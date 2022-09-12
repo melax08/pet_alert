@@ -30,11 +30,21 @@ class Lost(models.Model):
         'Описание',
         help_text='Опишите вашего потерянного питомца'
     )
+    pet_name = models.CharField(
+        'Кличка',
+        max_length=50,
+        help_text='Кличка потерянного питомца',
+        blank=True
+    )
     age = models.CharField(
         'Возраст питомца',
         max_length=50,
         help_text='Примерный или точный возраст животного',
         blank=True
+    )
+    name = models.CharField(
+        'Ваше имя',
+        max_length=50
     )
     phone = models.CharField(
         'Номер телефона',
@@ -83,6 +93,10 @@ class Found(models.Model):
         max_length=2,
         choices=CONDITIONS_OF_PET,
         default='OK'
+    )
+    name = models.CharField(
+        'Ваше имя',
+        max_length=50
     )
     phone = models.CharField(
         'Номер телефона',

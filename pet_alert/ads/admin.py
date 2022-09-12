@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Lost, Found
+
+
+admin.site.register(Lost)
+admin.site.register(Found)

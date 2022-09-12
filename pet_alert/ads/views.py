@@ -26,3 +26,8 @@ def add_lost(request):
         form.save()
         return redirect('ads:add_success')
     return render(request, template, {'form': form})
+
+
+def add_success(request):
+    template = 'ads/add_success.html'
+    return render(request, template)

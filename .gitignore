@@ -130,3 +130,4 @@ dmypy.json
 
 # Custom
 .idea/
+pet_alert/media/
