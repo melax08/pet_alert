@@ -14,7 +14,10 @@ def add_found(request):
     template = 'ads/add_found.html'
     form = FoundForm(request.POST or None, files=request.FILES or None)
     if form.is_valid():
-        form.save()
+        set_address = form.save(commit=False)
+        set_address.address = request.POST['address']
+        set_address.coords = request.POST['coords']
+        set_address.save()
         return redirect('ads:add_success')
     return render(request, template, {'form': form})
 
@@ -23,7 +26,10 @@ def add_lost(request):
     template = 'ads/add_lost.html'
     form = LostForm(request.POST or None, files=request.FILES or None)
     if form.is_valid():
-        form.save()
+        set_address = form.save(commit=False)
+        set_address.address = request.POST['address']
+        set_address.coords = request.POST['coords']
+        set_address.save()
         return redirect('ads:add_success')
     return render(request, template, {'form': form})
 

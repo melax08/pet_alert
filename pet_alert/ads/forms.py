@@ -6,7 +6,7 @@ from .models import Lost, Found
 class LostForm(forms.ModelForm):
     class Meta:
         model = Lost
-        fields = ('location', 'image', 'description', 'pet_name',
+        fields = ('image', 'description', 'pet_name',
                   'age', 'name', 'phone', 'email')
 
 

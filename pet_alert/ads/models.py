@@ -15,10 +15,15 @@ class Lost(models.Model):
         'Дата создания',
         auto_now_add=True
     )
-    location = models.CharField(
-        'Локация',
-        max_length=100,
-        help_text='Укажите где вы потеряли питомца'
+    address = models.CharField(
+        'Адрес',
+        max_length=300,
+        help_text='Укажите адрес где потеряли питомца'
+    )
+    coords = models.CharField(
+        'Координаты',
+        max_length=300,
+        help_text='Координаты адреса'
     )
     image = models.ImageField(
         'Фотография',
