@@ -37,3 +37,16 @@ def add_lost(request):
 def add_success(request):
     template = 'ads/add_success.html'
     return render(request, template)
+
+
+def lost(request):
+    template = 'ads/lost.html'
+    ads = Lost.objects.all()
+    context = {
+        "ads": ads
+    }
+    return render(request, template, context)
+
+
+def found(reqest):
+    pass

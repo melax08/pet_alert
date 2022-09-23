@@ -49,7 +49,7 @@
             <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1"
                  aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                   <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Выберите
@@ -67,8 +67,8 @@
                             type="text/javascript"></script>
                     <script src="{% static 'js/map_event.js' %}"
                             type="text/javascript"></script>
-                    <div id="map" style="width: 600px; height: 400px">{% csrf_token %}</div>
-                    <input type="hidden" id="coords" name="coords"/>
+                    <div id="map" style="width: 770px; height: 600px">{% csrf_token %}</div>
+                    <input type="hidden" id="coords" name="coords">
                     <input type="hidden" id="address" name="address">
                     {% comment %}
                     Либо textarea либо input оставить
@@ -76,7 +76,7 @@
                     {% endcomment %}
                     {% comment %}<textarea id="id_address" class="form-control" rows="5" name="address"></textarea>
                     <input type="text" name="id_coords" maxlength="300" class="form-control" required="" id="id_coords">{% endcomment %}
-                    <p>Выбранный адрес:</p> <p id="id_address">Адрес не выбран</p>
+                    <p></p><p>Выбранный адрес:</p> <p id="id_address">Адрес не выбран</p>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary"

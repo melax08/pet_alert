@@ -11,9 +11,13 @@
       </a>
     </div>
     <div class="col d-flex justify-content-md-end">
-      <button type="button" class="btn btn-secondary me-md-2">Потерялся
-      </button>
-      <button type="button" class="btn btn-secondary">Нашёлся</button>
+      <a href="{% url 'ads:lost' %}">
+        <button type="button" class="btn btn-secondary me-md-2">Потерялся
+        </button>
+      </a>
+      <a href="{% url 'ads:found' %}">
+        <button type="button" class="btn btn-secondary">Нашёлся</button>
+      </a>
     </div>
   </div>
   <article class="py-3">

@@ -63,6 +63,9 @@ class Lost(models.Model):
         blank=True
     )
 
+    class Meta:
+        ordering = ['-pub_date']
+
     def __str__(self):
         return self.description[:15]
 
@@ -114,6 +117,9 @@ class Found(models.Model):
         help_text='Ваша электронная почта для связи',
         blank=True
     )
+
+    class Meta:
+        ordering = ['-pub_date']
 
     def __str__(self):
         return self.description[:15]
