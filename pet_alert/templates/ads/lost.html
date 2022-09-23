@@ -1,56 +1,13 @@
 {% extends 'base.html' %}
 {% load thumbnail %}
 {% load static %}
-{% load js %}
 {% block title %}
   Потерялись
 {% endblock %}
 {% block content %}
-  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104"
-          type="text/javascript"></script>
-  {% comment %}
-  Этот пиздец надо как-то менять. Либо фиксим, чтобы у каждого объявления была своя карта, либо делаем на отдельной странице объявление
-  <script>var coords = [{{ ad.coords }}]</script>
-  {% endcomment %}
-  <script>var coords = [{{ ad.coords }}]</script>
-            <script src="{% static 'js/map_mark.js' %}"
-                    type="text/javascript">
-            </script>
-  <div class="row">
-    <div class="col d-flex justify-content-md-start">
-      <a href="{% url 'ads:add_lost' %}">
-        <button type="button" class="btn btn-primary">Подать объявление
-        </button>
-      </a>
-    </div>
-    <div class="col d-flex justify-content-md-end">
-      <a href="{% url 'ads:lost' %}">
-        <button type="button" class="btn btn-secondary me-md-2">Потерялся
-        </button>
-      </a>
-      <a href="{% url 'ads:found' %}">
-        <button type="button" class="btn btn-secondary">Нашёлся</button>
-      </a>
-    </div>
-  </div>
+ {% include 'ads/includes/navigation.html' %}
   <p></p>
-  {% for ad in ads %}
-    {% comment %}
-    <div class="d-flex position-relative">
-  {% thumbnail ad.image "100x100" crop="center" as im %}
-  <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
-{% endthumbnail %}
-  <div>
-    <h5 class="mt-0">{{ ad.pet_name }}</h5>
-    <p>{{ ad.description }}</p>
-    <button type="button" data-bs-toggle="modal" data-bs-target="#exampleModal{{ ad.id }}">
-Подробнее
-</button>
-  </div>
-</div>
-
-     <hr>
-{% endcomment %}
+  {% for ad in page_obj %}
     <article>
       <div class="row g-0 bg-light position-relative">
         <div class="col-md-3 mb-md-0 p-md-4">
@@ -62,46 +19,14 @@
         <div class="col-md-9 p-4 ps-md-0">
           <h5 class="mt-0">Пропала: {{ ad.pet_name }}</h5>
           <p>{{ ad.description }}</p>
-          <button onclick="update_like({{ ad.coords }})" type="button" class="btn btn-link" data-bs-toggle="modal"
-                  data-bs-target="#exampleModal{{ ad.id }}">
+          <a href="{% url 'ads:lost_detail' ad.id %}">
+          <button type="button" class="btn btn-link">
             Подробнее
           </button>
+            </a>
         </div>
       </div>
     </article>
-
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal{{ ad.id }}" tabindex="-1"
-         aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">
-              Кличка: {{ ad.pet_name }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                    aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            {% thumbnail ad.image "500x500" crop="center" as im %}
-              <img src="{{ im.url }}" width="{{ im.width }}"
-                   height="{{ im.height }}">
-            {% endthumbnail %}
-            <p><span
-                    style="color:darkgray">Дата публикации:</span> {{ ad.pub_date }}
-            </p>
-            <p><span style="color:darkgray">Возраст:</span> {{ ad.age }}</p>
-            <h4 style="color:darkgray">Описание:</h4>
-            <p>{{ ad.description }}</p>
-            <p><span style="color:darkgray">Адрес:</span> {{ ad.address }}</p>
-            <div id="map_{{ ad.id }}" style="width: 400px; height: 300px"></div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary"
-                    data-bs-dismiss="modal">Закрыть
-          </div>
-        </div>
-      </div>
-    </div>
-    <p></p>
   {% endfor %}
+  {% include 'ads/includes/paginator.html' %}
 {% endblock %}

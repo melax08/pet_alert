@@ -3,23 +3,7 @@
   Главная страница
 {% endblock %}
 {% block content %}
-  <div class="row">
-    <div class="col d-flex justify-content-md-start">
-      <a href="{% url 'ads:add_lost' %}">
-        <button type="button" class="btn btn-primary">Подать объявление
-        </button>
-      </a>
-    </div>
-    <div class="col d-flex justify-content-md-end">
-      <a href="{% url 'ads:lost' %}">
-        <button type="button" class="btn btn-secondary me-md-2">Потерялся
-        </button>
-      </a>
-      <a href="{% url 'ads:found' %}">
-        <button type="button" class="btn btn-secondary">Нашёлся</button>
-      </a>
-    </div>
-  </div>
+{% include 'ads/includes/navigation.html' %}
   <article class="py-3">
     <p>Тут очень важный текст с миссией проекта. Тут очень важный текст с
       миссией проекта.

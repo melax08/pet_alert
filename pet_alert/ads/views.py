@@ -1,8 +1,17 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
+from django.core.paginator import Paginator
 
 from .models import Found, Lost
 from .forms import FoundForm, LostForm
+
+ADS_COUNT = 10
+
+
+def paginator(request, ads):
+    pagination = Paginator(ads, ADS_COUNT)
+    page_number = request.GET.get('page')
+    return pagination.get_page(page_number)
 
 
 def index(request):
@@ -42,8 +51,27 @@ def add_success(request):
 def lost(request):
     template = 'ads/lost.html'
     ads = Lost.objects.all()
+    page_obj = paginator(request, ads)
     context = {
-        "ads": ads
+        'page_obj': page_obj
+    }
+    return render(request, template, context)
+
+
+def lost_map(request):
+    template = 'ads/lost_map.html'
+    ads = Lost.objects.all()
+    context = {
+        'ads': ads
+    }
+    return render(request, template, context)
+
+
+def lost_detail(request, ad_id):
+    template = 'ads/lost_detail.html'
+    ad = get_object_or_404(Lost, pk=ad_id)
+    context = {
+        'ad': ad
     }
     return render(request, template, context)
 

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load static %}
+{% block title %}
+  Потерялся | {{ ad.pet_name }}
+{% endblock %}
+{% block content %}
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104"
+          type="text/javascript"></script>
+  <script>
+      var coords = [{{ ad.coords }}]
+      var ballCont = 'Здесь был {{ ad.pet_name }}'
+  </script>
+  <script src="{% static 'js/map_mark.js' %}"
+          type="text/javascript">
+  </script>
+{% include 'ads/includes/navigation.html' %}
+  <div class="row py-3" >
+  <article class="col-12 col-md-8">
+    {% thumbnail ad.image "500x500" crop="center" as im %}
+      <img src="{{ im.url }}" width="{{ im.width }}"
+           height="{{ im.height }}">
+    {% endthumbnail %}
+    <p><span
+            style="color:darkgray">Кличка:</span> {{ ad.pet_name }}
+    </p>
+    <p><span style="color:darkgray">Возраст:</span> {{ ad.age }}</p>
+    <p style="color:darkgray">Описание:</p>
+    <p>{{ ad.description }}</p>
+    <p><span style="color:darkgray">Адрес:</span> {{ ad.address }}</p>
+    <div id="map" style="width: 500px; height: 300px"></div>
+  </article>
+  <aside class="col-12 col-md-4">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        Дата публикации: {{ ad.pub_date }}
+      </li>
+      <li class="list-group-item">
+        Кто ищет: {{ ad.name }}
+      </li>
+      <li class="list-group-item">
+        Контактный телефон: {{ ad.phone }}
+      </li>
+      <li class="list-group-item">
+        Контактый имейл: {{ ad.email }}
+      </li>
+    </ul>
+  </aside>
+  </div>
+{% endblock %}

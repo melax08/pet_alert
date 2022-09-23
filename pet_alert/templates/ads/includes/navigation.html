@@ -1,0 +1,29 @@
+{% with request.resolver_match.view_name as view_name %}
+<div class="row">
+    <div class="col d-flex justify-content-md-start">
+      <a href="{% url 'ads:add_lost' %}">
+        <button type="button" class="btn btn-danger">Подать объявление
+        </button>
+      </a>
+    </div>
+    <div class="col d-flex justify-content-md-end">
+    {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %}
+      <div class="btn-group me-md-2" role="group" aria-label="Basic radio toggle button group">
+        <a href="{% url 'ads:lost' %}">
+<button type="button" class="btn btn{% if view_name != 'ads:lost' %}-outline{% endif %}-primary">Список</button>
+          </a>
+        <a href="{% url 'ads:lost_map' %}">
+<button type="button" class="btn btn{% if view_name != 'ads:lost_map' %}-outline{% endif %}-primary">Карта</button>
+          </a>
+      </div>
+    {% endif %}
+      <a href="{% url 'ads:lost' %}">
+        <button type="button" class="btn {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %} btn-primary {% else %} btn-secondary {% endif %} me-md-2">Потерялся
+        </button>
+      </a>
+      <a href="{% url 'ads:found' %}">
+        <button type="button" class="btn {% if view_name == 'ads:found' %} btn-primary {% else %} btn-secondary {% endif %}">Нашёлся</button>
+      </a>
+    </div>
+  </div>
+{% endwith %}

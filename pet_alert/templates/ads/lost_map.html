@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load static %}
+{% block title %}
+  Потерялись
+{% endblock %}
+{% block content %}
+  {% include 'ads/includes/navigation.html' %}
+   <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104"
+          type="text/javascript"></script>
+  <script>
+      var coords = [{{ ads.coords }}]
+      var ballCont = 'Здесь был {{ ad.pet_name }}'
+  </script>
+  <script src="{% static 'js/map_marks.js' %}"
+          type="text/javascript">
+  </script>
+
+  <div class="d-flex justify-content-center py-3">
+  <p></p>
+  {% for ad in ads %}
+  {% endfor %}
+  <div id="map" style="width: 1200px; height: 1000px"></div>
+  </div>
+{% endblock %}
