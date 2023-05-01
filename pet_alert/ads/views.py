@@ -50,7 +50,7 @@ def add_success(request):
 
 def lost(request):
     template = 'ads/lost.html'
-    ads = Lost.objects.all()
+    ads = Lost.objects.filter(active=True)
     page_obj = paginator(request, ads)
     context = {
         'page_obj': page_obj
@@ -60,7 +60,7 @@ def lost(request):
 
 def lost_map(request):
     template = 'ads/lost_map.html'
-    ads = Lost.objects.all()
+    ads = Lost.objects.filter(active=True)
     context = {
         'ads': ads
     }
@@ -69,7 +69,10 @@ def lost_map(request):
 
 def lost_detail(request, ad_id):
     template = 'ads/lost_detail.html'
-    ad = get_object_or_404(Lost, pk=ad_id)
+    ad = get_object_or_404(Lost,
+                           pk=ad_id,
+                           active=True
+                           )
     context = {
         'ad': ad
     }

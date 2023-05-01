@@ -9,6 +9,9 @@ CONDITIONS_OF_PET = [
     ('CR', 'Критическое')
 ]
 
+# ToDo: пол (мальчик, девочка, неопределен)
+# ToDo: Цвет
+
 
 class AdsAbstract(models.Model):
     pub_date = models.DateTimeField(

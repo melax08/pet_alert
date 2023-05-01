@@ -15,18 +15,21 @@
           type="text/javascript">
   </script>
 {% include 'ads/includes/navigation.html' %}
-  <div class="row py-3" >
+  <div class="row" >
   <article class="col-12 col-md-8">
-    {% thumbnail ad.image "500x500" crop="center" as im %}
+    {% thumbnail ad.image "500x400" crop="center" as im %}
       <img src="{{ im.url }}" width="{{ im.width }}"
-           height="{{ im.height }}">
+           height="{{ im.height }}" class="pb-3 rounded">
     {% endthumbnail %}
-    <p><span
-            style="color:darkgray">Кличка:</span> {{ ad.pet_name }}
-    </p>
+  {% if ad.pet_name %}
+    <p><span style="color:darkgray">Кличка:</span> {{ ad.pet_name }}</p>
+  {% endif %}
+  {% if ad.age %}
     <p><span style="color:darkgray">Возраст:</span> {{ ad.age }}</p>
+  {% endif %}
     <p style="color:darkgray">Описание:</p>
     <p>{{ ad.description }}</p>
+  {% if ad.address %}
     <p><span style="color:darkgray">Адрес:</span> {{ ad.address }}</p>
   {% comment %}
     <div id="map" style="width: 500px; height: 300px"></div>
@@ -37,9 +40,10 @@
         }
     </style>
   <div id="map"></div>
+  {% endif %}
   </article>
   <aside class="col-12 col-md-4">
-    <ul class="list-group list-group-flush">
+    <ul class="list-group ">
       <li class="list-group-item">
         Дата публикации: {{ ad.pub_date }}
       </li>
@@ -50,7 +54,7 @@
         Контактный телефон: {{ ad.phone }}
       </li>
       <li class="list-group-item">
-        Контактый имейл: {{ ad.email }}
+        Контактый email: {{ ad.email }}
       </li>
     </ul>
   </aside>

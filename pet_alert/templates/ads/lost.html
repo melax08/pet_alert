@@ -2,23 +2,23 @@
 {% load thumbnail %}
 {% load static %}
 {% block title %}
-  Потерялись
+  Потерялись | Список
 {% endblock %}
 {% block content %}
  {% include 'ads/includes/navigation.html' %}
-  <p></p>
   {% for ad in page_obj %}
-    <article>
+    <article class="border">
       <div class="row g-0 bg-light position-relative">
         <div class="col-md-3 mb-md-0 p-md-4">
           {% thumbnail ad.image "200x200" crop="center" as im %}
             <img src="{{ im.url }}" width="{{ im.width }}"
-                 height="{{ im.height }}">
+                 height="{{ im.height }}" class="rounded">
           {% endthumbnail %}
         </div>
         <div class="col-md-9 p-4 ps-md-0">
-          <h5 class="mt-0">Пропала: {{ ad.pet_name }}</h5>
+          <h5 class="mt-0">Пропал: {{ ad.pet_name }}</h5>
           <p>{{ ad.description }}</p>
+          <p class="text-muted">{{ ad.address }}</p>
           <a href="{% url 'ads:lost_detail' ad.id %}">
           <button type="button" class="btn btn-link">
             Подробнее

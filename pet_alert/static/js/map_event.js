@@ -57,7 +57,7 @@ function init() {
                     // В качестве контента балуна задаем строку с адресом объекта.
                     balloonContent: firstGeoObject.getAddressLine()
                 });
-            $("#id_address").html(firstGeoObject.getAddressLine());
+            $(".id_address").html(firstGeoObject.getAddressLine());
             $("#address").val(firstGeoObject.getAddressLine());
             $("#coords").val(coords);
         });

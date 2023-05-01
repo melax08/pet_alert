@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load yamaps %}
 {% load static %}
 {% block title %}
   Подать объявление | Потерялся
@@ -45,6 +44,7 @@
                     data-bs-toggle="modal" data-bs-target="#exampleModal">
               Выбрать адрес
             </button>
+          <p class="my-3 id_address">Адрес не выбран</p>
 
             <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1"
@@ -59,10 +59,6 @@
                             aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    {%  comment %}
-                    {% yamaps 'Брянск' %}
-                    {% yamaps_init %}
-                    {% endcomment %}
                     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104"
                             type="text/javascript"></script>
                     <script src="{% static 'js/map_event.js' %}"
@@ -70,13 +66,8 @@
                     <div id="map" style="width: 770px; height: 600px">{% csrf_token %}</div>
                     <input type="hidden" id="coords" name="coords">
                     <input type="hidden" id="address" name="address">
-                    {% comment %}
-                    Либо textarea либо input оставить
-                    Подумать как засунуть кординаты в hidden latitude и longitude, после чего, отправить это в форму
-                    {% endcomment %}
-                    {% comment %}<textarea id="id_address" class="form-control" rows="5" name="address"></textarea>
-                    <input type="text" name="id_coords" maxlength="300" class="form-control" required="" id="id_coords">{% endcomment %}
-                    <p></p><p>Выбранный адрес:</p> <p id="id_address">Адрес не выбран</p>
+                    <p class="my-3">Выбранный адрес:</p>
+                    <p class="id_address">Адрес не выбран</p>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary"
