@@ -21,12 +21,14 @@ class AdsAbstract(models.Model):
     address = models.CharField(
         'Адрес',
         max_length=300,
-        help_text='Укажите адрес где потеряли питомца'
+        help_text='Укажите адрес где потеряли питомца',
+        blank=True
     )
     coords = models.CharField(
         'Координаты',
         max_length=300,
-        help_text='Координаты адреса'
+        help_text='Координаты адреса',
+        blank=True
     )
     image = models.ImageField(
         'Фотография',

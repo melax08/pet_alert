@@ -61,8 +61,11 @@ def lost(request):
 def lost_map(request):
     template = 'ads/lost_map.html'
     ads = Lost.objects.filter(active=True)
+    coords = []
+    for ad in ads:
+        coords.append(list(map(float, ad.coords.split(','))))
     context = {
-        'ads': ads
+        'coords': coords
     }
     return render(request, template, context)
 

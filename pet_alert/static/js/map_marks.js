@@ -4,17 +4,21 @@ ymaps.ready(function () {
             zoom: 9
         }, {
             searchControlProvider: 'yandex#search'
-        }),
-
-        myPlacemarkWithContent = new ymaps.Placemark(coords, {
-            hintContent: ballCont,
-            balloonContent: ballCont,
-            iconContent: '12'
-        }, {
-             preset: 'islands#dotIcon',
-            iconColor: '#735184'
         });
 
-    myMap.geoObjects
-        .add(myPlacemarkWithContent);
+        var myGeoObjects = [];
+
+        for (var i = 0; i<coords.length; i++) {
+            myGeoObjects[i] = new ymaps.GeoObject({
+                geometry: {
+                    type: "Point",
+                    coordinates: coords[i]
+                }
+            });
+        }
+
+        var myClusterer = new ymaps.Clusterer();
+        myClusterer.add(myGeoObjects);
+        myMap.geoObjects.add(myClusterer);
+
 });
