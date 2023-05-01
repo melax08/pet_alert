@@ -10,7 +10,7 @@ CONDITIONS_OF_PET = [
 ]
 
 
-class Lost(models.Model):
+class AdsAbstract(models.Model):
     pub_date = models.DateTimeField(
         'Дата создания',
         auto_now_add=True
@@ -35,12 +35,6 @@ class Lost(models.Model):
         'Описание',
         help_text='Опишите вашего потерянного питомца'
     )
-    pet_name = models.CharField(
-        'Кличка',
-        max_length=50,
-        help_text='Кличка потерянного питомца',
-        blank=True
-    )
     age = models.CharField(
         'Возраст питомца',
         max_length=50,
@@ -62,24 +56,41 @@ class Lost(models.Model):
         help_text='Ваша электронная почта для связи',
         blank=True
     )
+    active = models.BooleanField(
+        'Активно',
+        default=False,
+        help_text='Объявление одобрено, активно и видно на сайте.'
+    )
 
     class Meta:
         ordering = ['-pub_date']
+        abstract = True
 
     def __str__(self):
         return self.description[:15]
 
 
-class Found(models.Model):
-    pub_date = models.DateTimeField(
-        'Дата создания',
-        auto_now_add=True
+# ToDo: сделать, чтобы help_text изменялся без переопределения поля.
+class Lost(AdsAbstract):
+    pet_name = models.CharField(
+            'Кличка',
+            max_length=50,
+            help_text='Кличка потерянного питомца',
+            blank=True
     )
-    location = models.CharField(
-        'Локация',
-        max_length=100,
-        help_text='Укажите где вы нашли животное'
-    )
+
+    class Meta(AdsAbstract.Meta):
+        verbose_name = 'Потерян'
+        verbose_name_plural = 'Потеряны'
+
+
+class Found(AdsAbstract):
+    condition = models.CharField(
+            'Состояние животного',
+            max_length=2,
+            choices=CONDITIONS_OF_PET,
+            default='OK'
+        )
     image = models.ImageField(
         'Фотография',
         upload_to='ads/img',
@@ -96,30 +107,7 @@ class Found(models.Model):
         help_text='Примерный возраст животного',
         blank=True
     )
-    condition = models.CharField(
-        'Состояние животного',
-        max_length=2,
-        choices=CONDITIONS_OF_PET,
-        default='OK'
-    )
-    name = models.CharField(
-        'Ваше имя',
-        max_length=50
-    )
-    phone = models.CharField(
-        'Номер телефона',
-        max_length=20,
-        help_text='Ваш номер телефона для связи',
-        blank=True
-    )
-    email = models.EmailField(
-        'Электронная почта',
-        help_text='Ваша электронная почта для связи',
-        blank=True
-    )
 
-    class Meta:
-        ordering = ['-pub_date']
-
-    def __str__(self):
-        return self.description[:15]
+    class Meta(AdsAbstract.Meta):
+        verbose_name = 'Найден'
+        verbose_name_plural = 'Найдены'

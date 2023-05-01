@@ -13,5 +13,5 @@ class LostForm(forms.ModelForm):
 class FoundForm(forms.ModelForm):
     class Meta:
         model = Found
-        fields = ('location', 'image', 'description',
-                  'age', 'name', 'condition', 'phone', 'email')
+        fields = ('image', 'description', 'age', 'name', 'condition',
+                  'phone', 'email')

@@ -76,5 +76,5 @@ def lost_detail(request, ad_id):
     return render(request, template, context)
 
 
-def found(reqest):
+def found(request):
     pass

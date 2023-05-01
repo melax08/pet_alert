@@ -1,0 +1,14 @@
+certifi==2022.6.15
+charset-normalizer==2.0.12
+Django==2.2.16
+idna==3.4
+Pillow==8.3.1
+python-dotenv==0.21.1
+pytz==2022.7.1
+requests==2.26.0
+six==1.16.0
+sorl-thumbnail==12.7.0
+sqlparse==0.4.2
+typing_extensions==4.3.0
+urllib3==1.26.12
+zipp==3.8.1
