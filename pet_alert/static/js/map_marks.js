@@ -8,13 +8,23 @@ ymaps.ready(function () {
 
         var myGeoObjects = [];
 
-        for (var i = 0; i<coords.length; i++) {
+        for (var i = 0; i<map_objects.length; i++) {
             myGeoObjects[i] = new ymaps.GeoObject({
                 geometry: {
                     type: "Point",
-                    coordinates: coords[i]
+                    coordinates: map_objects[i].coordinates
+                },
+                properties: {
+                    hintContent: map_objects[i].hintContent,
+                    balloonContentHeader: map_objects[i].balloonContentHeader,
+                    balloonContentBody: map_objects[i].balloonContentBody,
+                    balloonContentFooter: map_objects[i].balloonContentFooter
+                },
+            },
+                {
+                    preset: "islands#blueDogIcon"
                 }
-            });
+                );
         }
 
         var myClusterer = new ymaps.Clusterer();
