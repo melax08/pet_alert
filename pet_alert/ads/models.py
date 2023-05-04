@@ -94,7 +94,8 @@ class Found(AdsAbstract):
             'Состояние животного',
             max_length=2,
             choices=CONDITIONS_OF_PET,
-            default='OK'
+            default='OK',
+            help_text='В каком состоянии было животное, когда вы его нашли?'
         )
     image = models.ImageField(
         'Фотография',
