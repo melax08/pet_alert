@@ -32,7 +32,7 @@ class AdsAbstract(models.Model):
     )
     image = models.ImageField(
         'Фотография',
-        upload_to='ads/img',
+        upload_to='main/img',
         blank=True,
         help_text='Прикрепите фотографию питомца'
     )
@@ -98,7 +98,7 @@ class Found(AdsAbstract):
         )
     image = models.ImageField(
         'Фотография',
-        upload_to='ads/img',
+        upload_to='main/img',
         blank=True,
         help_text='Прикрепите фотографию найденного животного'
     )

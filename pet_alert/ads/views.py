@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
 from django.core.paginator import Paginator
 from django.urls import reverse_lazy
+from sorl.thumbnail import get_thumbnail
 
 from .models import Found, Lost
 from .forms import FoundForm, LostForm
@@ -65,7 +66,8 @@ def lost_map(request):
     map_objects = []
     for ad in ads:
         hint_content = ad.pet_name
-        img = f'<img src="/media/{ad.image}" style="width: 100px; height: auto">'
+        small_img = get_thumbnail(ad.image, '50x50', crop='center', quality=99)
+        img = f'<img src="/media/{small_img}" class="rounded"'
         balloon_content_header = f'{img} <br> Потерялся: {ad.pet_name}'
         balloon_content_body = ad.description
         url = reverse_lazy('ads:lost_detail', kwargs={'ad_id': ad.id})
