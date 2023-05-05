@@ -40,7 +40,7 @@
 
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <p>Выберите адрес:</p>
+            <p>{{ address_info }}</p>
             <!-- Button trigger modal -->
             <button type="button" class="btn btn-primary"
                     data-bs-toggle="modal" data-bs-target="#exampleModal">

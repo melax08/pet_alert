@@ -21,9 +21,8 @@ def index(request):
     return render(request, template)
 
 
-def add_found(request):
-    template = 'ads/add_found.html'
-    form = FoundForm(request.POST or None, files=request.FILES or None)
+def add_ad(request, template, form):
+    form = form(request.POST or None, files=request.FILES or None)
     if form.is_valid():
         set_address = form.save(commit=False)
         set_address.address = request.POST['address']
@@ -31,18 +30,14 @@ def add_found(request):
         set_address.save()
         return redirect('ads:add_success')
     return render(request, template, {'form': form})
+
+
+def add_found(request):
+    return add_ad(request, 'ads/add_found.html', FoundForm)
 
 
 def add_lost(request):
-    template = 'ads/add_lost.html'
-    form = LostForm(request.POST or None, files=request.FILES or None)
-    if form.is_valid():
-        set_address = form.save(commit=False)
-        set_address.address = request.POST['address']
-        set_address.coords = request.POST['coords']
-        set_address.save()
-        return redirect('ads:add_success')
-    return render(request, template, {'form': form})
+    return add_ad(request, 'ads/add_lost.html', LostForm)
 
 
 def add_success(request):
@@ -53,6 +48,16 @@ def add_success(request):
 def lost(request):
     template = 'ads/lost.html'
     ads = Lost.objects.filter(active=True)
+    page_obj = paginator(request, ads)
+    context = {
+        'page_obj': page_obj
+    }
+    return render(request, template, context)
+
+
+def found(request):
+    template = 'ads/found.html'
+    ads = Found.objects.filter(active=True)
     page_obj = paginator(request, ads)
     context = {
         'page_obj': page_obj
@@ -85,6 +90,10 @@ def lost_map(request):
     return render(request, template, context)
 
 
+def found_map(request):
+    ...
+
+
 def lost_detail(request, ad_id):
     template = 'ads/lost_detail.html'
     ad = get_object_or_404(Lost,
@@ -97,5 +106,14 @@ def lost_detail(request, ad_id):
     return render(request, template, context)
 
 
-def found(request):
-    pass
+def found_detail(request, ad_id):
+    template = 'ads/found_detail.html'
+    ad = get_object_or_404(Found,
+                           pk=ad_id,
+                           active=True
+                           )
+    context = {
+        'ad': ad
+    }
+    return render(request, template, context)
+
