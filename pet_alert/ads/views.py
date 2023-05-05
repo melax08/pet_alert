@@ -91,7 +91,28 @@ def lost_map(request):
 
 
 def found_map(request):
-    ...
+    template = 'ads/found_map.html'
+    ads = Found.objects.filter(active=True)
+    map_objects = []
+    for ad in ads:
+        hint_content = 'Нашелся'
+        small_img = get_thumbnail(ad.image, '50x50', crop='center', quality=99)
+        img = f'<img src="/media/{small_img}" class="rounded"'
+        balloon_content_header = f'{img} <br> Нашелся:'
+        balloon_content_body = ad.description
+        url = reverse_lazy('ads:found_detail', kwargs={'ad_id': ad.id})
+        balloon_content_footer = f'<a href="{url}">Перейти</a>'
+        map_objects.append({
+            "coordinates": list(map(float, ad.coords.split(','))),
+            "hintContent": hint_content,
+            "balloonContentHeader": balloon_content_header,
+            "balloonContentBody": balloon_content_body,
+            "balloonContentFooter": balloon_content_footer
+        })
+    context = {
+        'map_objects': map_objects
+    }
+    return render(request, template, context)
 
 
 def lost_detail(request, ad_id):
