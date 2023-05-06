@@ -7,11 +7,12 @@ from sorl.thumbnail import get_thumbnail
 from .models import Found, Lost
 from .forms import FoundForm, LostForm
 
-ADS_COUNT = 10
+ADS_PER_PAGE = 6
+DESCRIPTION_MAP_LIMIT = 60
 
 
 def paginator(request, ads):
-    pagination = Paginator(ads, ADS_COUNT)
+    pagination = Paginator(ads, ADS_PER_PAGE)
     page_number = request.GET.get('page')
     return pagination.get_page(page_number)
 
@@ -65,62 +66,56 @@ def found(request):
     return render(request, template, context)
 
 
-def lost_map(request):
-    template = 'ads/lost_map.html'
-    ads = Lost.objects.filter(active=True)
+def map_generation(request, template, model, header, reverse_url):
+    ads = model.objects.filter(active=True)
     map_objects = []
     for ad in ads:
-        hint_content = ad.pet_name
-        small_img = get_thumbnail(ad.image, '50x50', crop='center', quality=99)
-        img = f'<img src="/media/{small_img}" class="rounded"'
-        balloon_content_header = f'{img} <br> Потерялся: {ad.pet_name}'
-        balloon_content_body = ad.description
-        url = reverse_lazy('ads:lost_detail', kwargs={'ad_id': ad.id})
-        balloon_content_footer = f'<a href="{url}">Перейти</a>'
-        map_objects.append({
-            "coordinates": list(map(float, ad.coords.split(','))),
-            "hintContent": hint_content,
-            "balloonContentHeader": balloon_content_header,
-            "balloonContentBody": balloon_content_body,
-            "balloonContentFooter": balloon_content_footer
-        })
+        if ad.coords:
+            if getattr(ad, 'pet_name', ''):
+                header_to_show = f'{header}: {ad.pet_name}'
+            else:
+                header_to_show = header
+            hint_content = header_to_show
+            if ad.image:
+                small_img = get_thumbnail(ad.image, '50x50', crop='center',
+                                          quality=99)
+                img = f'<img src="/media/{small_img}" class="rounded"'
+                balloon_content_header = f'{img} <br> {header_to_show}'
+            else:
+                balloon_content_header = header_to_show
+            if len(ad.description) <= DESCRIPTION_MAP_LIMIT:
+                balloon_content_body = ad.description
+            else:
+                balloon_content_body = (ad.description[:DESCRIPTION_MAP_LIMIT]
+                                        + '...')
+            url = reverse_lazy(reverse_url, kwargs={'ad_id': ad.id})
+            balloon_content_footer = f'<a href="{url}">Перейти</a>'
+            map_objects.append({
+                "coordinates": list(map(float, ad.coords.split(','))),
+                "hintContent": hint_content,
+                "balloonContentHeader": balloon_content_header,
+                "balloonContentBody": balloon_content_body,
+                "balloonContentFooter": balloon_content_footer
+            })
     context = {
         'map_objects': map_objects
     }
     return render(request, template, context)
+
+
+def lost_map(request):
+    return map_generation(request, 'ads/lost_map.html', Lost, 'Потерялся',
+                          'ads:lost_detail')
 
 
 def found_map(request):
-    template = 'ads/found_map.html'
-    ads = Found.objects.filter(active=True)
-    map_objects = []
-    for ad in ads:
-        hint_content = 'Нашелся'
-        small_img = get_thumbnail(ad.image, '50x50', crop='center', quality=99)
-        img = f'<img src="/media/{small_img}" class="rounded"'
-        balloon_content_header = f'{img} <br> Нашелся:'
-        balloon_content_body = ad.description
-        url = reverse_lazy('ads:found_detail', kwargs={'ad_id': ad.id})
-        balloon_content_footer = f'<a href="{url}">Перейти</a>'
-        map_objects.append({
-            "coordinates": list(map(float, ad.coords.split(','))),
-            "hintContent": hint_content,
-            "balloonContentHeader": balloon_content_header,
-            "balloonContentBody": balloon_content_body,
-            "balloonContentFooter": balloon_content_footer
-        })
-    context = {
-        'map_objects': map_objects
-    }
-    return render(request, template, context)
+    return map_generation(request, 'ads/found_map.html', Found, 'Нашелся',
+                          'ads:found_detail')
 
 
 def lost_detail(request, ad_id):
     template = 'ads/lost_detail.html'
-    ad = get_object_or_404(Lost,
-                           pk=ad_id,
-                           active=True
-                           )
+    ad = get_object_or_404(Lost, pk=ad_id, active=True)
     context = {
         'ad': ad
     }
@@ -129,10 +124,7 @@ def lost_detail(request, ad_id):
 
 def found_detail(request, ad_id):
     template = 'ads/found_detail.html'
-    ad = get_object_or_404(Found,
-                           pk=ad_id,
-                           active=True
-                           )
+    ad = get_object_or_404(Found, pk=ad_id, active=True)
     context = {
         'ad': ad
     }
