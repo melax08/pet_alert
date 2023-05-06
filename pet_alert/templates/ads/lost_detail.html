@@ -16,7 +16,7 @@
   </script>
 {% include 'ads/includes/navigation.html' %}
   <div class="row" >
-  <article class="col-12 col-md-8">
+  <article class="col-12 col-md-8 text-break">
     {% thumbnail ad.image "500x400" crop="center" as im %}
       <img src="{{ im.url }}" width="{{ im.width }}"
            height="{{ im.height }}" class="pb-3 rounded">
@@ -39,7 +39,7 @@
   <div id="map"></div>
   {% endif %}
   </article>
-  <aside class="col-12 col-md-4">
+  <aside class="col-12 col-md-4 text-break">
     <ul class="list-group ">
       <li class="list-group-item">
         Дата публикации: {{ ad.pub_date }}
