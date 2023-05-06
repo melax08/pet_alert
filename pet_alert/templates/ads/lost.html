@@ -17,7 +17,7 @@
         </div>
         <div class="col-md-9 p-4 ps-md-0">
           <h5 class="mt-0 text-break">Пропал: {{ ad.pet_name }}</h5>
-          <p class="text-break">{{ ad.description | truncatechars:100 }}</p>
+          <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
           <p class="text-muted">{{ ad.address }}</p>
           <a href="{% url 'ads:lost_detail' ad.id %}">
           <button type="button" class="btn btn-link">
