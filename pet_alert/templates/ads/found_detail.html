@@ -25,15 +25,12 @@
     <p><span style="color:darkgray">Примерный возраст:</span> {{ ad.age }}</p>
   {% endif %}
     {% if ad.condition %}
-    <p><span style="color:darkgray">Состояние:</span> {{ ad.condition }}</p>
+    <p><span style="color:darkgray">Состояние:</span> {{ ad.get_condition_display }}</p>
   {% endif %}
     <p style="color:darkgray">Описание:</p>
     <p>{{ ad.description }}</p>
   {% if ad.address %}
     <p><span style="color:darkgray">Адрес:</span> {{ ad.address }}</p>
-  {% comment %}
-    <div id="map" style="width: 500px; height: 300px"></div>
-  {% endcomment %}
   <style>
         html, body, #map {
             width: 100%; height: 40%; padding: 0; margin: 0;
