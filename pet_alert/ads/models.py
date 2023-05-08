@@ -13,6 +13,34 @@ CONDITIONS_OF_PET = [
 # ToDo: Цвет
 
 
+class AnimalType(models.Model):
+    name = models.CharField(
+        'Название вида',
+        max_length=50,
+        help_text='Укажите название вида животного',
+        unique=True
+    )
+    slug = models.SlugField(
+        'Слаг',
+        unique=True,
+        help_text='Как будет называться вид животного в URL'
+    )
+    icon = models.ImageField(
+        'Иконка',
+        upload_to='main/img/animal-icons',
+        help_text='Иконка для вида животного, будет отображаться на карте.',
+        height_field='height',
+        width_field='weight'
+    )
+
+    class Meta:
+        verbose_name = 'Вид животного'
+        verbose_name_plural = 'Виды животных'
+
+    def __str__(self):
+        return self.name
+
+
 class AdsAbstract(models.Model):
     pub_date = models.DateTimeField(
         'Дата создания',
@@ -72,16 +100,24 @@ class AdsAbstract(models.Model):
         abstract = True
 
     def __str__(self):
-        return self.description[:15]
+        return self.description[:30]
 
 
 # ToDo: сделать, чтобы help_text изменялся без переопределения поля.
 class Lost(AdsAbstract):
     pet_name = models.CharField(
-            'Кличка',
-            max_length=50,
-            help_text='Кличка потерянного питомца',
-            blank=True
+        'Кличка',
+        max_length=50,
+        help_text='Кличка потерянного питомца',
+        blank=True
+    )
+    type = models.ForeignKey(
+        AnimalType,
+        on_delete=models.SET_NULL,
+        related_name='lost',
+        verbose_name='Вид животного',
+        help_text='Выберите вид потерянного животного',
+        null=True
     )
 
     class Meta(AdsAbstract.Meta):
@@ -91,12 +127,12 @@ class Lost(AdsAbstract):
 
 class Found(AdsAbstract):
     condition = models.CharField(
-            'Состояние животного',
-            max_length=2,
-            choices=CONDITIONS_OF_PET,
-            default='OK',
-            help_text='В каком состоянии было животное, когда вы его нашли?'
-        )
+        'Состояние животного',
+        max_length=2,
+        choices=CONDITIONS_OF_PET,
+        default='OK',
+        help_text='В каком состоянии было животное, когда вы его нашли?'
+    )
     image = models.ImageField(
         'Фотография',
         upload_to='main/img',
@@ -112,6 +148,14 @@ class Found(AdsAbstract):
         max_length=50,
         help_text='Примерный возраст животного',
         blank=True
+    )
+    type = models.ForeignKey(
+        AnimalType,
+        on_delete=models.SET_NULL,
+        related_name='found',
+        verbose_name='Вид животного',
+        help_text='Выберите вид найденного животного',
+        null=True
     )
 
     class Meta(AdsAbstract.Meta):

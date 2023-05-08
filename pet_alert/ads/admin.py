@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Lost, Found
+from .models import Lost, Found, AnimalType
 
 
 class LostAdmin(admin.ModelAdmin):
@@ -17,5 +17,10 @@ class FoundAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+class TypeAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'slug', 'icon')
+
+
 admin.site.register(Lost, LostAdmin)
 admin.site.register(Found, FoundAdmin)
+admin.site.register(AnimalType, TypeAdmin)
