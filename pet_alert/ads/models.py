@@ -28,9 +28,7 @@ class AnimalType(models.Model):
     icon = models.ImageField(
         'Иконка',
         upload_to='main/img/animal-icons',
-        help_text='Иконка для вида животного, будет отображаться на карте.',
-        height_field='height',
-        width_field='weight'
+        help_text='Иконка для вида животного, будет отображаться на карте.'
     )
 
     class Meta:
