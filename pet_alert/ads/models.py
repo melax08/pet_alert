@@ -30,6 +30,12 @@ class AnimalType(models.Model):
         upload_to='main/img/animal-icons',
         help_text='Иконка для вида животного, будет отображаться на карте.'
     )
+    default_image = models.ImageField(
+        'Изображение по умолчанию',
+        upload_to='main/img/default-images',
+        help_text=('Изображение для животного, '
+                   'которое будет отображаться по умолчанию.')
+    )
 
     class Meta:
         verbose_name = 'Вид животного'

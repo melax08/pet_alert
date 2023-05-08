@@ -10,10 +10,17 @@
     <article class="border">
       <div class="row g-0 bg-light position-relative">
         <div class="col-md-3 mb-md-0 p-md-4">
+        {% if ad.image %}
           {% thumbnail ad.image "200x200" crop="center" as im %}
             <img src="{{ im.url }}" width="{{ im.width }}"
                  height="{{ im.height }}" class="rounded">
           {% endthumbnail %}
+        {% else %}
+          {% thumbnail ad.type.default_image "200x200" crop="center" as im %}
+            <img src="{{ im.url }}" width="{{ im.width }}"
+                 height="{{ im.height }}" class="rounded">
+          {% endthumbnail %}
+        {% endif %}
         </div>
         <div class="col-md-9 p-4 ps-md-0">
           <h5 class="mt-0">Нашелся:</h5>

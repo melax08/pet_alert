@@ -21,6 +21,9 @@
       <img src="{{ im.url }}" width="{{ im.width }}"
            height="{{ im.height }}" class="pb-3 rounded">
     {% endthumbnail %}
+  {% if ad.type %}
+    <p><span style="color:darkgray">Вид:</span> {{ ad.type }}</p>
+  {% endif %}
   {% if ad.age %}
     <p><span style="color:darkgray">Примерный возраст:</span> {{ ad.age }}</p>
   {% endif %}
