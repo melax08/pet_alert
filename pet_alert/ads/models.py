@@ -90,8 +90,7 @@ class AdsAbstract(models.Model):
     )
     email = models.EmailField(
         'Электронная почта',
-        help_text='Ваша электронная почта для связи',
-        blank=True
+        help_text='Ваша электронная почта для связи'
     )
     active = models.BooleanField(
         'Активно',

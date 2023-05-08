@@ -22,7 +22,10 @@ ymaps.ready(function () {
                 },
             },
                 {
-                    preset: "islands#blueDogIcon"
+                    // preset: "islands#blueDogIcon"
+                    iconLayout: 'default#image',
+                    iconImageHref: map_objects[i].iconHref,
+                    iconImageSize: [42, 42]
                 }
                 );
         }

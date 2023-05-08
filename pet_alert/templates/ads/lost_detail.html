@@ -10,6 +10,7 @@
   <script>
       var coords = [{{ ad.coords }}]
       var ballCont = 'Здесь был {{ ad.pet_name }}'
+      var iconHref = '/media/{{ ad.type.icon }}'
   </script>
   <script src="{% static 'js/map_mark.js' %}"
           type="text/javascript">

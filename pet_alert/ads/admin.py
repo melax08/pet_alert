@@ -18,7 +18,7 @@ class FoundAdmin(admin.ModelAdmin):
 
 
 class TypeAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'slug', 'icon')
+    list_display = ('pk', 'name', 'slug')
 
 
 admin.site.register(Lost, LostAdmin)

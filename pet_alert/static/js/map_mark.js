@@ -11,8 +11,12 @@ ymaps.ready(function () {
             balloonContent: ballCont,
             iconContent: '12'
         }, {
-             preset: 'islands#dotIcon',
-            iconColor: '#735184'
+            //  preset: 'islands#dotIcon',
+            // iconColor: '#735184'
+            iconLayout: 'default#image',
+            iconImageHref: iconHref,
+            iconImageSize: [42, 42]
+
         });
 
     myMap.geoObjects

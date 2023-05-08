@@ -89,13 +89,16 @@ def map_generation(request, template, model, header, reverse_url):
                 balloon_content_body = (ad.description[:DESCRIPTION_MAP_LIMIT]
                                         + '...')
             url = reverse_lazy(reverse_url, kwargs={'ad_id': ad.id})
-            balloon_content_footer = f'<a href="{url}" target="_blank">Перейти</a>'
+            balloon_content_footer = (f'<a href="{url}" '
+                                      f'target="_blank">Перейти</a>')
+            icon_href = f'/media/{ad.type.icon}'
             map_objects.append({
                 "coordinates": list(map(float, ad.coords.split(','))),
                 "hintContent": hint_content,
                 "balloonContentHeader": balloon_content_header,
                 "balloonContentBody": balloon_content_body,
-                "balloonContentFooter": balloon_content_footer
+                "balloonContentFooter": balloon_content_footer,
+                "iconHref": icon_href
             })
     context = {
         'map_objects': map_objects

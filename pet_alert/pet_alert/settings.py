@@ -2,12 +2,15 @@ import os
 import sys
 
 from django.core.management.utils import get_random_secret_key
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', default=get_random_secret_key())
 DEBUG = int(os.getenv('DJANGO_DEBUG', default=1))
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', default='*').split()
-LOCAL = False
+LOCAL = int(os.getenv('LOCAL', default=0))
 
 INSTALLED_APPS = [
     'django.contrib.admin',
