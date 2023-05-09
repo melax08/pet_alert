@@ -15,8 +15,8 @@ ymaps.ready(function () {
             // iconColor: '#735184'
             iconLayout: 'default#image',
             iconImageHref: iconHref,
-            iconImageSize: [42, 42]
-
+            iconImageSize: [60, 60],
+            iconImageOffset: [-30, -60]
         });
 
     myMap.geoObjects

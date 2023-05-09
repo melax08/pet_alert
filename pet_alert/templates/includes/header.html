@@ -1,18 +1,25 @@
 {% load static %}
+<nav class="navbar navbar-expand-md navbar-light">
 <div class="container">
-  <div class="row my-2">
-    <div class="col-4">
       <a class="navbar-brand" href="{% url 'ads:index' %}">
-      <img src="{% static 'img/logo.png' %}" style="width: auto; height: 50px;">
+      <img src="{% static 'img/logo.png' %}" class="d-inline-block align-top" style="width: auto; height: 50px;">
         </a>
-    </div>
-    <div class="col-8">
-      <div class="text-end">
+{#      <div class="text-end">#}
         {% comment %}
         <p>"Вернем потерянных домой" - наш слоган. Мы помогаем владельцам потерянных домашних животных быстро и эффективно их найти.</p>
         {% endcomment %}
-        <p>Войти Регистрация Личный кабинет</p>
-      </div>
+<ul class="nav nav-pills">
+  <li class="nav-item"><a class="nav-link" href="">Войти</a></li>
+  <li class="nav-item"><a class="nav-link" href="">Регистрация</a></li>
+    <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Username</a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#">Изменить пароль</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="#">Выйти</a>
     </div>
-  </div>
+  </li>
+</ul>
+{#      </div>#}
 </div>
+</nav>

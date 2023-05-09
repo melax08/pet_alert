@@ -25,12 +25,23 @@ ymaps.ready(function () {
                     // preset: "islands#blueDogIcon"
                     iconLayout: 'default#image',
                     iconImageHref: map_objects[i].iconHref,
-                    iconImageSize: [42, 42]
+                    iconImageSize: [60, 60],
+                    iconImageOffset: [-30, -60]
                 }
                 );
         }
 
-        var myClusterer = new ymaps.Clusterer();
+        var myClusterer = new ymaps.Clusterer(
+            {
+            // preset: 'islands#redClusterIcons',
+
+                clusterIcons: [{
+                    href: '/static/img/map_icons/cluster.png',
+                    size: [50, 50],
+                    offset: [-30, -30]
+                }]
+            }
+            );
         myClusterer.add(myGeoObjects);
         myMap.geoObjects.add(myClusterer);
 

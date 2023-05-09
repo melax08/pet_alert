@@ -34,7 +34,11 @@ function init() {
         return new ymaps.Placemark(coords, {
             iconCaption: 'поиск...'
         }, {
-            preset: 'islands#violetDotIconWithCaption',
+            // preset: 'islands#violetDotIconWithCaption',
+            iconLayout: 'default#image',
+            iconImageHref: '/static/img/map_icons/other.png',
+            iconImageSize: [60, 60],
+            iconImageOffset: [-30, -60],
             draggable: true
         });
     }
