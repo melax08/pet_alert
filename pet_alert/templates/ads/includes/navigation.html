@@ -30,11 +30,11 @@
       </div>
     {% endif %}
       <a href="{% url 'ads:lost' %}">
-        <button type="button" class="btn {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %} btn-primary {% else %} btn-secondary {% endif %} me-md-2">Потерялся
+        <button type="button" class="btn {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %} btn-primary {% else %} btn-outline-primary {% endif %} me-md-2">Потерялся
         </button>
       </a>
       <a href="{% url 'ads:found' %}">
-        <button type="button" class="btn {% if view_name == 'ads:found' or view_name == 'ads:found_map' %} btn-primary {% else %} btn-secondary {% endif %}">Нашёлся</button>
+        <button type="button" class="btn {% if view_name == 'ads:found' or view_name == 'ads:found_map' %} btn-primary {% else %} btn-outline-primary {% endif %}">Нашёлся</button>
       </a>
     </div>
   </div>

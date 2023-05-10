@@ -12,6 +12,8 @@ DEBUG = int(os.getenv('DJANGO_DEBUG', default=1))
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', default='*').split()
 LOCAL = int(os.getenv('LOCAL', default=0))
 
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
