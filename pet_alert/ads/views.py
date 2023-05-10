@@ -71,8 +71,9 @@ def found(request):
 
 def map_generation(request, template, model, header, reverse_url):
     ads = model.objects.filter(active=True)
+    f = TypeFilter(request.GET, queryset=ads)
     map_objects = []
-    for ad in ads:
+    for ad in f.qs:
         if ad.coords:
             if getattr(ad, 'pet_name', ''):
                 header_to_show = f'{header}: {ad.pet_name}'
@@ -104,7 +105,8 @@ def map_generation(request, template, model, header, reverse_url):
                 "iconHref": icon_href
             })
     context = {
-        'map_objects': map_objects
+        'map_objects': map_objects,
+        'filter': f
     }
     return render(request, template, context)
 

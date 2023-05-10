@@ -8,12 +8,10 @@
       </a>
     </div>
     <div class="col d-flex justify-content-md-end">
-    {% if view_name == 'ads:lost' or view_name == 'ads:found' %}
-    <form method="get" class="mx-2">
-        {{ filter.form.type|addclass:'form-select' }}
-    </form>
-    {% endif %}
     {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' or view_name == 'ads:found' or view_name == 'ads:found_map' %}
+    <form method="get" class="mx-2">
+      {{ filter.form.type|addclass:'form-select' }}
+    </form>
       <div class="btn-group me-md-2" role="group" aria-label="Basic radio toggle button group">
       {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %}
         <a href="{% url 'ads:lost' %}">
