@@ -4,16 +4,20 @@ from .models import Lost, Found, AnimalType
 
 
 class LostAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'active', 'pet_name', 'address', 'name', 'email')
-    list_editable = ('active', )
+    list_display = ('pk', 'active', 'pet_name', 'address', 'name', 'email',
+                    'type')
+    list_editable = ('active', 'type')
     search_fields = ('description', 'pet_name', 'address')
+    list_filter = ('type',)
     empty_value_display = '-пусто-'
 
 
 class FoundAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'active', 'condition', 'address', 'name', 'email')
-    list_editable = ('active',)
+    list_display = ('pk', 'active', 'condition', 'address', 'name', 'email',
+                    'type')
+    list_editable = ('active', 'type')
     search_fields = ('description', 'address')
+    list_filter = ('type',)
     empty_value_display = '-пусто-'
 
 

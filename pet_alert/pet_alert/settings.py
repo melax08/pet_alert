@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'ads.apps.AdsConfig',
     'core.apps.CoreConfig',
     'sorl.thumbnail',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

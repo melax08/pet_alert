@@ -6,6 +6,7 @@ from sorl.thumbnail import get_thumbnail
 
 from .models import Found, Lost
 from .forms import FoundForm, LostForm
+from .filters import TypeFilter
 
 ADS_PER_PAGE = 6
 DESCRIPTION_MAP_LIMIT = 60
@@ -46,24 +47,26 @@ def add_success(request):
     return render(request, template)
 
 
-def lost(request):
-    template = 'ads/lost.html'
-    ads = Lost.objects.filter(active=True)
-    page_obj = paginator(request, ads)
+def ads_list(request, template, model):
+    ads = model.objects.filter(active=True)
+    f = TypeFilter(request.GET, queryset=ads)
+    page_obj = paginator(request, f.qs)
+    get_copy = request.GET.copy()
+    parameters = get_copy.pop('page', True) and get_copy.urlencode()
     context = {
-        'page_obj': page_obj
+        'page_obj': page_obj,
+        'filter': f,
+        'parameters': parameters
     }
     return render(request, template, context)
+
+
+def lost(request):
+    return ads_list(request, 'ads/lost.html', Lost)
 
 
 def found(request):
-    template = 'ads/found.html'
-    ads = Found.objects.filter(active=True)
-    page_obj = paginator(request, ads)
-    context = {
-        'page_obj': page_obj
-    }
-    return render(request, template, context)
+    return ads_list(request, 'ads/found.html', Found)
 
 
 def map_generation(request, template, model, header, reverse_url):
