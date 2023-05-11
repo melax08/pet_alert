@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 User = get_user_model()
 
 CONDITIONS_OF_PET = [
@@ -82,11 +84,10 @@ class AdsAbstract(models.Model):
         'Ваше имя',
         max_length=50
     )
-    phone = models.CharField(
+    phone = PhoneNumberField(
         'Номер телефона',
-        max_length=20,
         help_text='Ваш номер телефона для связи',
-        blank=True
+        max_length=18
     )
     email = models.EmailField(
         'Электронная почта',

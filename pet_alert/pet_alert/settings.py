@@ -14,6 +14,14 @@ LOCAL = int(os.getenv('LOCAL', default=0))
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'ads:index'
+# LOGOUT_REDIRECT_URL = 'posts:index'
+
+PHONENUMBER_DEFAULT_REGION = 'RU'
+
+AUTH_USER_MODEL = 'users.User'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -23,8 +31,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ads.apps.AdsConfig',
     'core.apps.CoreConfig',
+    'users.apps.UsersConfig',
     'sorl.thumbnail',
     'django_filters',
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
