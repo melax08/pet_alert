@@ -132,3 +132,4 @@ dmypy.json
 .idea/
 pet_alert/media/
 .DS_Store
+sent_emails/

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Ошибка активации{% endblock %}
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 p-5">
+      <div class="card">
+        <div class="card-header">
+          Ошибка активации аккаунта
+        </div>
+        <div class="card-body">
+          <p>
+            {% if activation_error.code == 'already_activated' %}
+              Данный аккаунт уже был активирован.
+          <p>
+            <a href="{% url 'users:login' %}">Войти</a>
+          </p>
+            {% elif activation_error.code == 'invalid_key' %}
+              Предоставленный код активации некорректный.
+            {% elif activation_error.code == 'bad_username' %}
+              Такого пользователя не существует. Зарегистрируйте новый аккаунт.
+              <p>
+                <a href="{% url 'django_registration_register' %}">Регистрация</a>
+              </p>
+            {% elif activation_error.code == 'expired' %}
+              К сожалению, срок действия ключа регистрации истек. Напишите нам для активации вашего аккаунта.
+              <p>
+                <a href="">Написать нам</a>
+              </p>
+            {% else %}
+            {{ activation_error }}
+            {% endif %}
+          </p>
+        </div> <!-- card body -->
+      </div> <!-- card -->
+    </div> <!-- col -->
+  </div> <!-- row -->
+{% endblock %}

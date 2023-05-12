@@ -22,6 +22,12 @@ PHONENUMBER_DEFAULT_REGION = 'RU'
 
 AUTH_USER_MODEL = 'users.User'
 
+ACCOUNT_ACTIVATION_DAYS = 30
+REGISTRATION_OPEN = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,6 +41,7 @@ INSTALLED_APPS = [
     'sorl.thumbnail',
     'django_filters',
     'phonenumber_field',
+    'django_registration'
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация невозможна{% endblock %}
+{% block content %}
+  {% with card_header='Регистрация отключена' card_body='Регистрация на сайте временно недоступна.' %}
+    {% include 'users/includes/card.html' %}
+  {% endwith %}
+{% endblock %}

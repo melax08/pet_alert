@@ -8,7 +8,12 @@ from django.contrib.auth.views import (LogoutView, LoginView,
                                        )
 
 from django.urls import path
-from . import views
+from django_registration.backends.activation.views import (RegistrationView,
+                                                           ActivationView)
+from django.views.generic.base import TemplateView
+from django.urls import reverse_lazy
+
+from .forms import CreationForm
 
 
 app_name = 'users'
@@ -19,16 +24,48 @@ urlpatterns = [
          name='logout'
          ),
     path('signup/',
-         views.SignUp.as_view(),
-         name='signup'
+         RegistrationView.as_view(
+             form_class=CreationForm,
+             template_name='users/registration_form.html',
+             success_url=reverse_lazy("users:signup_complete"),
+             disallowed_url=reverse_lazy("users:signup_disallowed"),
+             email_subject_template='users/activation_email_subject.txt',
+             email_body_template='users/activation_email_body.txt',
          ),
+         name='signup',
+         ),
+    path(
+        'activate/complete/',
+        TemplateView.as_view(
+            template_name="users/activation_complete.html"
+        ),
+        name="signup_activation_complete",
+    ),
+    path(
+        'activate/<str:activation_key>/',
+        ActivationView.as_view(
+            template_name='users/activation_failed.html',
+            success_url=reverse_lazy("users:signup_activation_complete"),
+        ),
+        name="registration_activate",
+    ),
+    path(
+        "signup/complete/",
+        TemplateView.as_view(
+            template_name="users/registration_complete.html"
+        ),
+        name="signup_complete",
+    ),
+    path(
+        "signup/closed/",
+        TemplateView.as_view(
+            template_name="users/registration_closed.html"
+        ),
+        name="signup_disallowed",
+    ),
     path('login/',
          LoginView.as_view(template_name='users/login.html'),
          name='login'
-         ),
-    path('confirmation/',
-         views.ConfirmationInfo.as_view(),
-         name='confirmation_info'
          ),
     path('password_change/',
          PasswordChangeView.as_view(
