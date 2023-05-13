@@ -49,13 +49,13 @@
         Дата публикации: {{ ad.pub_date }}
       </li>
       <li class="list-group-item">
-        Кто ищет: {{ ad.name }}
+        Кто ищет: {{ ad.author.first_name }}
       </li>
       <li class="list-group-item">
-        Контактный телефон: {{ ad.phone }}
+        Контактный телефон: {{ ad.author.phone }}
       </li>
       <li class="list-group-item">
-        Контактый email: {{ ad.email }}
+        Контактный email: {{ ad.author.email }}
       </li>
     </ul>
   </aside>

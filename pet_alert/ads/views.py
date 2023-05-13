@@ -5,8 +5,10 @@ from django.urls import reverse_lazy
 from sorl.thumbnail import get_thumbnail
 
 from .models import Found, Lost
-from .forms import FoundForm, LostForm
+from .forms import FoundForm, LostForm, AuthorizedFoundForm, AuthorizedLostForm
 from .filters import TypeFilter
+from users.forms import CreationForm, CreationFormWithoutPassword
+
 
 ADS_PER_PAGE = 6
 DESCRIPTION_MAP_LIMIT = 60
@@ -23,23 +25,45 @@ def index(request):
     return render(request, template)
 
 
-def add_ad(request, template, form):
+def add_ad_authorized(request, template, form):
     form = form(request.POST or None, files=request.FILES or None)
+
     if form.is_valid():
         set_address = form.save(commit=False)
         set_address.address = request.POST['address']
         set_address.coords = request.POST['coords']
+        set_address.author = request.user
         set_address.save()
         return redirect('ads:add_success')
     return render(request, template, {'form': form})
 
 
+def add_ad_unauthorized(request, template, form):
+    form = form(request.POST or None, files=request.FILES or None)
+    reg_form = CreationFormWithoutPassword(request.POST or None)
+    if form.is_valid() and reg_form.is_valid():
+        reg_user = reg_form.save(commit=False)
+        reg_user.is_active = False
+        reg_user.save()
+        set_address = form.save(commit=False)
+        set_address.address = request.POST['address']
+        set_address.coords = request.POST['coords']
+        set_address.author = reg_user
+        set_address.save()
+        return redirect('ads:add_success')
+    return render(request, template, {'form': form, 'reg_form': reg_form})
+
+
 def add_found(request):
-    return add_ad(request, 'ads/add_found.html', FoundForm)
+    if request.user.is_authenticated:
+        return add_ad_authorized(request, 'ads/add_found.html', AuthorizedFoundForm)
+    return add_ad_unauthorized(request, 'ads/add_found.html', FoundForm)
 
 
 def add_lost(request):
-    return add_ad(request, 'ads/add_lost.html', LostForm)
+    if request.user.is_authenticated:
+        return add_ad_authorized(request, 'ads/add_lost.html', AuthorizedLostForm)
+    return add_ad_unauthorized(request, 'ads/add_lost.html', LostForm)
 
 
 def add_success(request):

@@ -40,7 +40,8 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """Custom User model with required first_name, last_name and email."""
+    """Custom User model with required email,
+    email as username field and custom phone field."""
     objects = UserManager()
     username = None
     first_name = models.CharField(

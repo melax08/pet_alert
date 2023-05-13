@@ -80,19 +80,6 @@ class AdsAbstract(models.Model):
         help_text='Примерный или точный возраст животного',
         blank=True
     )
-    name = models.CharField(
-        'Ваше имя',
-        max_length=50
-    )
-    phone = PhoneNumberField(
-        'Номер телефона',
-        help_text='Ваш номер телефона для связи',
-        max_length=18
-    )
-    email = models.EmailField(
-        'Электронная почта',
-        help_text='Ваша электронная почта для связи'
-    )
     active = models.BooleanField(
         'Активно',
         default=False,
@@ -122,6 +109,13 @@ class Lost(AdsAbstract):
         verbose_name='Вид животного',
         help_text='Выберите вид потерянного животного',
         null=True
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='lost_ads',
+        verbose_name='Автор',
+        help_text='Автор объявления о пропаже',
     )
 
     class Meta(AdsAbstract.Meta):
@@ -160,6 +154,13 @@ class Found(AdsAbstract):
         verbose_name='Вид животного',
         help_text='Выберите вид найденного животного',
         null=True
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='found_ads',
+        verbose_name='Автор',
+        help_text='Автор объявления о находке',
     )
 
     class Meta(AdsAbstract.Meta):

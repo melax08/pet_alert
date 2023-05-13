@@ -4,8 +4,7 @@ from .models import Lost, Found, AnimalType
 
 
 class LostAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'active', 'pet_name', 'address', 'name', 'email',
-                    'type')
+    list_display = ('pk', 'active', 'pet_name', 'address', 'type')
     list_editable = ('active', 'type')
     search_fields = ('description', 'pet_name', 'address')
     list_filter = ('type',)
@@ -13,8 +12,7 @@ class LostAdmin(admin.ModelAdmin):
 
 
 class FoundAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'active', 'condition', 'address', 'name', 'email',
-                    'type')
+    list_display = ('pk', 'active', 'condition', 'address', 'type')
     list_editable = ('active', 'type')
     search_fields = ('description', 'address')
     list_filter = ('type',)
