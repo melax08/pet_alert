@@ -19,7 +19,7 @@
             {% elif activation_error.code == 'bad_username' %}
               Такого пользователя не существует. Зарегистрируйте новый аккаунт.
               <p>
-                <a href="{% url 'django_registration_register' %}">Регистрация</a>
+                <a href="{% url 'users:signup' %}">Регистрация</a>
               </p>
             {% elif activation_error.code == 'expired' %}
               К сожалению, срок действия ключа регистрации истек. Напишите нам для активации вашего аккаунта.

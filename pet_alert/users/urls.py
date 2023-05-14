@@ -14,6 +14,7 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 
 from .forms import CreationForm
+from ads.views import CustomActivationView
 
 
 app_name = 'users'
@@ -43,7 +44,7 @@ urlpatterns = [
     ),
     path(
         'activate/<str:activation_key>/',
-        ActivationView.as_view(
+        CustomActivationView.as_view(
             template_name='users/activation_failed.html',
             success_url=reverse_lazy("users:signup_activation_complete"),
         ),
@@ -96,5 +97,8 @@ urlpatterns = [
          PasswordResetCompleteView.as_view(
              template_name='users/password_reset_complete.html'),
          name='reset_complete'
-         )
+         ),
+    path('set-password/done',
+         TemplateView.as_view(template_name='users/password_set_done.html'),
+         name='set_password_done')
 ]
