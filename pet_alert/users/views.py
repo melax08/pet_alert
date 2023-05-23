@@ -1,9 +1,15 @@
+from django.contrib.auth import get_user_model
+from django.http import HttpResponseRedirect
 from django.views.generic import CreateView
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
+from django_registration import signals
+from django_registration.backends.activation.views import RegistrationView
 
-from .forms import CreationForm
+from .forms import CreationForm, CreationFormWithoutPassword
+from ads.forms import LostForm, FoundForm
+
 
 
 # class SignUp(CreateView):

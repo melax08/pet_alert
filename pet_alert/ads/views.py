@@ -18,6 +18,7 @@ from django.views.generic.edit import FormView
 from django_registration.exceptions import ActivationError
 from django.contrib.auth import login as auth_login
 from django.utils.encoding import force_str
+from django_registration.backends.activation.views import RegistrationView
 
 from .models import Found, Lost
 from .forms import FoundForm, LostForm, AuthorizedFoundForm, AuthorizedLostForm
@@ -46,6 +47,64 @@ def index(request):
 
 
 INTERNAL_SET_PASS_SESSION_TOKEN = "_password_set_token"
+
+
+class AdWithRegistration(RegistrationView):
+    email_subject_template = 'users/activation_email_subject.txt'
+    email_body_template = 'users/activation_email_body.txt'
+    template_name = 'ads/add_lost.html'
+    form_class = CreationFormWithoutPassword
+    success_url = reverse_lazy('ads:add_success_reg')
+    disallowed_url = reverse_lazy("users:signup_disallowed")
+
+    def register(self, form, ad_form):
+        new_user = self.create_inactive_user(form)
+        signals.user_registered.send(
+            sender=self.__class__, user=new_user, request=self.request
+        )
+        set_address = ad_form.save(commit=False)
+        set_address.address = self.request.POST['address']
+        set_address.coords = self.request.POST['coords']
+        set_address.author = new_user
+        set_address.save()
+        return new_user
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handle POST requests: instantiate a form instance with the passed
+        POST variables and then check if it's valid.
+        """
+        form = self.get_form()
+        ad_form = self.get_ad_form()
+        if form.is_valid() and ad_form.is_valid():
+            return self.form_valid(form, ad_form)
+        else:
+            return self.form_invalid(form, ad_form)
+
+    def get_ad_form(self):
+        if self.request.resolver_match.view_name == 'ads:add_lost':
+            return LostForm(**self.get_form_kwargs())
+        return FoundForm(**self.get_form_kwargs())
+
+    def form_valid(self, form, ad_form):
+        return HttpResponseRedirect(self.get_success_url(self.register(form, ad_form)))
+
+    def form_invalid(self, form, ad_form):
+        """If the form is invalid, render the invalid form."""
+        return self.render_to_response(self.get_context_data(form=form,
+                                                             ad_form=ad_form))
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        return form_class(**self.get_form_kwargs())
+
+    def get_context_data(self, **kwargs):
+        """Insert the form into the context dict."""
+        if "form" not in kwargs:
+            kwargs["form"] = self.get_form()
+            kwargs["ad_form"] = self.get_ad_form()
+        return super().get_context_data(**kwargs)
 
 
 def set_password(request):
@@ -165,71 +224,20 @@ def add_ad_authorized(request, template, form):
         set_address.author = request.user
         set_address.save()
         return redirect('ads:add_success')
-    return render(request, template, {'form': form})
-
-
-def add_ad_unauthorized(request, template, form):
-
-    def send_activation_email(user):
-        activation_key = get_activation_key(user)
-        context = get_email_context(activation_key)
-        context["user"] = user
-        subject = render_to_string(
-            template_name=EMAIL_SUBJECT_TEMPLATE,
-            context=context,
-            request=request,
-        )
-        # Force subject to a single line to avoid header-injection
-        # issues.
-        subject = "".join(subject.splitlines())
-        message = render_to_string(
-            template_name=EMAIL_BODY_TEMPLATE,
-            context=context,
-            request=request,
-        )
-        user.email_user(subject, message, settings.DEFAULT_FROM_EMAIL)
-
-    def get_activation_key(user):
-        return signing.dumps(obj=user.get_username(), salt=REGISTRATION_SALT)
-
-    def get_email_context(activation_key):
-        scheme = "https" if request.is_secure() else "http"
-        return {
-            "scheme": scheme,
-            "activation_key": activation_key,
-            "expiration_days": settings.ACCOUNT_ACTIVATION_DAYS,
-            "site": get_current_site(request),
-        }
-
-    form = form(request.POST or None, files=request.FILES or None)
-    reg_form = CreationFormWithoutPassword(request.POST or None)
-    if form.is_valid() and reg_form.is_valid():
-        reg_user = reg_form.save(commit=False)
-        reg_user.is_active = False
-        reg_user.save()
-        signals.user_registered.send(
-            sender=add_ad_unauthorized.__class__, user=reg_user, request=request
-        )
-        send_activation_email(reg_user)
-        set_address = form.save(commit=False)
-        set_address.address = request.POST['address']
-        set_address.coords = request.POST['coords']
-        set_address.author = reg_user
-        set_address.save()
-        return redirect('ads:add_success_reg')
-    return render(request, template, {'form': form, 'reg_form': reg_form})
+    return render(request, template, {'ad_form': form})
 
 
 def add_found(request):
     if request.user.is_authenticated:
         return add_ad_authorized(request, 'ads/add_found.html', AuthorizedFoundForm)
-    return add_ad_unauthorized(request, 'ads/add_found.html', FoundForm)
+    return AdWithRegistration.as_view(template_name='ads/add_found.html')(
+        request)
 
 
 def add_lost(request):
     if request.user.is_authenticated:
         return add_ad_authorized(request, 'ads/add_lost.html', AuthorizedLostForm)
-    return add_ad_unauthorized(request, 'ads/add_lost.html', LostForm)
+    return AdWithRegistration.as_view(template_name='ads/add_lost.html')(request)
 
 
 def add_success(request):
