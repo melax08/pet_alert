@@ -25,8 +25,25 @@ AUTH_USER_MODEL = 'users.User'
 ACCOUNT_ACTIVATION_DAYS = 30
 REGISTRATION_OPEN = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+if LOCAL:
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', default='no-reply@pet-alert.ru')
+EMAIL_HOST = os.getenv('EMAIL_HOST', default='localhost')
+EMAIL_USE_TLS = int(os.getenv('EMAIL_USE_TLS', default=0))
+EMAIL_PORT = os.getenv('EMAIL_PORT', default=465)
+EMAIL_USE_SSL = int(os.getenv('EMAIL_USE_SSL', default=1))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', default='no-reply@pet-alert.ru')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', default='123123')
+
+RECAPTCHA_PUBLIC_KEY = os.getenv('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_PRIVATE_KEY')
+RECAPTCHA_REQUIRED_SCORE = float(os.getenv('RECAPTCHA_REQUIRED_SCORE', default=0.6))
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -41,7 +58,8 @@ INSTALLED_APPS = [
     'sorl.thumbnail',
     'django_filters',
     'phonenumber_field',
-    'django_registration'
+    'django_registration',
+    'captcha',
 ]
 
 MIDDLEWARE = [

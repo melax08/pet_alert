@@ -81,8 +81,8 @@
                             type="text/javascript"></script>
                     <div id="map"
                          style="width: 100%; height: 500px;">{% csrf_token %}</div>
-                    <input type="hidden" id="coords" name="coords">
-                    <input type="hidden" id="address" name="address">
+{#                    <input type="hidden" id="coords" name="coords">#}
+{#                    <input type="hidden" id="address" name="address">#}
                     <p class="my-3">Выбранный адрес:</p>
                     <p class="id_address">Адрес не выбран</p>
                   </div>
@@ -97,7 +97,10 @@
                 </div>
               </div>
             </div>
-            {% for field in ad_form %}
+            {% for hidden_field in ad_form.hidden_fields %}
+              {{ hidden_field }}
+            {% endfor %}
+            {% for field in ad_form.visible_fields %}
               <div class="form-group row my-3"
                 {% if field.field.required %}
                    aria-required="true"

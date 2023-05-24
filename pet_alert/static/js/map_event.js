@@ -62,8 +62,8 @@ function init() {
                     balloonContent: firstGeoObject.getAddressLine()
                 });
             $(".id_address").html(firstGeoObject.getAddressLine());
-            $("#address").val(firstGeoObject.getAddressLine());
-            $("#coords").val(coords);
+            $("#id_address").val(firstGeoObject.getAddressLine());
+            $("#id_coords").val(coords);
         });
     }
 }

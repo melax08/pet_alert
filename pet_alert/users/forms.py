@@ -1,6 +1,9 @@
+from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from django_registration.forms import RegistrationForm
+from captcha.fields import ReCaptchaField
+from captcha.widgets import ReCaptchaV3, ReCaptchaV2Checkbox
 
 User = get_user_model()
 
@@ -11,9 +14,12 @@ User = get_user_model()
 #         fields = ('first_name', 'email', 'phone')
 
 class CreationForm(RegistrationForm):
+    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox,
+                             label='Подтвердите что вы не робот')
+
     class Meta(RegistrationForm.Meta):
         model = User
-        fields = ('first_name', 'email', 'phone')
+        fields = ('first_name', 'email', 'phone', 'captcha')
 
 
 class CreationFormWithoutPassword(RegistrationForm):

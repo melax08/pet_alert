@@ -58,20 +58,23 @@ class AdWithRegistration(RegistrationView):
     disallowed_url = reverse_lazy("users:signup_disallowed")
 
     def register(self, form, ad_form):
+        """
+        Register a new (inactive) user account, generate an activation key
+        and email it to the user, create advertisement
+        and set new user the author of it.
+        """
         new_user = self.create_inactive_user(form)
         signals.user_registered.send(
             sender=self.__class__, user=new_user, request=self.request
         )
-        set_address = ad_form.save(commit=False)
-        set_address.address = self.request.POST['address']
-        set_address.coords = self.request.POST['coords']
-        set_address.author = new_user
-        set_address.save()
+        set_author = ad_form.save(commit=False)
+        set_author.author = new_user
+        set_author.save()
         return new_user
 
     def post(self, request, *args, **kwargs):
         """
-        Handle POST requests: instantiate a form instance with the passed
+        Handle POST requests: instantiate the forms instance with the passed
         POST variables and then check if it's valid.
         """
         form = self.get_form()
@@ -81,26 +84,32 @@ class AdWithRegistration(RegistrationView):
         else:
             return self.form_invalid(form, ad_form)
 
-    def get_ad_form(self):
-        if self.request.resolver_match.view_name == 'ads:add_lost':
-            return LostForm(**self.get_form_kwargs())
-        return FoundForm(**self.get_form_kwargs())
-
     def form_valid(self, form, ad_form):
-        return HttpResponseRedirect(self.get_success_url(self.register(form, ad_form)))
+        """If the forms are valid, register user, create
+        post and return success url."""
+        return HttpResponseRedirect(
+            self.get_success_url(self.register(form, ad_form)))
 
     def form_invalid(self, form, ad_form):
-        """If the form is invalid, render the invalid form."""
+        """If the forms are invalid, render the invalid forms."""
         return self.render_to_response(self.get_context_data(form=form,
                                                              ad_form=ad_form))
 
     def get_form(self, form_class=None):
+        """Returns an instance of the form to be used in this view.
+        Deleted check for user_model."""
         if form_class is None:
             form_class = self.get_form_class()
         return form_class(**self.get_form_kwargs())
 
+    def get_ad_form(self):
+        """Returns an instance of the ad form to be used in this view."""
+        if self.request.resolver_match.view_name == 'ads:add_lost':
+            return LostForm(**self.get_form_kwargs())
+        return FoundForm(**self.get_form_kwargs())
+
     def get_context_data(self, **kwargs):
-        """Insert the form into the context dict."""
+        """Insert the forms into the context dict."""
         if "form" not in kwargs:
             kwargs["form"] = self.get_form()
             kwargs["ad_form"] = self.get_ad_form()
@@ -208,6 +217,7 @@ class CustomActivationView(ActivationView):
                 signals.user_activated.send(
                     sender=self.__class__, user=activated_user, request=self.request
                 )
+                auth_login(self.request, activated_user)
                 return HttpResponseRedirect(force_str(self.get_success_url(activated_user)))
         context_data = self.get_context_data()
         context_data.update(extra_context)
@@ -218,11 +228,9 @@ def add_ad_authorized(request, template, form):
     form = form(request.POST or None, files=request.FILES or None)
 
     if form.is_valid():
-        set_address = form.save(commit=False)
-        set_address.address = request.POST['address']
-        set_address.coords = request.POST['coords']
-        set_address.author = request.user
-        set_address.save()
+        set_author = form.save(commit=False)
+        set_author.author = request.user
+        set_author.save()
         return redirect('ads:add_success')
     return render(request, template, {'ad_form': form})
 
