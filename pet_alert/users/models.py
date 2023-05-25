@@ -52,7 +52,6 @@ class User(AbstractUser):
     phone = PhoneNumberField(
         'Номер мобильного телефона',
         help_text='Ваш номер телефона для связи',
-        unique=True,
         max_length=18
     )
     email = models.EmailField(
