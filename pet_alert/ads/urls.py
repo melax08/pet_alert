@@ -17,6 +17,6 @@ urlpatterns = [
     path('found/list/', views.found, name='found'),
     path('found/<int:ad_id>/', views.found_detail, name='found_detail'),
     path('found/map/', views.found_map, name='found_map'),
-    path('auth/activate/set-password/', views.set_password, name='set_password')
+    # path('auth/activate/set-password/', views.set_password, name='set_password')
 ]
 

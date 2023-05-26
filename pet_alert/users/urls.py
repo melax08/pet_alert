@@ -8,14 +8,12 @@ from django.contrib.auth.views import (LogoutView, LoginView,
                                        )
 
 from django.urls import path
-from django_registration.backends.activation.views import (RegistrationView,
-                                                           ActivationView)
+from django_registration.backends.activation.views import RegistrationView
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 
 from .forms import CreationForm
-from ads.views import CustomActivationView
-
+from .views import CustomActivationView
 
 app_name = 'users'
 
@@ -44,10 +42,7 @@ urlpatterns = [
     ),
     path(
         'activate/<str:activation_key>/',
-        CustomActivationView.as_view(
-            template_name='users/activation_failed.html',
-            success_url=reverse_lazy("users:signup_activation_complete"),
-        ),
+        CustomActivationView.as_view(),
         name="registration_activate",
     ),
     path(
