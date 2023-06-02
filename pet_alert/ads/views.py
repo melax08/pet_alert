@@ -234,7 +234,6 @@ def found_detail(request, ad_id):
     return render(request, template, context)
 
 
-
 @login_required
 def my_ads(request):
     template = 'ads/my_ads.html'

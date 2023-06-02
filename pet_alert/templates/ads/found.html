@@ -30,11 +30,7 @@
           <p class="text-muted">{{ ad.pub_date }}</p>
           <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
           <p class="text-muted">{{ ad.address }}</p>
-          <a href="{% url 'ads:found_detail' ad.id %}">
-          <button type="button" class="btn btn-link">
-            Подробнее
-          </button>
-            </a>
+          <a href="{% url 'ads:found_detail' ad.id %}">Подробнее</a>
         </div>
       </div>
     </article>

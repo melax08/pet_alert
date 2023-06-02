@@ -7,13 +7,18 @@
 {% endblock %}
 {% block content %}
  {% include 'ads/includes/navigation.html' %}
+  <div class="row" >
+  <aside class="col-12 col-md-2">
+ {% include 'ads/includes/profile_nav.html' %}
+  </aside>
+  <div class="col-12 col-md-10">
  {% include 'ads/includes/my_ads_switcher.html' %}
   {% if not page_obj %}
     <p class="py-3 text-secondary">В данном разделе отсутствуют объявления</p>
   {% else %}
   {% for ad in page_obj %}
-    <article {% if forloop.first %}class="border-end border-start border-bottom" {% else %} class="border" {% endif %}>
-      <div class="row g-0 bg-light position-relative">
+    <article class="border-bottom border-start border-end {% if forloop.last %} rounded-bottom {% endif %}">
+      <div class="row g-0 position-relative">
         <div class="col-md-3 mb-md-0 p-md-4">
         {% if ad.image %}
           {% thumbnail ad.image "200x200" crop="center" as im %}
@@ -45,11 +50,7 @@
           <p class="text-muted">{{ ad.pub_date }}</p>
           <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
           <p class="text-muted">{{ ad.address }}</p>
-          <a href="{% url 'ads:lost_detail' ad.id %}">
-          <button type="button" class="btn btn-link">
-            Подробнее
-          </button>
-            </a>
+          <a href="{% url 'ads:lost_detail' ad.id %}">Подробнее</a>
         </div>
         {% endif %}
       </div>
@@ -57,4 +58,6 @@
   {% endfor %}
   {% include 'ads/includes/paginator.html' %}
   {% endif %}
+  </div>
+  </div>
 {% endblock %}
