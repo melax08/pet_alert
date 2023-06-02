@@ -16,6 +16,7 @@ urlpatterns = [
     path('found/list/', views.found, name='found'),
     path('found/<int:ad_id>/', views.found_detail, name='found_detail'),
     path('found/map/', views.found_map, name='found_map'),
+    path('profile/', views.profile, name='profile'),
     path('profile/active/', views.my_ads, name='my_ads'),
     path('profile/inactive/', views.my_ads_inactive, name='my_ads_inactive'),
 ]

@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
 from django.core.paginator import Paginator
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from sorl.thumbnail import get_thumbnail
 from django_registration import signals
 from django.conf import settings
@@ -12,7 +12,8 @@ from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
 
 from .models import Found, Lost
-from .forms import FoundForm, LostForm, AuthorizedFoundForm, AuthorizedLostForm
+from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
+                    AuthorizedLostForm, ChangeNameForm)
 from .filters import TypeFilter
 from users.forms import CreationForm, CreationFormWithoutPassword
 
@@ -269,3 +270,14 @@ def my_ads_inactive(request):
         'inactive_count': len(mix_ads)
     }
     return render(request, template, context)
+
+
+@login_required
+def profile(request):
+    template = 'ads/profile.html'
+    form = ChangeNameForm(request.POST or None, instance=request.user)
+    if form.is_valid():
+        request.user.first_name = form.cleaned_data['first_name']
+        request.user.save()
+        return redirect(reverse('ads:profile') + '?success=1')
+    return render(request, template, {'form': form})

@@ -4,6 +4,6 @@
     Мои объявления
   </a>
   <a href="#" class="list-group-item list-group-item-action">Сообщения</a>
-  <a href="#" class="list-group-item list-group-item-action">Профиль</a>
+  <a href="{% url 'ads:profile' %}" class="list-group-item list-group-item-action {% if view_name == 'ads:profile' %} text-primary {% endif %}">Профиль</a>
 </div>
 {% endwith %}

@@ -1,9 +1,12 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from phonenumber_field.formfields import PhoneNumberField
 from captcha.fields import ReCaptchaField
 from captcha.widgets import ReCaptchaV3, ReCaptchaV2Checkbox
 
 from .models import Lost, Found
+
+User = get_user_model()
 
 
 class LostForm(forms.ModelForm):
@@ -88,3 +91,9 @@ class AuthorizedFoundForm(forms.ModelForm):
             'address': forms.HiddenInput(),
             'coords': forms.HiddenInput()
         }
+
+
+class ChangeNameForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', )
