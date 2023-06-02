@@ -1,4 +1,6 @@
-from django.http import HttpResponseRedirect
+from itertools import chain
+
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
 from django.core.paginator import Paginator
@@ -7,6 +9,7 @@ from sorl.thumbnail import get_thumbnail
 from django_registration import signals
 from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
+from django.contrib.auth.decorators import login_required
 
 from .models import Found, Lost
 from .forms import FoundForm, LostForm, AuthorizedFoundForm, AuthorizedLostForm
@@ -211,7 +214,9 @@ def found_map(request):
 
 def lost_detail(request, ad_id):
     template = 'ads/lost_detail.html'
-    ad = get_object_or_404(Lost, pk=ad_id, active=True)
+    ad = get_object_or_404(Lost, pk=ad_id)
+    if not ad.active and ad.author != request.user:
+        raise Http404
     context = {
         'ad': ad
     }
@@ -220,9 +225,48 @@ def lost_detail(request, ad_id):
 
 def found_detail(request, ad_id):
     template = 'ads/found_detail.html'
-    ad = get_object_or_404(Found, pk=ad_id, active=True)
+    ad = get_object_or_404(Found, pk=ad_id)
+    if not ad.active and ad.author != request.user:
+        raise Http404
     context = {
         'ad': ad
     }
     return render(request, template, context)
 
+
+
+@login_required
+def my_ads(request):
+    template = 'ads/my_ads.html'
+    current_user_lost_ads = request.user.lost_ads.filter(active=True)
+    current_user_found_ads = request.user.found_ads.filter(active=True)
+    mix_ads = list(chain(current_user_lost_ads, current_user_found_ads))
+    page_obj = paginator(request, mix_ads)
+
+    inactive_count = (request.user.lost_ads.filter(active=False).count()
+                      + request.user.found_ads.filter(active=False).count())
+    context = {
+        'page_obj': page_obj,
+        'active_count': len(mix_ads),
+        'inactive_count': inactive_count
+    }
+    return render(request, template, context)
+
+
+@login_required
+def my_ads_inactive(request):
+    template = 'ads/my_ads.html'
+    current_user_lost_ads = request.user.lost_ads.filter(active=False)
+    current_user_found_ads = request.user.found_ads.filter(active=False)
+    mix_ads = list(chain(current_user_lost_ads, current_user_found_ads))
+    page_obj = paginator(request, mix_ads)
+
+    active_count = (request.user.lost_ads.filter(active=True).count()
+                    + request.user.found_ads.filter(active=True).count())
+
+    context = {
+        'page_obj': page_obj,
+        'active_count': active_count,
+        'inactive_count': len(mix_ads)
+    }
+    return render(request, template, context)

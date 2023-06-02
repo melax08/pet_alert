@@ -13,10 +13,10 @@ urlpatterns = [
     path('lost/list/', views.lost, name='lost'),
     path('lost/map/', views.lost_map, name='lost_map'),
     path('lost/<int:ad_id>/', views.lost_detail, name='lost_detail'),
-    # path('lost/<int:ad_id>/', views.LostDetail.as_view(), name='lost_detail'),
     path('found/list/', views.found, name='found'),
     path('found/<int:ad_id>/', views.found_detail, name='found_detail'),
     path('found/map/', views.found_map, name='found_map'),
-    # path('auth/activate/set-password/', views.set_password, name='set_password')
+    path('profile/active/', views.my_ads, name='my_ads'),
+    path('profile/inactive/', views.my_ads_inactive, name='my_ads_inactive'),
 ]
 

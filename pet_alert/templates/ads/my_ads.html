@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
 {% load thumbnail %}
 {% load static %}
+{% load user_filters %}
 {% block title %}
-  Нашлись | Список
+  Мои объявления
 {% endblock %}
 {% block content %}
  {% include 'ads/includes/navigation.html' %}
+ {% include 'ads/includes/my_ads_switcher.html' %}
   {% if not page_obj %}
-  <p class="py-3 text-secondary">В данном разделе отсутствуют объявления</p>
+    <p class="py-3 text-secondary">В данном разделе отсутствуют объявления</p>
   {% else %}
   {% for ad in page_obj %}
-    <article class="border">
+    <article {% if forloop.first %}class="border-end border-start border-bottom" {% else %} class="border" {% endif %}>
       <div class="row g-0 bg-light position-relative">
         <div class="col-md-3 mb-md-0 p-md-4">
         {% if ad.image %}
@@ -25,6 +27,7 @@
           {% endthumbnail %}
         {% endif %}
         </div>
+      {% if ad|getmodelname == 'found' %}
         <div class="col-md-9 p-4 ps-md-0">
           <h5 class="mt-0">Нашелся:</h5>
           <p class="text-muted">{{ ad.pub_date }}</p>
@@ -36,6 +39,19 @@
           </button>
             </a>
         </div>
+        {% else %}
+        <div class="col-md-9 p-4 ps-md-0">
+          <h5 class="mt-0 text-break">Пропал: {{ ad.pet_name }}</h5>
+          <p class="text-muted">{{ ad.pub_date }}</p>
+          <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
+          <p class="text-muted">{{ ad.address }}</p>
+          <a href="{% url 'ads:lost_detail' ad.id %}">
+          <button type="button" class="btn btn-link">
+            Подробнее
+          </button>
+            </a>
+        </div>
+        {% endif %}
       </div>
     </article>
   {% endfor %}
