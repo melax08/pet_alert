@@ -13,6 +13,7 @@ ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', default='*').split()
 LOCAL = int(os.getenv('LOCAL', default=0))
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+CSRF_COOKIE_SECURE = True
 
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'ads:index'
