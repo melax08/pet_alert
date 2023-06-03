@@ -14,6 +14,7 @@ LOCAL = int(os.getenv('LOCAL', default=0))
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ['https://*.pet-alert.ru']
 
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'ads:index'
