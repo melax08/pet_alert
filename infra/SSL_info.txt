@@ -1,0 +1,4 @@
+При первом запуске используем конфиг nginx_first_run.conf (переименовываем его в nginx.conf).
+После первого запуска и успешного выпуска SSL-сертификата, меняем конфиг на тот, что сейчас nginx.conf и перезапускаем nginx.
+В crontab на сервере добавляем команду для автоматического перевыпуска сертификата каждый месяц:
+5 1 1 * *  docker compose --file /home/petalert/pet_alert/infra/docker-compose.yml up certbot
