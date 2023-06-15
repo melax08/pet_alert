@@ -75,7 +75,7 @@ jobs:
             EMAIL_HOST_PASSWORD=${{ secrets.SMTP_PASSWORD }}
             # DONE WORKFLOW ENVS
             EOF
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose up -d --build web
+             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose up -d --build --no-cache web nginx
 
 
   send_message:

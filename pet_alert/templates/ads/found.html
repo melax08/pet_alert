@@ -12,7 +12,7 @@
   {% for ad in page_obj %}
     <article class="border">
       <div class="row g-0 bg-light position-relative">
-        <div class="col-md-3 mb-md-0 p-md-4">
+        <div class="col-md-4 col-lg-3 mb-md-0 p-md-4">
         {% if ad.image %}
           {% thumbnail ad.image "200x200" crop="center" as im %}
             <img src="{{ im.url }}" width="{{ im.width }}"
@@ -25,7 +25,7 @@
           {% endthumbnail %}
         {% endif %}
         </div>
-        <div class="col-md-9 p-4 ps-md-0">
+        <div class="col-md-8 col-lg-9 p-4 ps-md-0">
           <h5 class="mt-0">Нашелся:</h5>
           <p class="text-muted">{{ ad.pub_date }}</p>
           <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
