@@ -22,6 +22,12 @@ jobs:
       - name: Test with django unittest
         run: |
           cd pet_alert/
+          cat <<EOF > pet_alert/.env
+          LOCAL=1
+          DJANGO_DEBUG=1
+          RECAPTCHA_PUBLIC_KEY=${{ secrets.RECAPTCHA_DEV_PUBLIC_KEY }}
+          RECAPTCHA_PRIVATE_KEY=${{ secrets.RECAPTCHA_DEV_PRIVATE_KEY }}
+          EOF
           python manage.py test -v 2
           
 
