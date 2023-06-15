@@ -7,6 +7,8 @@ services:
       - database:/var/lib/postgresql/data/
     env_file:
       - ./.env
+    environment:
+      - TZ=Europe/Moscow
   web:
     build: ../pet_alert
     restart: always
@@ -17,6 +19,8 @@ services:
       - db
     env_file:
       - ./.env
+    environment:
+      - TZ=Europe/Moscow
   nginx:
     image: nginx:1.23.4-alpine
     ports:
@@ -30,6 +34,8 @@ services:
       - certbot_www:/var/www/certbot
     depends_on:
       - web
+    environment:
+      - TZ=Europe/Moscow
   certbot:
     image: certbot/certbot
     volumes:
@@ -37,6 +43,8 @@ services:
       - certbot_www:/var/www/certbot
     depends_on:
       - nginx
+    environment:
+      - TZ=Europe/Moscow
     command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@pet-alert.ru -d pet-alert.ru --agree-tos
 
 volumes:
