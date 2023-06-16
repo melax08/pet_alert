@@ -19,7 +19,7 @@
   {% for ad in page_obj %}
     <article class="border-bottom border-start border-end {% if forloop.last %} rounded-bottom {% endif %}">
       <div class="row g-0 position-relative">
-        <div class="col-md-5 col-lg-4 col-xl-3 mb-md-0 p-md-4">
+        <div class="col-md-5 col-lg-4 col-xl-3 mb-md-0 p-4 pb-0 pb-md-4">
         {% if ad.image %}
           {% thumbnail ad.image "200x200" crop="center" as im %}
             <img src="{{ im.url }}" width="{{ im.width }}"

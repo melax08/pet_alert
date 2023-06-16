@@ -1,18 +1,20 @@
 {% with request.resolver_match.view_name as view_name %}
   {% load user_filters %}
 <div class="row pb-3">
-    <div class="col d-flex justify-content-md-start">
+    <div class="col d-flex justify-content-md-start pb-2 pb-md-0">
       <a href="{% url 'ads:add_lost' %}">
-        <button type="button" class="btn btn-danger" style="background-color: #d8303d;">Подать объявление
-        </button>
+        <button type="button" class="btn btn-danger" style="background-color: #d8303d;">Подать объявление </button>
       </a>
     </div>
-    <div class="col d-flex justify-content-md-end">
+    <div class="col-md d-md-flex justify-content-md-end">
     {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' or view_name == 'ads:found' or view_name == 'ads:found_map' %}
-    <form method="get" class="mx-2">
+{#      было только mx-2#}
+    <form method="get" class="pb-2 pb-md-0 pe-md-2 px-lg-0 mx-lg-2 col-md-4 col-lg-5">
       {{ filter.form.type|addclass:'form-select' }}
     </form>
-      <div class="btn-group me-md-2" role="group" aria-label="Basic radio toggle button group">
+      <div class="d-flex">
+      <div class="btn-group me-2" role="group" aria-label="Basic radio
+toggle button group">
       {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %}
         <a href="{% url 'ads:lost' %}">
       {% else %}
@@ -29,13 +31,19 @@
           </a>
       </div>
     {% endif %}
+    <div class="d-flex">
       <a href="{% url 'ads:lost' %}">
-        <button type="button" class="btn {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %} btn-primary {% else %} btn-outline-primary {% endif %} me-md-2">Потерялся
+        <button type="button" class="btn {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %} btn-primary {% else %} btn-outline-primary
+{% endif %} me-md-2">Потерялся
         </button>
       </a>
       <a href="{% url 'ads:found' %}">
-        <button type="button" class="btn {% if view_name == 'ads:found' or view_name == 'ads:found_map' %} btn-primary {% else %} btn-outline-primary {% endif %}">Нашёлся</button>
+        <button type="button" class="btn {% if view_name == 'ads:found' or view_name == 'ads:found_map' %} btn-primary {% else %} btn-outline-primary{% endif %}">Нашёлся</button>
       </a>
+    </div>
+    {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' or view_name == 'ads:found' or view_name == 'ads:found_map' %}
+    </div>
+    {% endif %}
     </div>
   </div>
 {% endwith %}
