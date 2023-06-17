@@ -5,17 +5,17 @@
   Потерялся | {{ ad.pet_name }}
 {% endblock %}
 {% block content %}
+  {% include 'ads/includes/navigation.html' %}
 
   <script>
-    var isAuth = '{{request.user.is_authenticated}}' === 'True';
-    var adId = '{{ ad.id }}'
-    var adType = 'l'
-    var uiUrl = "{% url 'ads:get_contact_information' %}"
-    var loginUrl = "{% url 'users:login' %}"
+    const adType = "l"
+    const isAuth = '{{request.user.is_authenticated}}' === 'True';
+    const adId = '{{ ad.id }}'
+    const uiUrl = "{% url 'ads:get_contact_information' %}"
+    const loginUrl = "{% url 'users:login' %}"
   </script>
   <script src="{% static 'js/ajax_ui.js' %}"></script>
 
-{% include 'ads/includes/navigation.html' %}
   <div class="row" >
   <article class="col-12 col-lg-8 text-break">
   {% if not ad.active %}
@@ -82,24 +82,5 @@
     </ul>
   </aside>
   </div>
-
-  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Контактная информация</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p class="d-inline">Создал объявление:</p> <div class="d-inline fw-bold">{{ ad.author.first_name }}</div>
-        <p></p>
-        <p class="d-inline">Контактный email:</p> <div class="d-inline fw-bold" id="id_email"></div>
-        <p></p>
-        <p class="d-inline">Контактный телефон:</p> <div class="d-inline fw-bold" id="id_phone"></div>
-        <p></p>
-        <button type="button" class="btn btn-danger" disabled>Пожаловаться</button>
-      </div>
-    </div>
-  </div>
-</div>
+{% include 'ads/includes/contact_info_modal.html' %}
 {% endblock %}

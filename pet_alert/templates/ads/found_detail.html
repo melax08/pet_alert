@@ -5,7 +5,17 @@
   Потерялся | {{ ad.pet_name }}
 {% endblock %}
 {% block content %}
-{% include 'ads/includes/navigation.html' %}
+  {% include 'ads/includes/navigation.html' %}
+
+  <script>
+    const adType = "f"
+    const isAuth = '{{request.user.is_authenticated}}' === 'True';
+    const adId = '{{ ad.id }}'
+    const uiUrl = "{% url 'ads:get_contact_information' %}"
+    const loginUrl = "{% url 'users:login' %}"
+  </script>
+  <script src="{% static 'js/ajax_ui.js' %}"></script>
+
   <div class="row" >
   <article class="col-12 col-lg-8 text-break">
     {% if not ad.active %}
@@ -65,12 +75,12 @@
         Кто видел: {{ ad.author.first_name }}
       </li>
       <li class="list-group-item">
-        Контактный телефон: {{ ad.author.phone }}
-      </li>
-      <li class="list-group-item">
-        Контактный email: {{ ad.author.email }}
+        <button id="contact-button" type="button" class="btn btn-info" onclick="getUserInfo()"><span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none"></span> Контакты</button>
+        <button id="contact-button" type="button" class="btn btn-info" disabled>Написать</button>
+        <div class="text-danger" id="contact-failed"></div>
       </li>
     </ul>
   </aside>
   </div>
+{% include 'ads/includes/contact_info_modal.html' %}
 {% endblock %}
