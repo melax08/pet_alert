@@ -19,5 +19,9 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('profile/active/', views.my_ads, name='my_ads'),
     path('profile/inactive/', views.my_ads_inactive, name='my_ads_inactive'),
+    path('get/ajax/contact-information/',
+         views.get_contact_information,
+         name='get_contact_information'
+         ),
 ]
 

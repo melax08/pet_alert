@@ -1,6 +1,6 @@
 from itertools import chain
 
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
 from django.core.paginator import Paginator
@@ -281,3 +281,33 @@ def profile(request):
         request.user.save()
         return redirect(reverse('ads:profile') + '?success=1')
     return render(request, template, {'form': form})
+
+
+def get_contact_information(request):
+    """Processes AJAX-requests from ads detail page,
+    sends author contact information."""
+    # if (request.method == 'GET'
+    #         and request.user.is_authenticated):
+    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'
+            and request.method == 'GET'
+            and request.user.is_authenticated):
+        type_of_ad = request.GET.get('ad_type', None)
+        ad_id = request.GET.get('ad_id', None)
+        if type_of_ad == 'l':
+            model = Lost
+        elif type_of_ad == 'f':
+            model = Found
+        else:
+            return JsonResponse({}, status=400)
+        try:
+            ad = model.objects.get(pk=ad_id)
+            if not ad.active and ad.author != request.user:
+                return JsonResponse({}, status=400)
+        except model.DoesNotExist:
+            return JsonResponse({}, status=400)
+        data = {
+            'email': str(ad.author.email),
+            'phone': str(ad.author.phone)
+        }
+        return JsonResponse(data, status=200)
+    return JsonResponse({}, status=400)
