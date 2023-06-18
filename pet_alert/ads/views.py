@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from itertools import chain
 
 from django.http import HttpResponseRedirect, Http404, JsonResponse
@@ -291,23 +292,24 @@ def get_contact_information(request):
     if (request.headers.get('x-requested-with') == 'XMLHttpRequest'
             and request.method == 'GET'
             and request.user.is_authenticated):
-        type_of_ad = request.GET.get('ad_type', None)
-        ad_id = request.GET.get('ad_id', None)
-        if type_of_ad == 'l':
-            model = Lost
-        elif type_of_ad == 'f':
-            model = Found
-        else:
-            return JsonResponse({}, status=400)
+        ad_type = request.GET.get('ad_type')
+        ad_id = request.GET.get('ad_id')
+        models = {
+            'l': Lost,
+            'f': Found
+        }
+        model = models.get(ad_type)
+        if model is None:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
         try:
             ad = model.objects.get(pk=ad_id)
             if not ad.active and ad.author != request.user:
-                return JsonResponse({}, status=400)
+                return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
         except model.DoesNotExist:
-            return JsonResponse({}, status=400)
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
         data = {
             'email': str(ad.author.email),
             'phone': str(ad.author.phone)
         }
-        return JsonResponse(data, status=200)
-    return JsonResponse({}, status=400)
+        return JsonResponse(data, status=HTTPStatus.OK)
+    return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)

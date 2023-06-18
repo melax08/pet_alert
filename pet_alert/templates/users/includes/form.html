@@ -1,6 +1,6 @@
 {% load user_filters %}
 <div class="row justify-content-center">
-  <div class="col-md-8 p-5">
+  <div class="col-md-9 col-lg-7 col-xl-6 p-3">
     <div class="card">
       <div class="card-header">
         {{ card_header }}
@@ -51,8 +51,8 @@
               </div>
             </div>
           {% endfor %}
-          <div class="col-md-6 offset-md-4">
-            <button type="submit" class="btn btn-primary">
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg col-sm-6 mx-auto">
               {{ button_label }}
             </button>
           </div>
