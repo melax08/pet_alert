@@ -23,5 +23,9 @@ urlpatterns = [
          views.get_contact_information,
          name='get_contact_information'
          ),
+    path('lost/<int:ad_id>/open/', views.ad_open_lost, name='ad_open_lost'),
+    path('lost/<int:ad_id>/close/', views.ad_close_lost, name='ad_close_lost'),
+    path('found/<int:ad_id>/open/', views.ad_open_found, name='ad_open_found'),
+    path('found/<int:ad_id>/close/', views.ad_close_found, name='ad_close_found'),
 ]
 

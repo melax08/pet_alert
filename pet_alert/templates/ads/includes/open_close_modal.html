@@ -1,0 +1,35 @@
+<div class="modal fade" id="closeOpenModal" tabindex="-1" aria-labelledby="closeOpenModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="closeOpenModalLabel">
+          {% if ad.open %}
+            Закрыть объявление?
+          {% else %}
+            Активировать объявление?
+          {% endif %}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% if ad.open %}
+            Если вы хотите, чтобы данное объявление больше не было доступно другим пользователям на сайте, вы можете его закрыть.
+          {% else %}
+            Если вы хотите, чтобы объявление было снова доступно на сайте, вы можете его открыть.
+          {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
+      <a href="{% if ad.open %} {% url close_url ad.id %} {% else %} {% url open_url ad.id %} {% endif %}">
+        <button type="button" class="btn {% if ad.open %} btn-warning {% else %} btn-success {% endif %}">
+          {% if ad.open %}
+            Закрыть объявление
+          {% else %}
+            Активировать объявление
+          {% endif %}
+        </button>
+      </a>
+      </div>
+    </div>
+  </div>
+</div>

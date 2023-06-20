@@ -11,6 +11,7 @@ from django_registration import signals
 from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 from .models import Found, Lost
 from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
@@ -141,7 +142,7 @@ def add_success_reg(request):
 
 
 def ads_list(request, template, model):
-    ads = model.objects.filter(active=True)
+    ads = model.objects.filter(active=True, open=True)
     f = TypeFilter(request.GET, queryset=ads)
     page_obj = paginator(request, f.qs)
     get_copy = request.GET.copy()
@@ -163,7 +164,7 @@ def found(request):
 
 
 def map_generation(request, template, model, header, reverse_url):
-    ads = model.objects.filter(active=True)
+    ads = model.objects.filter(active=True, open=True)
     f = TypeFilter(request.GET, queryset=ads)
     map_objects = []
     for ad in f.qs:
@@ -217,7 +218,7 @@ def found_map(request):
 def lost_detail(request, ad_id):
     template = 'ads/lost_detail.html'
     ad = get_object_or_404(Lost, pk=ad_id)
-    if not ad.active and ad.author != request.user:
+    if not (ad.active and ad.open) and ad.author != request.user:
         raise Http404
     context = {
         'ad': ad
@@ -239,13 +240,13 @@ def found_detail(request, ad_id):
 @login_required
 def my_ads(request):
     template = 'ads/my_ads.html'
-    current_user_lost_ads = request.user.lost_ads.filter(active=True)
-    current_user_found_ads = request.user.found_ads.filter(active=True)
+    current_user_lost_ads = request.user.lost_ads.filter(active=True, open=True)
+    current_user_found_ads = request.user.found_ads.filter(active=True, open=True)
     mix_ads = list(chain(current_user_lost_ads, current_user_found_ads))
     page_obj = paginator(request, mix_ads)
 
-    inactive_count = (request.user.lost_ads.filter(active=False).count()
-                      + request.user.found_ads.filter(active=False).count())
+    inactive_count = (request.user.lost_ads.filter(Q(active=False) | Q(open=False)).count()
+                      + request.user.found_ads.filter(Q(active=False) | Q(open=False)).count())
     context = {
         'page_obj': page_obj,
         'active_count': len(mix_ads),
@@ -257,13 +258,13 @@ def my_ads(request):
 @login_required
 def my_ads_inactive(request):
     template = 'ads/my_ads.html'
-    current_user_lost_ads = request.user.lost_ads.filter(active=False)
-    current_user_found_ads = request.user.found_ads.filter(active=False)
+    current_user_lost_ads = request.user.lost_ads.filter(Q(active=False) | Q(open=False))
+    current_user_found_ads = request.user.found_ads.filter(Q(active=False) | Q(open=False))
     mix_ads = list(chain(current_user_lost_ads, current_user_found_ads))
     page_obj = paginator(request, mix_ads)
 
-    active_count = (request.user.lost_ads.filter(active=True).count()
-                    + request.user.found_ads.filter(active=True).count())
+    active_count = (request.user.lost_ads.filter(active=True, open=True).count()
+                    + request.user.found_ads.filter(active=True, open=True).count())
 
     context = {
         'page_obj': page_obj,
@@ -313,3 +314,39 @@ def get_contact_information(request):
         }
         return JsonResponse(data, status=HTTPStatus.OK)
     return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+
+def ad_open(request, ad_id, redirect_dest, model):
+    ad = get_object_or_404(model, pk=ad_id)
+    if ad.author == request.user and not ad.open:
+        ad.open = True
+        ad.save()
+    return redirect(redirect_dest, ad_id)
+
+
+def ad_close(request, ad_id, redirect_dest, model):
+    ad = get_object_or_404(model, pk=ad_id)
+    if ad.author == request.user and ad.open:
+        ad.open = False
+        ad.save()
+    return redirect(redirect_dest, ad_id)
+
+
+@login_required
+def ad_open_lost(request, ad_id):
+    return ad_open(request, ad_id, 'ads:lost_detail', Lost)
+
+
+@login_required
+def ad_close_lost(request, ad_id):
+    return ad_close(request, ad_id, 'ads:lost_detail', Lost)
+
+
+@login_required
+def ad_open_found(request, ad_id):
+    return ad_open(request, ad_id, 'ads:found_detail', Found)
+
+
+@login_required
+def ad_close_found(request, ad_id):
+    return ad_close(request, ad_id, 'ads:found_detail', Found)

@@ -85,6 +85,11 @@ class AdsAbstract(models.Model):
         default=False,
         help_text='Объявление одобрено, активно и видно на сайте.'
     )
+    open = models.BooleanField(
+        'Открыто',
+        default=True,
+        help_text='Объявление открыто пользователем'
+    )
 
     class Meta:
         ordering = ['-pub_date']
