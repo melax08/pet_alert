@@ -12,7 +12,7 @@ from django_registration.backends.activation.views import RegistrationView
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 
-from .forms import CreationForm
+from .forms import CreationForm, CustomAuthenticationForm
 from .views import CustomActivationView
 
 app_name = 'users'
@@ -60,7 +60,8 @@ urlpatterns = [
         name="signup_disallowed",
     ),
     path('login/',
-         LoginView.as_view(template_name='users/login.html'),
+         LoginView.as_view(template_name='users/login.html',
+                           form_class=CustomAuthenticationForm),
          name='login'
          ),
     path('password_change/',
