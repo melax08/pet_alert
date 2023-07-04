@@ -1,6 +1,8 @@
 from http import HTTPStatus
 from itertools import chain
+from operator import attrgetter
 
+from django.views.generic import ListView
 from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import redirect
@@ -11,17 +13,16 @@ from django_registration import signals
 from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 
+from .constants import ADS_PER_PAGE, DESCRIPTION_MAP_LIMIT
 from .models import Found, Lost
 from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
                     AuthorizedLostForm, ChangeNameForm)
 from .filters import TypeFilter
 from users.forms import CreationForm, CreationFormWithoutPassword
 
-
-ADS_PER_PAGE = 6
-DESCRIPTION_MAP_LIMIT = 60
 
 REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 
@@ -120,15 +121,24 @@ def add_ad_authorized(request, template, form):
 
 def add_found(request):
     if request.user.is_authenticated:
-        return add_ad_authorized(request, 'ads/add_found.html', AuthorizedFoundForm)
-    return AdWithRegistration.as_view(template_name='ads/add_found.html')(
-        request)
+        return add_ad_authorized(
+            request,
+            'ads/add_found.html',
+            AuthorizedFoundForm
+        )
+    return AdWithRegistration.as_view(
+        template_name='ads/add_found.html')(request)
 
 
 def add_lost(request):
     if request.user.is_authenticated:
-        return add_ad_authorized(request, 'ads/add_lost.html', AuthorizedLostForm)
-    return AdWithRegistration.as_view(template_name='ads/add_lost.html')(request)
+        return add_ad_authorized(
+            request,
+            'ads/add_lost.html',
+            AuthorizedLostForm
+        )
+    return AdWithRegistration.as_view(
+        template_name='ads/add_lost.html')(request)
 
 
 def add_success(request):
@@ -141,26 +151,36 @@ def add_success_reg(request):
     return render(request, template)
 
 
-def ads_list(request, template, model):
-    ads = model.objects.filter(active=True, open=True)
-    f = TypeFilter(request.GET, queryset=ads)
-    page_obj = paginator(request, f.qs)
-    get_copy = request.GET.copy()
-    parameters = get_copy.pop('page', True) and get_copy.urlencode()
-    context = {
-        'page_obj': page_obj,
-        'filter': f,
-        'parameters': parameters
-    }
-    return render(request, template, context)
+class ListAdsBase(ListView):
+    allow_empty = True
+    paginate_by = ADS_PER_PAGE
+    filterset_class = TypeFilter
+
+    def get_queryset(self):
+        queryset = self.model.objects.filter(active=True, open=True)
+        self.filterset = self.filterset_class(
+            self.request.GET,
+            queryset=queryset
+        )
+        return self.filterset.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        get_copy = self.request.GET.copy()
+        context['parameters'] = (get_copy.pop('page', True)
+                                 and get_copy.urlencode())
+        context['filter'] = self.filterset
+        return context
 
 
-def lost(request):
-    return ads_list(request, 'ads/lost.html', Lost)
+class LostList(ListAdsBase):
+    template_name = 'ads/lost.html'
+    model = Lost
 
 
-def found(request):
-    return ads_list(request, 'ads/found.html', Found)
+class FoundList(ListAdsBase):
+    template_name = 'ads/found.html'
+    model = Found
 
 
 def map_generation(request, template, model, header, reverse_url):
@@ -237,41 +257,61 @@ def found_detail(request, ad_id):
     return render(request, template, context)
 
 
-@login_required
-def my_ads(request):
-    template = 'ads/my_ads.html'
-    current_user_lost_ads = request.user.lost_ads.filter(active=True, open=True)
-    current_user_found_ads = request.user.found_ads.filter(active=True, open=True)
-    mix_ads = list(chain(current_user_lost_ads, current_user_found_ads))
-    page_obj = paginator(request, mix_ads)
+class ProfileAdsBase(LoginRequiredMixin, ListView):
+    """Base class for user profile ads list pages."""
+    template_name = 'ads/my_ads.html'
+    paginate_by = ADS_PER_PAGE
+    active = True
 
-    inactive_count = (request.user.lost_ads.filter(Q(active=False) | Q(open=False)).count()
-                      + request.user.found_ads.filter(Q(active=False) | Q(open=False)).count())
-    context = {
-        'page_obj': page_obj,
-        'active_count': len(mix_ads),
-        'inactive_count': inactive_count
-    }
-    return render(request, template, context)
+    def get_active_user_ads(self):
+        return (
+            self.request.user.lost_ads.filter(active=True, open=True),
+            self.request.user.found_ads.filter(active=True, open=True)
+        )
+
+    def get_inactive_user_ads(self):
+        return (
+            self.request.user.lost_ads.filter(Q(active=False) | Q(open=False)),
+            self.request.user.found_ads.filter(Q(active=False) | Q(open=False))
+        )
+
+    def get_mixed_ads(self):
+        to_mix = self.get_active_user_ads()
+        to_count = self.get_inactive_user_ads()
+        if not self.active:
+            to_mix, to_count = to_count, to_mix
+        #  https://stackoverflow.com/a/434755/21420819
+        ads_mix = sorted(
+            chain(*to_mix),
+            key=attrgetter('pub_date'),
+            reverse=True
+        )
+        if self.active:
+            self.active_count = len(ads_mix)
+            self.inactive_count = sum([q.count() for q in to_count])
+        else:
+            self.inactive_count = len(ads_mix)
+            self.active_count = sum([q.count() for q in to_count])
+        return ads_mix
+
+    def get_queryset(self):
+        return self.get_mixed_ads()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_count'] = self.active_count
+        context['inactive_count'] = self.inactive_count
+        return context
 
 
-@login_required
-def my_ads_inactive(request):
-    template = 'ads/my_ads.html'
-    current_user_lost_ads = request.user.lost_ads.filter(Q(active=False) | Q(open=False))
-    current_user_found_ads = request.user.found_ads.filter(Q(active=False) | Q(open=False))
-    mix_ads = list(chain(current_user_lost_ads, current_user_found_ads))
-    page_obj = paginator(request, mix_ads)
+class ProfileActiveList(ProfileAdsBase):
+    """View for active ads page of user profile."""
+    active = True
 
-    active_count = (request.user.lost_ads.filter(active=True, open=True).count()
-                    + request.user.found_ads.filter(active=True, open=True).count())
 
-    context = {
-        'page_obj': page_obj,
-        'active_count': active_count,
-        'inactive_count': len(mix_ads)
-    }
-    return render(request, template, context)
+class ProfileInactiveList(ProfileAdsBase):
+    """Views for inactive ads page of user profile."""
+    active = False
 
 
 @login_required
