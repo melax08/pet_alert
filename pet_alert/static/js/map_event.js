@@ -1,6 +1,6 @@
-ymaps.ready(init);
+// ymaps.ready(init);
 
-function init() {
+function getYaMap() {
     var myPlacemark,
         myMap = new ymaps.Map('map', {
             center: [55.753994, 37.622093],

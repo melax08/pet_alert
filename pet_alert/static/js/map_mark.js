@@ -1,4 +1,4 @@
-ymaps.ready(function () {
+function getYaMap () {
     var myMap = new ymaps.Map('map', {
             center: coords,
             zoom: 16
@@ -21,4 +21,4 @@ ymaps.ready(function () {
 
     myMap.geoObjects
         .add(myPlacemarkWithContent);
-});
+}

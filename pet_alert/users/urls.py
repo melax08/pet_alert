@@ -1,18 +1,26 @@
-from django.contrib.auth.views import (LogoutView, LoginView,
-                                       PasswordChangeView,
-                                       PasswordChangeDoneView,
-                                       PasswordResetView,
-                                       PasswordResetDoneView,
-                                       PasswordResetConfirmView,
-                                       PasswordResetCompleteView
-                                       )
+from django.contrib.auth.views import (
+    LogoutView,
+    LoginView,
+    PasswordChangeView,
+    PasswordChangeDoneView,
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView
+)
 
 from django.urls import path
 from django_registration.backends.activation.views import RegistrationView
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 
-from .forms import CreationForm, CustomAuthenticationForm
+from .forms import (
+    CreationForm,
+    CustomAuthenticationForm,
+    CustomResetForm,
+    CustomPasswordChangeForm,
+    CustomSetPasswordForm
+)
 from .views import CustomActivationView
 
 app_name = 'users'
@@ -66,7 +74,9 @@ urlpatterns = [
          ),
     path('password_change/',
          PasswordChangeView.as_view(
-             template_name='users/password_change_form.html'),
+             template_name='users/password_change_form.html',
+             form_class=CustomPasswordChangeForm
+         ),
          name='change_form'
          ),
     path('password_change/done/',
@@ -76,7 +86,9 @@ urlpatterns = [
          ),
     path('password_reset/',
          PasswordResetView.as_view(
-             template_name='users/password_reset_form.html'),
+             template_name='users/password_reset_form.html',
+             form_class=CustomResetForm
+         ),
          name='reset_form'
          ),
     path('password_reset/done/',
@@ -86,7 +98,9 @@ urlpatterns = [
          ),
     path('reset/<uidb64>/<token>/',
          PasswordResetConfirmView.as_view(
-             template_name='users/password_reset_confirm.html'),
+             template_name='users/password_reset_confirm.html',
+             form_class=CustomSetPasswordForm
+         ),
          name='reset_confirm'
          ),
     path('reset/done/',

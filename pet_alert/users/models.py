@@ -47,7 +47,7 @@ class User(AbstractUser):
     first_name = models.CharField(
         _("first name"),
         max_length=150,
-        help_text='Ваше имя, будет видно в объявлениях и в личных сообщениях.'
+        help_text='Ваше имя, будет видно в объявлениях и в личных сообщениях'
     )
     phone = PhoneNumberField(
         'Номер мобильного телефона',
@@ -58,7 +58,7 @@ class User(AbstractUser):
         _("email address"),
         unique=True,
         max_length=254,
-        help_text='Будет использоваться для логина на сайте.'
+        help_text='Будет использоваться для логина на сайте'
     )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -66,3 +66,4 @@ class User(AbstractUser):
     class Meta(AbstractUser.Meta):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+

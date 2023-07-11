@@ -4,17 +4,7 @@
   Подать объявление | {{ title }}
 {% endblock %}
 {% block content %}
-  {% with request.resolver_match.view_name as view_name %}
-  <div class="col d-flex justify-content-md-end">
-    <a href="{% url 'ads:add_lost' %}">
-      <button type="button" class="btn {% if view_name == 'ads:add_lost' %}btn-primary{% else %}btn-secondary{% endif %} me-md-2">Потерялся
-      </button>
-    </a>
-    <a href="{% url 'ads:add_found' %}">
-      <button type="button" class="btn {% if view_name == 'ads:add_found' %}btn-primary{% else %}btn-secondary{% endif %}">Нашёлся</button>
-    </a>
-  </div>
-  {% endwith %}
+  {% include 'ads/includes/add_ad_navigation.html' %}
   {% load user_filters %}
   <div class="row justify-content-center">
     <div class="col-md-9 col-lg-7 col-xl-6 p-3">
@@ -38,7 +28,7 @@
             {% endfor %}
           {% endif %}
           {% if form.errors %}
-                        {% for field in form %}
+            {% for field in form %}
               {% for error in field.errors %}
                 <div class="alert alert-danger">
                   {{ error|escape }}
@@ -57,32 +47,30 @@
             <p>{{ address_info }}</p>
             <!-- Button trigger modal -->
             <button type="button" class="btn btn-primary"
-                    data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    data-bs-toggle="modal" data-bs-target="#mapModal">
               Выбрать адрес
             </button>
             <p class="my-3 id_address">Адрес не выбран</p>
             <!-- Modal -->
-            <div class="modal fade" id="exampleModal" tabindex="-1"
-                 aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="mapModal" tabindex="-1"
+                 aria-labelledby="mapModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                   <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Выберите
+                    <h5 class="modal-title" id="mapModalLabel">Выберите
                       адрес</h5>
                     <button type="button" class="btn-close"
                             data-bs-dismiss="modal"
                             aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
-                    <script
-                      src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104"
+                    <script async
+                      src="https://api-maps.yandex.ru/2.1/?load=package.standard&lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104&onload=getYaMap"
                       type="text/javascript"></script>
-                    <script src="{% static 'js/map_event.js' %}"
+                    <script async src="{% static 'js/map_event.js' %}"
                             type="text/javascript"></script>
                     <div id="map"
                          style="width: 100%; height: 500px;">{% csrf_token %}</div>
-{#                    <input type="hidden" id="coords" name="coords">#}
-{#                    <input type="hidden" id="address" name="address">#}
                     <p class="my-3">Выбранный адрес:</p>
                     <p class="id_address">Адрес не выбран</p>
                   </div>
@@ -108,25 +96,28 @@
                    aria-required="false"
                 {% endif %}
               >
-                <label for="{{ field.id_for_label }}">
-                  {{ field.label }}
-                  {% if field.field.required %}
-                    <span class="required text-danger">*</span>
-                  {% endif %}
-                </label>
+{#                <label for="{{ field.id_for_label }}">#}
+{#                  {{ field.label }}#}
+{#                  {% if field.field.required %}#}
+{#                    <span class="required text-danger">*</span>#}
+{#                  {% endif %}#}
+{#                </label>#}
                 <div>
-                  {{ field|addclass:'form-control' }}
+                  {{ field }}
                   {% if field.help_text %}
                     <small id="{{ field.id_for_label }}-help"
                            class="form-text text-muted">
                       {{ field.help_text|safe }}
+                  {% if field.field.required %}
+                    <span class="required text-danger">*</span>
+                  {% endif %}
                     </small>
                   {% endif %}
                 </div>
               </div>
             {% endfor %}
             <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary btn-lg col-sm-6 mx-auto">
+              <button type="submit" class="btn btn-primary btn-lg col-12 col-sm-6 mx-auto">
                 Подать объявление
               </button>
             </div>

@@ -1,26 +1,33 @@
-from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordResetForm,
+    PasswordChangeForm,
+    SetPasswordForm
+)
 from django.contrib.auth import get_user_model
 from django_registration.forms import RegistrationForm
 from captcha.fields import ReCaptchaField
 from captcha.widgets import ReCaptchaV3, ReCaptchaV2Checkbox
 
+from core.forms import CustomWidgetMixin
 
 User = get_user_model()
 
 
-# class CreationForm(UserCreationForm):
-#     class Meta(UserCreationForm.Meta):
-#         model = User
-#         fields = ('first_name', 'email', 'phone')
+class CreationForm(CustomWidgetMixin, RegistrationForm):
+    """Custom registration from with form-control classes,
+    placeholder and captcha."""
 
-class CreationForm(RegistrationForm):
-    captcha = ReCaptchaField(widget=ReCaptchaV2Checkbox,
-                             label='Подтвердите что вы не робот')
+    captcha = ReCaptchaField(
+        widget=ReCaptchaV2Checkbox,
+        label='',
+        help_text='Подтвердите что вы не робот'
+    )
 
     class Meta(RegistrationForm.Meta):
         model = User
-        fields = ('first_name', 'email', 'phone', 'captcha')
+        fields = ('first_name', 'email', 'phone',
+                  'password1', 'password2', 'captcha')
 
 
 class CreationFormWithoutPassword(RegistrationForm):
@@ -36,10 +43,27 @@ class CreationFormWithoutPassword(RegistrationForm):
         fields = ('first_name', 'email', 'phone')
 
 
-class CustomAuthenticationForm(AuthenticationForm):
+class CustomAuthenticationForm(CustomWidgetMixin, AuthenticationForm):
     """Custom login form with form-control classes and placeholder."""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = 'form-control form-control-lg'
-            visible.field.widget.attrs['placeholder'] = visible.field.label
+    pass
+
+
+class CustomResetForm(CustomWidgetMixin, PasswordResetForm):
+    """Custom reset from with form-control classes, placeholder and captcha."""
+
+    captcha = ReCaptchaField(
+        widget=ReCaptchaV2Checkbox,
+        label='',
+        help_text='Подтвердите что вы не робот'
+    )
+
+
+class CustomPasswordChangeForm(CustomWidgetMixin, PasswordChangeForm):
+    """Custom password change form
+    with form-control classes and placeholder."""
+
+
+class CustomSetPasswordForm(CustomWidgetMixin, SetPasswordForm):
+    """Custom password set form with form-control classes and placeholder."""
+    pass
+

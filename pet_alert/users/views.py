@@ -11,9 +11,10 @@ from django.urls import reverse_lazy
 from django.shortcuts import redirect
 from django.contrib.auth.views import PasswordContextMixin
 from django.contrib.auth import login as auth_login
-from django.contrib.auth.forms import SetPasswordForm
 from django.utils.translation import gettext_lazy as _
 from django_registration import signals
+
+from .forms import CustomSetPasswordForm
 
 User = get_user_model()
 
@@ -31,7 +32,7 @@ class CustomActivationView(PasswordContextMixin, FormView):
     """
     success_url = reverse_lazy("users:set_password_done")
     template_name = 'users/password_set_confirm.html'
-    form_class = SetPasswordForm
+    form_class = CustomSetPasswordForm
     post_reset_login = True
     post_reset_login_backend = None
     reset_url_token = "set-password"

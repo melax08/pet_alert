@@ -59,7 +59,7 @@
     <p style="color:darkgray">Описание:</p>
     <p>{{ ad.description }}</p>
   {% if ad.address %}
-      <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104"
+      <script async src="https://api-maps.yandex.ru/2.1/?load=package.standard&lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104&onload=getYaMap"
           type="text/javascript"></script>
   <script>
       var coords = [{{ ad.coords }}]
