@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from phonenumber_field.modelfields import PhoneNumberField
-
 User = get_user_model()
 
 CONDITIONS_OF_PET = [
@@ -10,9 +8,6 @@ CONDITIONS_OF_PET = [
     ('BD', 'Больное'),
     ('CR', 'Критическое')
 ]
-
-# ToDo: пол (мальчик, девочка, неопределен)
-# ToDo: Цвет
 
 
 class AnimalType(models.Model):
@@ -99,7 +94,6 @@ class AdsAbstract(models.Model):
         return self.description[:30]
 
 
-# ToDo: сделать, чтобы help_text изменялся без переопределения поля.
 class Lost(AdsAbstract):
     pet_name = models.CharField(
         'Кличка',

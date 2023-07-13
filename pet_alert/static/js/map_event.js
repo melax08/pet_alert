@@ -9,6 +9,46 @@ function getYaMap() {
             searchControlProvider: 'yandex#search'
         });
 
+
+    mySearchResults = new ymaps.GeoObjectCollection(null, {
+        hintContentLayout: ymaps.templateLayoutFactory.createClass('$[properties.name]')
+    });
+
+    var suggestView1 = new ymaps.SuggestView('suggest');
+
+    // $('#customMapButton').bind('click', function (e) {
+    //     select_location();
+    // });
+    //
+    // function select_location() {
+    //     var request = $('#suggest').val();
+    //     ymaps.geocode(request).then(function (res) {
+    //         var obj = res.geoObjects.get(0),
+    //             error, hint;
+    //
+    //         if (obj) {
+    //             if (myPlacemark) {
+    //                 myPlacemark.geometry.setCoordinates(obj);
+    //             }
+    //             else {
+    //                 myPlacemark = createPlacemark(obj);
+    //                 myMap.geoObjects.add(myPlacemark);
+    //                 // Слушаем событие окончания перетаскивания на метке.
+    //                 myPlacemark.events.add('dragend', function () {
+    //                 getAddress(myPlacemark.geometry.getCoordinates());
+    //                 });
+    //             }
+    //             getAddress(obj)
+    //         }
+    //         else {
+    //             error = 'Адрес не найден';
+    //             hint = 'Уточните адрес';
+    //         }
+    // }, function (e) {
+    //     console.log(e)
+    // })}
+
+
     // Слушаем клик на карте.
     myMap.events.add('click', function (e) {
         var coords = e.get('coords');
@@ -28,6 +68,7 @@ function getYaMap() {
         }
         getAddress(coords);
     });
+
 
     // Создание метки.
     function createPlacemark(coords) {

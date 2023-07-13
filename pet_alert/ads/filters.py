@@ -1,10 +1,11 @@
 import django_filters
 from django import forms
 
-from .models import Found, Lost, AnimalType
+from .models import AnimalType
 
 
 class TypeFilter(django_filters.FilterSet):
+    """Filter by animal type for advertisements."""
     type = django_filters.ModelChoiceFilter(
         queryset=AnimalType.objects.all(),
         field_name='type__name',
@@ -12,7 +13,3 @@ class TypeFilter(django_filters.FilterSet):
         empty_label='Все животные',
         widget=forms.Select(attrs={'onchange': 'submit();'})
     )
-
-    # class Meta:
-    #     model = Lost
-    #     fields = ['type']

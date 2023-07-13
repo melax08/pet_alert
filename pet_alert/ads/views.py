@@ -2,6 +2,7 @@ from http import HTTPStatus
 from itertools import chain
 from operator import attrgetter
 
+from django.contrib.auth import get_user_model
 from django.views.generic import ListView
 from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -15,6 +16,9 @@ from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
+from django.views.generic.base import TemplateView
+from django.views.generic.edit import CreateView, FormView
+from django.views.generic import DetailView
 
 from .constants import ADS_PER_PAGE, DESCRIPTION_MAP_LIMIT
 from .models import Found, Lost
@@ -30,18 +34,27 @@ EMAIL_BODY_TEMPLATE = 'users/activation_email_body.txt'
 EMAIL_SUBJECT_TEMPLATE = 'users/activation_email_subject.txt'
 
 
+User = get_user_model()
+
+
 def paginator(request, ads):
     pagination = Paginator(ads, ADS_PER_PAGE)
     page_number = request.GET.get('page')
     return pagination.get_page(page_number)
 
 
-def index(request):
-    template = 'ads/index.html'
-    return render(request, template)
+class IndexPage(TemplateView):
+    """Main page with some information about project."""
+    template_name = 'ads/index.html'
 
 
 class AdWithRegistration(RegistrationView):
+    """
+    - Guest user can create an advertisement.
+    - During creating of advertisement, user will be registered
+    at site without password.
+    - User needs to follow the link on email to proceed the registration.
+    """
     email_subject_template = 'users/activation_email_subject.txt'
     email_body_template = 'users/activation_email_body.txt'
     template_name = 'ads/add_lost.html'
@@ -108,55 +121,76 @@ class AdWithRegistration(RegistrationView):
         return super().get_context_data(**kwargs)
 
 
-def add_ad_authorized(request, template, form):
-    form = form(request.POST or None, files=request.FILES or None)
+class CreateAdAuthorized(LoginRequiredMixin, CreateView):
+    """Base class for create advertisement pages.
+    You need to specify template_name and form_class while inheritance."""
+    success_url = reverse_lazy('ads:add_success')
 
-    if form.is_valid():
-        set_author = form.save(commit=False)
-        set_author.author = request.user
-        set_author.save()
-        return redirect('ads:add_success')
-    return render(request, template, {'ad_form': form})
+    def form_valid(self, form):
+        """Save current user as author of advertisement."""
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        """Insert the form into the context dict with custom
+        template variable name."""
+        # ToDo: изменить во вьюхе с добавлением объявления и регистрацией
+        #  дефолтное поле для формы объявления с ad_form на просто form
+        #  после этого, убрать этот метод
+        context = super().get_context_data(**kwargs)
+        context["ad_form"] = context["form"]
+        context["form"] = None
+        return context
 
 
 def add_found(request):
+    """Handler for add found page.
+    Authorized user and guest will see different pages."""
     if request.user.is_authenticated:
-        return add_ad_authorized(
-            request,
-            'ads/add_found.html',
-            AuthorizedFoundForm
-        )
+        return CreateAdAuthorized.as_view(
+            template_name='ads/add_found.html',
+            form_class=AuthorizedFoundForm
+        )(request)
     return AdWithRegistration.as_view(
-        template_name='ads/add_found.html')(request)
+        template_name='ads/add_found.html'
+    )(request)
 
 
 def add_lost(request):
+    """Handler for add lost page.
+    Authorized user and guest will see different pages."""
     if request.user.is_authenticated:
-        return add_ad_authorized(
-            request,
-            'ads/add_lost.html',
-            AuthorizedLostForm
-        )
+        return CreateAdAuthorized.as_view(
+            template_name='ads/add_lost.html',
+            form_class=AuthorizedLostForm
+        )(request)
     return AdWithRegistration.as_view(
-        template_name='ads/add_lost.html')(request)
+        template_name='ads/add_lost.html'
+    )(request)
 
 
-def add_success(request):
-    template = 'ads/add_success.html'
-    return render(request, template)
+class CreateAdSuccess(TemplateView):
+    """Show success page after create new advertisement for authorized user."""
+    template_name = 'ads/add_success.html'
 
 
-def add_success_reg(request):
-    template = 'ads/add_success_reg.html'
-    return render(request, template)
+class CreateAdWithRegSuccess(TemplateView):
+    """Show success page after create new advertisement for guest user
+    with information about registration on site."""
+    template_name = 'ads/add_success_reg.html'
 
 
-class ListAdsBase(ListView):
+class LostList(ListView):
+    """Lost list advertisements page."""
+    template_name = 'ads/lost.html'
+    model = Lost
     allow_empty = True
     paginate_by = ADS_PER_PAGE
     filterset_class = TypeFilter
 
     def get_queryset(self):
+        """Creates filterset by filterset_class,
+        returns the resulting queryset."""
         queryset = self.model.objects.filter(active=True, open=True)
         self.filterset = self.filterset_class(
             self.request.GET,
@@ -165,6 +199,7 @@ class ListAdsBase(ListView):
         return self.filterset.qs
 
     def get_context_data(self, **kwargs):
+        """Adds additional GET parameters and filter instance to context."""
         context = super().get_context_data(**kwargs)
         get_copy = self.request.GET.copy()
         context['parameters'] = (get_copy.pop('page', True)
@@ -173,12 +208,8 @@ class ListAdsBase(ListView):
         return context
 
 
-class LostList(ListAdsBase):
-    template_name = 'ads/lost.html'
-    model = Lost
-
-
-class FoundList(ListAdsBase):
+class FoundList(LostList):
+    """Found list advertisements page."""
     template_name = 'ads/found.html'
     model = Found
 
@@ -235,26 +266,29 @@ def found_map(request):
                           'ads:found_detail')
 
 
-def lost_detail(request, ad_id):
-    template = 'ads/lost_detail.html'
-    ad = get_object_or_404(Lost, pk=ad_id)
-    if not (ad.active and ad.open) and ad.author != request.user:
-        raise Http404
-    context = {
-        'ad': ad
-    }
-    return render(request, template, context)
+class LostDetail(DetailView):
+    """Lost detail ad page."""
+    model = Lost
+    template_name = 'ads/lost_detail.html'
+    context_object_name = 'ad'
+    pk_url_kwarg = 'ad_id'
+
+    def check_access(self):
+        """Only opening and active ads are available on the site.
+        The user can see their ads even if they are closed."""
+        ad = self.get_object()
+        if not (ad.active and ad.open) and ad.author != self.request.user:
+            raise Http404
+
+    def get(self, *args, **kwargs):
+        self.check_access()
+        return super().get(*args, **kwargs)
 
 
-def found_detail(request, ad_id):
-    template = 'ads/found_detail.html'
-    ad = get_object_or_404(Found, pk=ad_id)
-    if not ad.active and ad.author != request.user:
-        raise Http404
-    context = {
-        'ad': ad
-    }
-    return render(request, template, context)
+class FoundDetail(LostDetail):
+    """Found detail ad page."""
+    model = Found
+    template_name = 'ads/found_detail.html'
 
 
 class ProfileAdsBase(LoginRequiredMixin, ListView):

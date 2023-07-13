@@ -1,7 +1,8 @@
 import datetime as dt
 
+
 def year(request):
-    """Добавляет переменную с текущим годом."""
+    """Add template context variable with current year."""
     return {
         'year': dt.datetime.now().year
     }
