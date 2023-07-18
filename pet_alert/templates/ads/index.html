@@ -1,18 +1,103 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load thumbnail %}
 {% block title %}
   Главная страница
 {% endblock %}
 {% block content %}
-{% include 'ads/includes/navigation.html' %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/main-page.css' %}">
+
+
   <article class="py-3">
-    <p>Добро пожаловать на наш сайт по поиску потерянных домашних животных! Мы знаем, как трудно расставаться со своим любимым питомцем и наша цель - помочь вам вернуть его домой.</p>
+    <div class="row pb-5">
 
-    <p>Мы предоставляем удобный и простой в использовании онлайн-сервис для поиска потерянных животных. Если ваш питомец пропал, вы можете оставить объявление о пропаже на нашем сайте. Ваша информация будет доступна для всех пользователей нашего сайта, а также мы сотрудничаем с множеством приютов и организаций по защите животных, чтобы максимально распространить информацию о пропавшем животном.</p>
+      <div class="col-12 col-lg-5">
+        <p class="page-header mt-5 mb-5">Сервис для поиска домашних животных</p>
+        <ul class="rec-list mb-5">
+          <li>
+            Ваш питомец потерялся?
+          </li>
+          <li>
+            Или вы нашли кого-то на улице?
+          </li>
+          <li>
+            Хотите рассказать об этом?
+          </li>
+        </ul>
+      <a href="{% url 'ads:add_lost' %}">
+        <button type="button" class="index-red-button btn btn-lg btn-danger mt-4">Подать объявление </button>
+      </a>
+      </div>
 
-    <p>Мы также предоставляем список найденных животных, чтобы помочь владельцам быстрее найти своего питомца. Если вы нашли животное, которое кажется потерянным, вы можете оставить информацию о нем на нашем сайте. Таким образом, вы можете помочь вернуть потерянного питомца домой и принести радость его владельцам.</p>
+      <div class="col-12 col-lg-7 pt-5 pt-lg-0">
+        <img src="{% static 'img/girl-and-dog.png' %}" class="img-fluid">
+      </div>
+    </div>
 
-    <p>Мы заботимся о благополучии всех животных и у нас есть раздел советов по поиску потерянных животных, чтобы помочь владельцам организовать и эффективно провести поиск своего питомца. Мы также сотрудничаем с множеством приютов и организаций по защите животных, которые могут помочь с поиском потерянных животных.</p>
+    <div class="mt-5 pb-5">
+      <p class="page-header pb-3">Недавно найденные</p>
+      <div class="row pb-4">
+        {% for found in founds %}
+          <div class="col">
+            <a href="{% url 'ads:found_detail' found.id %}">
+              {% if found.image %}
+                {% thumbnail found.image "250x250" crop="center" as im %}
+                  <img src="{{ im.url }}" width="{{ im.width }}"
+                    height="{{ im.height }}" class="rounded">
+                {% endthumbnail %}
+              {% else %}
+                {% thumbnail found.type.default_image "250x250" crop="center" as im %}
+                  <img src="{{ im.url }}" width="{{ im.width }}"
+                    height="{{ im.height }}" class="rounded">
+                {% endthumbnail %}
+              {% endif %}
+            </a>
+            <p class="pt-3">{{ found.pub_date }}</p>
+            <div class="pb-3">
+              <a href="{% url 'ads:found_detail' found.id %}" class="detail-link">Подробнее</a>
+            </div>
+          </div>
+        {% endfor %}
+     </div>
+      <a href="{% url 'ads:found' %}">
+        <button class="btn btn-success index-green-button mt-5 mb-5">Все найденные</button>
+      </a>
+    </div>
 
-<p>Мы надеемся, что наш сайт станет для вас полезным инструментом в поиске потерянного питомца и поможет вернуть его домой. Наша команда всегда готова ответить на ваши вопросы и помочь в любых ситуациях. Спасибо, что выбрали наш сайт для поиска потерянных домашних животных!</p>
+    <div class="mt-5">
+      <p class="page-header pb-3">Недавно потерянные</p>
+      <div class="row pb-4">
+        {% for lost in losts %}
+          <div class="col">
+            <a href="{% url 'ads:lost_detail' lost.id %}">
+              {% if lost.image %}
+                {% thumbnail lost.image "250x250" crop="center" as im %}
+                  <img src="{{ im.url }}" width="{{ im.width }}"
+                       height="{{ im.height }}" class="rounded">
+                {% endthumbnail %}
+              {% else %}
+                {% thumbnail lost.type.default_image "250x250" crop="center" as im %}
+                  <img src="{{ im.url }}" width="{{ im.width }}"
+                       height="{{ im.height }}" class="rounded">
+                {% endthumbnail %}
+              {% endif %}
+            </a>
+            <p class="pt-3">{{ lost.pub_date }}</p>
+            <div class="pb-3">
+              <a href="{% url 'ads:lost_detail' lost.id %}" class="detail-link">Подробнее</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <a href="{% url 'ads:lost' %}">
+        <button class="btn btn-success index-green-button mt-5">Все потерянные</button>
+      </a>
+    </div>
   </article>
+
 {% endblock %}

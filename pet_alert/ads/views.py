@@ -47,6 +47,13 @@ class IndexPage(TemplateView):
     """Main page with some information about project."""
     template_name = 'ads/index.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['founds'] = Found.objects.filter(active=True, open=True)[:4]
+        context['losts'] = Lost.objects.filter(active=True, open=True)[:4]
+
+        return context
+
 
 class AdWithRegistration(RegistrationView):
     """

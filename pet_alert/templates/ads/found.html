@@ -10,7 +10,7 @@
   <p class="py-3 text-secondary">В данном разделе отсутствуют объявления</p>
   {% else %}
   {% for ad in page_obj %}
-    <article class="border">
+    <article class="border {% if not forloop.last %} border-bottom-0 {% endif %}">
       <div class="row g-0 bg-light position-relative">
         <div class="col-md-4 col-lg-3 mb-md-0 p-4 pb-0 pb-md-4">
         {% if ad.image %}
