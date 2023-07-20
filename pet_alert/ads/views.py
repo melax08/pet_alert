@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 from itertools import chain
 from operator import attrgetter
@@ -5,7 +6,7 @@ from operator import attrgetter
 from django.contrib.auth import get_user_model
 from django.views.generic import ListView
 from django.http import HttpResponseRedirect, Http404, JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.shortcuts import redirect
 from django.core.paginator import Paginator
 from django.urls import reverse_lazy, reverse
@@ -17,8 +18,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import CreateView, FormView
-from django.views.generic import DetailView
+from django.views.generic.edit import CreateView
+from django.views.generic import DetailView, View
 
 from .constants import ADS_PER_PAGE, DESCRIPTION_MAP_LIMIT
 from .models import Found, Lost
@@ -366,68 +367,66 @@ def profile(request):
     return render(request, template, {'form': form})
 
 
-def get_contact_information(request):
-    """Processes AJAX-requests from ads detail page,
+class GetContactInfo(LoginRequiredMixin, View):
+    """Processes fetch-request from ads detail page,
     sends author contact information."""
-    # if (request.method == 'GET'
-    #         and request.user.is_authenticated):
-    if (request.headers.get('x-requested-with') == 'XMLHttpRequest'
-            and request.method == 'GET'
-            and request.user.is_authenticated):
-        ad_type = request.GET.get('ad_type')
-        ad_id = request.GET.get('ad_id')
-        models = {
-            'l': Lost,
-            'f': Found
-        }
-        model = models.get(ad_type)
+    models = {
+        'l': Lost,
+        'f': Found
+    }
+
+    def post(self, request):
+        request_body = json.loads(request.body.decode())
+        ad_type = request_body.get('m')
+        ad_id = request_body.get('ad_id')
+        model = self.models.get(ad_type)
         if model is None:
             return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
         try:
             ad = model.objects.get(pk=ad_id)
             if not ad.active and ad.author != request.user:
                 return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+            data = {
+                'email': str(ad.author.email),
+                'phone': str(ad.author.phone)
+            }
+            return JsonResponse(data, status=HTTPStatus.OK)
         except model.DoesNotExist:
             return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-        data = {
-            'email': str(ad.author.email),
-            'phone': str(ad.author.phone)
-        }
-        return JsonResponse(data, status=HTTPStatus.OK)
-    return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
 
 
-def ad_open(request, ad_id, redirect_dest, model):
-    ad = get_object_or_404(model, pk=ad_id)
-    if ad.author == request.user and not ad.open:
-        ad.open = True
-        ad.save()
-    return redirect(redirect_dest, ad_id)
+class OpenAd(LoginRequiredMixin, View):
+    """
+    Service view for processing fetch requests from detail post page.
+    Allows user to open his advertisement.
+    """
+    to_set = True
+    models = {
+        'l': Lost,
+        'f': Found
+    }
+
+    def post(self, request):
+        request_body = json.loads(request.body.decode())
+        ad_type = request_body.get('m')
+        ad_id = request_body.get('ad_id')
+        model = self.models.get(ad_type)
+        if model is None:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+        try:
+            ad = model.objects.get(pk=ad_id)
+            if ad.author != request.user:
+                return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+            ad.open = self.to_set
+            ad.save()
+            return JsonResponse({'message': 'success'}, status=HTTPStatus.OK)
+        except model.DoesNotExist:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
 
 
-def ad_close(request, ad_id, redirect_dest, model):
-    ad = get_object_or_404(model, pk=ad_id)
-    if ad.author == request.user and ad.open:
-        ad.open = False
-        ad.save()
-    return redirect(redirect_dest, ad_id)
-
-
-@login_required
-def ad_open_lost(request, ad_id):
-    return ad_open(request, ad_id, 'ads:lost_detail', Lost)
-
-
-@login_required
-def ad_close_lost(request, ad_id):
-    return ad_close(request, ad_id, 'ads:lost_detail', Lost)
-
-
-@login_required
-def ad_open_found(request, ad_id):
-    return ad_open(request, ad_id, 'ads:found_detail', Found)
-
-
-@login_required
-def ad_close_found(request, ad_id):
-    return ad_close(request, ad_id, 'ads:found_detail', Found)
+class CloseAd(OpenAd):
+    """
+    Service view for processing fetch requests from detail post page.
+    Allows user to close his advertisement.
+    """
+    to_set = False

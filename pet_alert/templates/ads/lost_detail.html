@@ -8,13 +8,20 @@
   {% include 'ads/includes/navigation.html' %}
 
   <script>
-    const adType = "l"
     const isAuth = '{{request.user.is_authenticated}}' === 'True';
-    const adId = '{{ ad.id }}'
     const uiUrl = "{% url 'ads:get_contact_information' %}"
     const loginUrl = "{% url 'users:login' %}"
+    const manageUrl = "{% if ad.open %} {% url 'ads:close_ad' %} {% else %} {% url 'ads:open_ad' %} {% endif %}"
+    const manageData = {
+        "m": "l",
+        "ad_id": '{{ ad.id }}'
+    }
+    const headers = {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json"
+    }
   </script>
-  <script src="{% static 'js/ajax_ui.js' %}"></script>
+  <script src="{% static 'js/fetch_ui.js' %}"></script>
 
   <div class="row" >
   <article class="col-12 col-lg-8 text-break">
@@ -96,19 +103,20 @@
           </button>
         {% else %}
         <button id="contact-button" type="button" class="btn btn-info" onclick="getUserInfo()"><span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none"></span> Контакты</button>
-        <button id="contact-button" type="button" class="btn btn-info" disabled>Написать</button>
+        <button id="write-button" type="button" class="btn btn-info" disabled>Написать</button>
         <div class="text-danger" id="contact-failed"></div>
         {% endif %}
       </li>
     </ul>
   </aside>
   </div>
+
   {% if request.user != ad.author %}
-{% include 'ads/includes/contact_info_modal.html' %}
+    {% include 'ads/includes/contact_info_modal.html' %}
   {% endif %}
 
-{% if request.user == ad.author %}
-  {% include 'ads/includes/open_close_modal.html' with close_url='ads:ad_close_lost' open_url='ads:ad_open_lost' %}
-{% endif %}
+  {% if request.user == ad.author %}
+    {% include 'ads/includes/open_close_modal.html' %}
+  {% endif %}
 
 {% endblock %}

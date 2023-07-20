@@ -20,15 +20,15 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
-      <a href="{% if ad.open %} {% url close_url ad.id %} {% else %} {% url open_url ad.id %} {% endif %}">
-        <button type="button" class="btn {% if ad.open %} btn-warning {% else %} btn-success {% endif %}">
+        <button id="manage-button" type="button" class="btn {% if ad.open %} btn-warning {% else %} btn-success {% endif %}" onclick="managePost()">
+        <span id="spinner-open-close" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none"></span>
           {% if ad.open %}
             Закрыть объявление
           {% else %}
             Активировать объявление
           {% endif %}
         </button>
-      </a>
+        <div class="text-danger" id="manage-failed"></div>
       </div>
     </div>
   </div>

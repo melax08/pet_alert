@@ -14,8 +14,7 @@
 
 
   <article class="py-3">
-    <div class="row pb-5">
-
+    <div class="row mb-5 pb-3">
       <div class="col-12 col-lg-5">
         <p class="page-header mt-5 mb-5">Сервис для поиска домашних животных</p>
         <ul class="rec-list mb-5">
@@ -30,7 +29,7 @@
           </li>
         </ul>
       <a href="{% url 'ads:add_lost' %}">
-        <button type="button" class="index-red-button btn btn-lg btn-danger mt-4">Подать объявление </button>
+        <button type="button" class="index-red-button btn btn-lg btn-danger mt-4">Подать объявление</button>
       </a>
       </div>
 
@@ -39,8 +38,8 @@
       </div>
     </div>
 
-    <div class="mt-5 pb-5">
-      <p class="page-header pb-3">Недавно найденные</p>
+    <div class="mt-5 pt-5 mb-5 pb-3">
+      <p class="page-header pb-4">Недавно найденные</p>
       <div class="row pb-4">
         {% for found in founds %}
           <div class="col">
@@ -65,12 +64,12 @@
         {% endfor %}
      </div>
       <a href="{% url 'ads:found' %}">
-        <button class="btn btn-success index-green-button mt-5 mb-5">Все найденные</button>
+        <button class="btn btn-success index-green-button mt-2">Все найденные</button>
       </a>
     </div>
 
-    <div class="mt-5">
-      <p class="page-header pb-3">Недавно потерянные</p>
+    <div class="mt-5 pt-5">
+      <p class="page-header pb-4">Недавно потерянные</p>
       <div class="row pb-4">
         {% for lost in losts %}
           <div class="col">
@@ -95,7 +94,7 @@
         {% endfor %}
       </div>
       <a href="{% url 'ads:lost' %}">
-        <button class="btn btn-success index-green-button mt-5">Все потерянные</button>
+        <button class="btn btn-success index-green-button mt-2">Все потерянные</button>
       </a>
     </div>
   </article>

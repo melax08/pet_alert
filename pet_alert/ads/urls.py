@@ -28,16 +28,11 @@ urlpatterns = [
          views.ProfileInactiveList.as_view(),
          name='my_ads_inactive'
          ),
-    path('get/ajax/contact-information/',
-         views.get_contact_information,
+    path('service/contact-info/',
+         views.GetContactInfo.as_view(),
          name='get_contact_information'
          ),
-    path('lost/<int:ad_id>/open/', views.ad_open_lost, name='ad_open_lost'),
-    path('lost/<int:ad_id>/close/', views.ad_close_lost, name='ad_close_lost'),
-    path('found/<int:ad_id>/open/', views.ad_open_found, name='ad_open_found'),
-    path('found/<int:ad_id>/close/',
-         views.ad_close_found,
-         name='ad_close_found'
-         ),
+    path('service/post-manage/c/', views.CloseAd.as_view(), name='close_ad'),
+    path('service/post-manage/o/', views.OpenAd.as_view(), name='open_ad')
 ]
 
