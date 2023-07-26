@@ -25,7 +25,7 @@ from .models import Found, Lost
 from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
                     AuthorizedLostForm, ChangeNameForm)
 from .filters import TypeFilter
-from users.forms import CreationForm, CreationFormWithoutPassword
+from users.forms import CreationForm, CreationFormWithoutPassword  # noqa
 
 
 REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
