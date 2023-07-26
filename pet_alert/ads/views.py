@@ -8,7 +8,6 @@ from django.views.generic import ListView
 from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import redirect
-from django.core.paginator import Paginator
 from django.urls import reverse_lazy, reverse
 from sorl.thumbnail import get_thumbnail
 from django_registration import signals
@@ -36,12 +35,6 @@ EMAIL_SUBJECT_TEMPLATE = 'users/activation_email_subject.txt'
 
 
 User = get_user_model()
-
-
-def paginator(request, ads):
-    pagination = Paginator(ads, ADS_PER_PAGE)
-    page_number = request.GET.get('page')
-    return pagination.get_page(page_number)
 
 
 class IndexPage(TemplateView):
@@ -274,10 +267,12 @@ def found_map(request):
                           'ads:found_detail')
 
 
-class LostDetail(DetailView):
-    """Lost detail ad page."""
-    model = Lost
-    template_name = 'ads/lost_detail.html'
+class BaseDetail(DetailView):
+    """
+    Base class for detail ad pages.
+    Only for inheritance.
+    """
+    template_name = 'ads/ad_detail.html'
     context_object_name = 'ad'
     pk_url_kwarg = 'ad_id'
 
@@ -293,10 +288,32 @@ class LostDetail(DetailView):
         return super().get(*args, **kwargs)
 
 
-class FoundDetail(LostDetail):
+class LostDetail(BaseDetail):
+    """Lost detail ad page."""
+    model = Lost
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['ad_title'] = f'Потерялся | {self.object.pet_name}'
+        context['ad_model'] = 'l'
+        context['age_label'] = 'Возраст'
+        context['balloon_content'] = f'Здесь был {self.object.pet_name}'
+        context['author_label'] = 'Кто ищет'
+        return context
+
+
+class FoundDetail(BaseDetail):
     """Found detail ad page."""
     model = Found
-    template_name = 'ads/found_detail.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['ad_title'] = f'Нашелся | {self.object.type.name}'
+        context['ad_model'] = 'f'
+        context['age_label'] = 'Примерный возраст'
+        context['balloon_content'] = f'Был найден тут'
+        context['author_label'] = 'Кто видел'
+        return context
 
 
 class ProfileAdsBase(LoginRequiredMixin, ListView):

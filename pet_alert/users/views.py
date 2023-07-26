@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password
 from django.core import signing
 from django.http import HttpResponseRedirect
 from django.utils.decorators import method_decorator
@@ -54,7 +53,7 @@ class CustomActivationView(PasswordContextMixin, FormView):
                     self.validlink = True
                     return super().dispatch(*args, **kwargs)
         else:
-            if check_password('', self.user.password):
+            if self.user.is_empty_password:
                 self.request.session[INTERNAL_SET_SESSION_TOKEN] = key
                 redirect_url = self.request.path.replace(key,
                                                          self.reset_url_token)
@@ -75,8 +74,8 @@ class CustomActivationView(PasswordContextMixin, FormView):
     def get_user(self, activation_key):
         """Verify that the activation key is valid and within the
         permitted activation time window, then look up and return the
-        corresponding user account if it exists, or raising
-        ``ActivationError`` if it doesn't."""
+        corresponding user account if it exists, or returning
+        None if it doesn't."""
         try:
             username = signing.loads(
                 activation_key,
@@ -88,7 +87,8 @@ class CustomActivationView(PasswordContextMixin, FormView):
                 user = None
         except (signing.SignatureExpired,
                 signing.BadSignature,
-                User.DoesNotExist):
+                User.DoesNotExist,
+                TypeError):
             user = None
         return user
 

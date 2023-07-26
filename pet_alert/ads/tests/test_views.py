@@ -1,21 +1,10 @@
 from http import HTTPStatus
-from django.test import TestCase, Client
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-User = get_user_model()
+from .fixtures import BaseTestCaseWithFixtures
 
 
-class AdsViewTests(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.user = User.objects.create_user(email='testuser@example.ru')
-
-    def setUp(self):
-        self.guest_client = Client()
-        self.authorized_client = Client()
-        self.authorized_client.force_login(AdsViewTests.user)
+class AdsViewTests(BaseTestCaseWithFixtures):
 
     def test_smoke(self):
         main_page = reverse('ads:index')

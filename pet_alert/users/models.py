@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.hashers import check_password
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -66,4 +67,8 @@ class User(AbstractUser):
     class Meta(AbstractUser.Meta):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    @property
+    def is_empty_password(self):
+        return check_password('', self.password)
 
