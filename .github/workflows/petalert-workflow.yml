@@ -53,6 +53,7 @@ jobs:
              echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose rm -sf web nginx
              echo "${{ secrets.SUDO_PASS }}" | sudo -S docker volume rm infra_static_volume
             cat <<EOF > .env
+            DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET }}
             DJANGO_DEBUG=0
             DJANGO_ALLOWED_HOSTS=127.0.0.1 localhost pet-alert.ru testserver
             DB_ENGINE=django.db.backends.postgresql
