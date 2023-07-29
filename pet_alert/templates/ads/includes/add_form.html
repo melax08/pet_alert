@@ -46,10 +46,12 @@
             {% csrf_token %}
             <p>{{ address_info }}</p>
             <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary"
+
+            <button type="button" class="btn btn-pa-green"
                     data-bs-toggle="modal" data-bs-target="#mapModal">
               Выбрать адрес
             </button>
+
             <p class="my-3 id_address">Адрес не выбран</p>
             <!-- Modal -->
             <div class="modal fade" id="mapModal" tabindex="-1"
@@ -79,7 +81,7 @@
                     <button type="button" class="btn btn-secondary"
                             data-bs-dismiss="modal">Закрыть
                     </button>
-                    <button type="button" class="btn btn-primary"
+                    <button type="button" class="btn btn-pa-green"
                             id="sendButton" data-bs-dismiss="modal">Подтвердить
                     </button>
                   </div>
@@ -118,7 +120,7 @@
               </div>
             {% endfor %}
             <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary btn-lg col-12 col-sm-6 mx-auto">
+              <button type="submit" class="btn btn-pa-green btn-lg col-12 col-sm-6 mx-auto">
                 Подать объявление
               </button>
             </div>

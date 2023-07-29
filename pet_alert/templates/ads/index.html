@@ -29,7 +29,7 @@
           </li>
         </ul>
       <a href="{% url 'ads:add_lost' %}">
-        <button type="button" class="index-red-button btn btn-lg btn-danger mt-4">Подать объявление</button>
+        <button type="button" class="index-red-button btn btn-lg btn-pa-red mt-4">Подать объявление</button>
       </a>
       </div>
 
@@ -58,13 +58,13 @@
             </a>
             <p class="pt-3">{{ found.pub_date }}</p>
             <div class="pb-3">
-              <a href="{% url 'ads:found_detail' found.id %}" class="detail-link">Подробнее</a>
+              <a href="{% url 'ads:found_detail' found.id %}" class="pa-link">Подробнее</a>
             </div>
           </div>
         {% endfor %}
      </div>
       <a href="{% url 'ads:found' %}">
-        <button class="btn btn-success index-green-button mt-2">Все найденные</button>
+        <button class="btn btn-pa-green index-green-button mt-2">Все найденные</button>
       </a>
     </div>
 
@@ -88,13 +88,13 @@
             </a>
             <p class="pt-3">{{ lost.pub_date }}</p>
             <div class="pb-3">
-              <a href="{% url 'ads:lost_detail' lost.id %}" class="detail-link">Подробнее</a>
+              <a href="{% url 'ads:lost_detail' lost.id %}" class="pa-link">Подробнее</a>
             </div>
           </div>
         {% endfor %}
       </div>
       <a href="{% url 'ads:lost' %}">
-        <button class="btn btn-success index-green-button mt-2">Все потерянные</button>
+        <button class="btn btn-pa-green index-green-button mt-2">Все потерянные</button>
       </a>
     </div>
   </article>

@@ -3,7 +3,7 @@
 <div class="row pb-3">
     <div class="col d-flex justify-content-md-start pb-2 pb-md-0">
       <a href="{% url 'ads:add_lost' %}">
-        <button type="button" class="btn btn-danger" style="background-color: #d8303d;">Подать объявление </button>
+        <button type="button" class="btn btn-pa-red">Подать объявление </button>
       </a>
     </div>
     <div class="col-md d-md-flex justify-content-md-end">
@@ -20,25 +20,25 @@ toggle button group">
       {% else %}
         <a href="{% url 'ads:found' %}">
       {% endif %}
-<button type="button" class="btn btn{% if view_name != 'ads:lost' and view_name != 'ads:found' %}-outline{% endif %}-primary">Список</button>
+<button type="button" class="btn btn{% if view_name != 'ads:lost' and view_name != 'ads:found' %}-outline{% endif %}-pa-green">Список</button>
           </a>
       {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %}
         <a href="{% url 'ads:lost_map' %}">
       {% else %}
         <a href="{% url 'ads:found_map' %}">
       {% endif %}
-<button type="button" class="btn btn{% if view_name != 'ads:lost_map' and view_name != 'ads:found_map' %}-outline{% endif %}-primary">Карта</button>
+<button type="button" class="btn btn{% if view_name != 'ads:lost_map' and view_name != 'ads:found_map' %}-outline{% endif %}-pa-green">Карта</button>
           </a>
       </div>
     {% endif %}
     <div class="d-flex">
       <a href="{% url 'ads:lost' %}">
-        <button type="button" class="btn {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %} btn-primary {% else %} btn-outline-primary
+        <button type="button" class="btn {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %} btn-pa-green {% else %} btn-outline-pa-green
 {% endif %} me-md-2">Потерялся
         </button>
       </a>
       <a href="{% url 'ads:found' %}">
-        <button type="button" class="btn {% if view_name == 'ads:found' or view_name == 'ads:found_map' %} btn-primary {% else %} btn-outline-primary{% endif %}">Нашёлся</button>
+        <button type="button" class="btn {% if view_name == 'ads:found' or view_name == 'ads:found_map' %} btn-pa-green {% else %} btn-outline-pa-green{% endif %}">Нашёлся</button>
       </a>
     </div>
     {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' or view_name == 'ads:found' or view_name == 'ads:found_map' %}

@@ -103,7 +103,7 @@
       </li>
       <li class="list-group-item">
         {% if request.user == ad.author %}
-          <button type="button" class="btn {% if ad.open %} btn-warning {% else %} btn-success {% endif %}" data-bs-toggle="modal" data-bs-target="#closeOpenModal">
+          <button type="button" class="btn {% if ad.open %} btn-pa-orange{% else %} btn-pa-green {% endif %}" data-bs-toggle="modal" data-bs-target="#closeOpenModal">
             {% if ad.open %}
               Закрыть
             {% else %}
@@ -111,9 +111,9 @@
             {% endif %}
           </button>
         {% else %}
-        <button id="contact-button" type="button" class="btn btn-info" onclick="getUserInfo()"><span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none"></span> Контакты</button>
-        <button id="write-button" type="button" class="btn btn-info" disabled>Написать</button>
-        <div class="text-danger" id="contact-failed"></div>
+        <button id="contact-button" type="button" class="btn btn-pa-green" onclick="getUserInfo()"><span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none"></span> Контакты</button>
+        <button id="write-button" type="button" class="btn btn-pa-green" disabled>Написать</button>
+        <div class="text-pa-red" id="contact-failed"></div>
         {% endif %}
       </li>
     </ul>

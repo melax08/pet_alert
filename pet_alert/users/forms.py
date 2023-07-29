@@ -26,7 +26,7 @@ class CreationForm(CustomWidgetMixin, RegistrationForm):
 
     class Meta(RegistrationForm.Meta):
         model = User
-        fields = ('first_name', 'email', 'phone',
+        fields = ('email', 'first_name', 'phone',
                   'password1', 'password2', 'captcha')
 
 

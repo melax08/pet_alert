@@ -38,17 +38,13 @@
           <p class="text-muted">{{ ad.pub_date }}</p>
           <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
           <p class="text-muted">{{ ad.address }}</p>
-          <a href="{% url 'ads:found_detail' ad.id %}">
-          <button type="button" class="btn btn-link">
-            Подробнее
-          </button>
-            </a>
+          <a href="{% url 'ads:found_detail' ad.id %}" class="pa-link">Подробнее</a>
         {% else %}
           <h5 class="mt-0 text-break">Пропал: {{ ad.pet_name }}</h5>
           <p class="text-muted">{{ ad.pub_date }}</p>
           <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
           <p class="text-muted">{{ ad.address }}</p>
-          <a href="{% url 'ads:lost_detail' ad.id %}">Подробнее</a>
+          <a href="{% url 'ads:lost_detail' ad.id %}" class="pa-link">Подробнее</a>
         {% endif %}
       </div>
       </div>

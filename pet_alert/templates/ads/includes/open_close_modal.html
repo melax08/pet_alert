@@ -20,7 +20,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
-        <button id="manage-button" type="button" class="btn {% if ad.open %} btn-warning {% else %} btn-success {% endif %}" onclick="managePost()">
+        <button id="manage-button" type="button" class="btn {% if ad.open %} btn-pa-orange {% else %} btn-pa-green {% endif %}" onclick="managePost()">
         <span id="spinner-open-close" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none"></span>
           {% if ad.open %}
             Закрыть объявление
@@ -28,7 +28,7 @@
             Активировать объявление
           {% endif %}
         </button>
-        <div class="text-danger" id="manage-failed"></div>
+        <div class="text-pa-red" id="manage-failed"></div>
       </div>
     </div>
   </div>

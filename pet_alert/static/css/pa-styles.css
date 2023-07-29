@@ -1,0 +1,211 @@
+/*Обычная кнопка*/
+.btn-pa-green {
+    background: #1F8A7E;
+    color: #fff;
+    border-color: #1F8A7E;
+}
+
+/*Наведение на кнопку*/
+.btn-pa-green:hover {
+    color: #fff;
+    background-color: #096B60;
+    border-color: #096B60;
+
+}
+
+/*Кнопка нажата, с тенью*/
+.btn-check:focus + .btn-pa-green, .btn-pa-green:focus {
+  color: #fff;
+  background-color: #096B60;
+  border-color: #096B60;
+  box-shadow: 0 0 0 0.25rem rgb(31, 138, 126, 0.5);
+}
+
+/*В момент нажатия на кнопку*/
+.btn-check:checked + .btn-pa-green, .btn-check:active + .btn-pa-green, .btn-pa-green:active, .btn-pa-green.active, .show > .btn-pa-green.dropdown-toggle {
+  color: #fff;
+  background-color: #096B60;
+  border-color: #096B60;
+}
+
+/*По двум верхним: в оригинальном bootstrap background-color и border-color меняются местами*/
+
+
+/*Просто тень при нажатии на кнопку*/
+.btn-check:checked + .btn-pa-green:focus, .btn-check:active + .btn-pa-green:focus, .btn-pa-green:active:focus, .btn-pa-green.active:focus, .show > .btn-pa-green.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.25rem rgba(36, 159, 147, 0.5);
+}
+
+/*Когда кнопка выключена*/
+.btn-pa-green:disabled, .btn-pa-green.disabled {
+  color: #fff;
+  background-color: #28b9ad;
+  border-color: #28b9ad;
+}
+
+
+/*Дефолт цвет для danger: #dc3545*/
+.btn-pa-red {
+  color: #fff;
+  background-color: #D8303D;
+  border-color: #D8303D;
+}
+.btn-pa-red:hover {
+  color: #fff;
+  background-color: #D61221;
+  border-color: #D61221;
+}
+.btn-check:focus + .btn-pa-red, .btn-pa-red:focus {
+  color: #fff;
+  background-color: #D61221;
+  border-color: #D61221;
+  box-shadow: 0 0 0 0.25rem rgba(225, 83, 97, 0.5);
+}
+.btn-check:checked + .btn-pa-red, .btn-check:active + .btn-pa-red, .btn-pa-red:active, .btn-pa-red.active, .show > .btn-pa-red.dropdown-toggle {
+  color: #fff;
+  background-color: #D61221;
+  border-color: #D61221;
+}
+.btn-check:checked + .btn-pa-red:focus, .btn-check:active + .btn-pa-red:focus, .btn-pa-red:active:focus, .btn-pa-red.active:focus, .show > .btn-pa-red.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.25rem rgba(225, 83, 97, 0.5);
+}
+.btn-pa-red:disabled, .btn-pa-red.disabled {
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+
+/*ffc107 - дефолт*/
+/*ffca2c - темнее*/
+.btn-pa-orange {
+  color: #fff;
+  background-color: #DE7A31;
+  border-color: #DE7A31;
+}
+.btn-pa-orange:hover {
+  color: #fff;
+  background-color: #D66614;
+  border-color: #D66614;
+}
+.btn-check:focus + .btn-pa-orange, .btn-pa-orange:focus {
+  color: #fff;
+  background-color: #D66614;
+  border-color: #D66614;
+  box-shadow: 0 0 0 0.25rem rgba(203, 104, 3, 0.5);
+}
+.btn-check:checked + .btn-pa-orange, .btn-check:active + .btn-pa-orange, .btn-pa-orange:active, .btn-pa-orange.active, .show > .btn-pa-orange.dropdown-toggle {
+  color: #fff;
+  background-color: #D66614;
+  border-color: #D66614;
+}
+.btn-check:checked + .btn-pa-orange:focus, .btn-check:active + .btn-pa-orange:focus, .btn-pa-orange:active:focus, .btn-pa-orange.active:focus, .show > .btn-pa-orange.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.25rem rgba(203, 104, 3, 0.5);
+}
+.btn-pa-orange:disabled, .btn-pa-orange.disabled {
+  color: #fff;
+  background-color: #e79052;
+  border-color: #e79052;
+}
+
+
+
+
+.btn-outline-pa-green {
+  color: #1F8A7E;
+  border-color: #1F8A7E;
+}
+.btn-outline-pa-green:hover {
+  color: #fff;
+  background-color: #1F8A7E;
+  border-color: #1F8A7E;
+}
+.btn-check:focus + .btn-outline-pa-green, .btn-outline-pa-green:focus {
+  box-shadow: 0 0 0 0.25rem rgb(31, 138, 126, 0.5);
+}
+.btn-check:checked + .btn-outline-pa-green, .btn-check:active + .btn-outline-pa-green, .btn-outline-pa-green:active, .btn-outline-pa-green.active, .btn-outline-pa-green.dropdown-toggle.show {
+  color: #fff;
+  background-color: #1F8A7E;
+  border-color: #1F8A7E;
+}
+.btn-check:checked + .btn-outline-pa-green:focus, .btn-check:active + .btn-outline-pa-green:focus, .btn-outline-pa-green:active:focus, .btn-outline-pa-green.active:focus, .btn-outline-pa-green.dropdown-toggle.show:focus {
+  box-shadow: 0 0 0 0.25rem rgb(31, 138, 126, 0.5);
+}
+.btn-outline-pa-green:disabled, .btn-outline-pa-green.disabled {
+  color: #1F8A7E;
+  background-color: transparent;
+}
+
+
+/*Навигация в шапке*/
+/*Просто надпись*/
+.nav-link {
+  color: #1F8A7E;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-link {
+    transition: none;
+  }
+}
+
+/*Текст, но при наведении, темнеет*/
+.nav-link:hover, .nav-link:focus {
+  /*Тут цвет должен  быть еще темнее чем сейчас */
+  color: #096B60;
+}
+.nav-link.disabled {
+  color: #6c757d;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #1F8A7E;
+}
+
+.pa-link {
+  color: #DE7A31;
+  text-decoration: none;
+}
+
+.pa-link:hover, .pa-link.focus {
+  color: #D66614;
+}
+
+.text-pa-green {
+  color: #1F8A7E !important;
+}
+
+.text-pa-red {
+  color: #D8303D !important;
+}
+
+.text-pa-orange {
+  color: #DE7A31 !important;
+}
+
+.page-link {
+  color: #1F8A7E;
+}
+
+.page-link:hover {
+  color: #096B60;
+}
+.page-link:focus {
+  color: #096B60;
+  box-shadow: 0 0 0 0.25rem rgb(31, 138, 126, 0.5);
+}
+
+.page-item.active .page-link {
+  background-color: #1F8A7E;
+  border-color: #1F8A7E;
+}
+
+.dropdown-item.active, .dropdown-item:active {
+  background-color: #1F8A7E;
+}
+
+.form-control:focus {
+  border-color: #1F8A7E;
+  box-shadow: 0 0 0 0.25rem rgb(31, 138, 126, 0.25);
+}
