@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load static %}
+{% load user_filters %}
+{% block title %}
+  Список чатов
+{% endblock %}
+{% block content %}
+
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/chat-history.css' %}">
+
+
+<script>
+  window.onload = () => {
+      const div = document.getElementById("chat-history");
+      div.scrollTo({
+          top: div.scrollHeight,
+          behavior: 'instant'
+      });
+
+  }
+</script>
+
+  {% include 'ads/includes/navigation.html' %}
+
+  <div class="row">
+    <aside class="col-12 col-md-2">
+      {% include 'ads/includes/profile_nav.html' %}
+    </aside>
+    <div class="col-12 col-md-10">
+
+            <div class="chat">
+                <div class="chat-header clearfix">
+                    <div class="row">
+                        <div class="col-lg-6">
+
+
+                          {% if advertisement.image %}
+                            {% thumbnail advertisement.image "40x40" crop="center" as im %}
+                              <img src="{{ im.url }}" width="{{ im.width }}"
+                                   height="{{ im.height }}" class="rounded">
+                            {% endthumbnail %}
+                          {% else %}
+                            {% thumbnail advertisement.type.default_image "40x40" crop="center" as im %}
+                              <img src="{{ im.url }}" width="{{ im.width }}"
+                                   height="{{ im.height }}" class="rounded">
+                            {% endthumbnail %}
+                          {% endif %}
+
+
+                            <div class="chat-about">
+                                 <span class="d-inline">Объявление от: </span><h6 class="m-b-0 d-inline">{{ advertisement.author.first_name }}</h6>
+
+                                    <small>
+                                    {% if advertisement.open and advertisement.active %}
+                                      <a href="{% if advertisement|getmodelname == 'found' %} {% url 'ads:found_detail' advertisement.id %} {% else %} {% url 'ads:lost_detail' advertisement.id %} {% endif %}" class="pa-link">
+                                        <p>{{ advertisement.description|truncatechars:30 }}</p>
+                                      </a>
+                                    {% else %}
+                                        <p><del>{{ advertisement.description|truncatechars:30 }}</del></p>
+                                    {% endif %}
+                                    </small>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-history overflow-scroll" style="max-height: 500px;" id="chat-history">
+                    <ul class="m-b-0">
+
+                      {% for message in messages %}
+                      <li class="clearfix">
+                        <div class="message-data {% if request.user == message.sender %} text-end {% endif %}">
+                          <span class="message-data-time">{{ message.sender.first_name }}{% if request.user == message.sender %} (вы){% endif %}, {{ message.pub_date|date:'d M G:i' }}</span>
+                        </div>
+                        <div class="message {% if request.user == message.sender %} other-message float-right {% else %} my-message {% endif %} text-break">
+                          {{ message.content }}
+                        </div>
+
+                      </li>
+                      {% endfor %}
+
+                    </ul>
+                </div>
+            <form method="post">
+              {% csrf_token %}
+                <div class="chat-message clearfix">
+                    <div class="input-group mb-0">
+                        <div class="input-group-prepend">
+                          <button class="btn btn-outline-secondary" type="submit" id="button-addon2"><i class="fa fa-send"></i></button>
+                        </div>
+                        {{ form.content|addclass:'form-control' }}
+                    </div>
+                </div>
+            </form>
+            </div>
+
+
+
+    </div>
+  </div>
+{% endblock %}

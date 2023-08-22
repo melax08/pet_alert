@@ -15,6 +15,7 @@ urlpatterns = [
     # path('auth/', include('django_registration.backends.activation.urls')),
     path('auth/', include('users.urls', namespace='users')),
     path('auth/', include('django.contrib.auth.urls')),
+    path('api/v1/', include('api.urls', namespace='api'))
 ]
 
 if settings.DEBUG:

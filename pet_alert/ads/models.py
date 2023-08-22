@@ -165,3 +165,95 @@ class Found(AdsAbstract):
     class Meta(AdsAbstract.Meta):
         verbose_name = 'Найден'
         verbose_name_plural = 'Найдены'
+
+
+class Dialog(models.Model):
+    # ToDo: убрать автора диалога, брать еще через related_name по объявлению.
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='dialog_ad_author',
+        verbose_name='Автор объявления из диалога'
+    )
+
+    questioner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='dialog_ad_questioner',
+        verbose_name='Задающий вопросы'
+    )
+
+    advertisement_lost = models.ForeignKey(
+        Lost,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        verbose_name='Тип объявления: потерялся'
+    )
+    advertisement_found = models.ForeignKey(
+        Found,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        verbose_name='Тип объявления: нашелся'
+    )
+
+    class Meta:
+        verbose_name = 'Диалог'
+        verbose_name_plural = 'Диалоги'
+
+    def __str__(self):
+        return (
+            f'Диалог между автором {self.author} '
+            f'и задающим вопросы {self.questioner}'
+        )
+
+    @property
+    def advertisement_group(self):
+        if self.advertisement_lost_id is not None:
+            return self.advertisement_lost
+        if self.advertisement_found_id is not None:
+            return self.advertisement_found
+        raise AssertionError("Message doesn't have any advertisement group")
+
+
+class Message(models.Model):
+    dialog = models.ForeignKey(
+        Dialog,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        verbose_name='Диалог'
+    )
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='send_messages',
+        verbose_name='Отправитель'
+    )
+    recipient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='received_messages',
+        verbose_name='Получатель'
+    )
+    content = models.TextField(
+        'Содержимое сообщения'
+    )
+    pub_date = models.DateTimeField(
+        'Дата создания',
+        auto_now_add=True
+    )
+    checked = models.BooleanField(
+        'Просмотрено?',
+        default=False
+    )
+
+    class Meta:
+        verbose_name = 'Сообщение'
+        verbose_name_plural = 'Сообщения'
+
+    def __str__(self):
+        return (f'От {self.sender.first_name} к {self.recipient.first_name}: '
+                f'{self.content[:30]}')

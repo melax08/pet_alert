@@ -4,7 +4,7 @@ from phonenumber_field.formfields import PhoneNumberField
 from captcha.fields import ReCaptchaField
 from captcha.widgets import ReCaptchaV3, ReCaptchaV2Checkbox
 
-from .models import Lost, Found
+from .models import Lost, Found, Message
 
 User = get_user_model()
 
@@ -94,3 +94,17 @@ class ChangeNameForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', )
+
+
+class SendMessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ('content', )
+
+        widgets = {
+            'content': forms.Textarea(attrs={
+                # 'rows': 6,
+                'rows': 1,
+                'placeholder': 'Введите сообщение'
+            })
+        }

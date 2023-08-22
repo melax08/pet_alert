@@ -3,7 +3,7 @@
   <a href="{% url 'ads:my_ads' %}" class="list-group-item list-group-item-action {% if view_name == 'ads:my_ads' or view_name == 'ads:my_ads_inactive' %} text-pa-green {% endif %}">
     Мои объявления
   </a>
-  <a href="#" class="list-group-item list-group-item-action disabled">Сообщения</a>
+  <a href="{% url 'ads:messages' %}" class="list-group-item list-group-item-action {% if view_name == 'ads:messages' or view_name == 'ads:messages_chat' %} text-pa-green {% endif %}">Сообщения</a>
   <a href="{% url 'ads:profile' %}" class="list-group-item list-group-item-action {% if view_name == 'ads:profile' %} text-pa-green {% endif %}">Профиль</a>
 </div>
 {% endwith %}

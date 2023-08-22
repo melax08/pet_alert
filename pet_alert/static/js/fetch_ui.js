@@ -46,3 +46,20 @@ function getUserInfo() {
             $("#contact-failed").html('Ошибка при загрузке контакта');
         }))
 }
+
+function writeToUser() {
+    if (isAuth == false) {
+        window.location = loginUrl + '?next=' + window.location.pathname;
+        return
+    } else
+        fetch(getDialogUrl, {
+            method: 'POST',
+            body: JSON.stringify(manageData),
+            headers: headers
+        }).then(response => response.json().then(data => {
+            if (response.ok) {
+                window.location = '/profile/messages/' + data['dialog_id']
+                return data
+            }
+        }))
+}

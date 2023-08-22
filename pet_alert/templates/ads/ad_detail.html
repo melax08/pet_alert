@@ -20,6 +20,7 @@
         "X-CSRFToken": "{{ csrf_token }}",
         "Content-Type": "application/json"
     }
+    const getDialogUrl = "{% url 'ads:get_dialog' %}"
   </script>
   <script src="{% static 'js/fetch_ui.js' %}"></script>
 
@@ -112,7 +113,7 @@
           </button>
         {% else %}
         <button id="contact-button" type="button" class="btn btn-pa-green" onclick="getUserInfo()"><span id="spinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none"></span> Контакты</button>
-        <button id="write-button" type="button" class="btn btn-pa-green" disabled>Написать</button>
+        <button id="write-button" type="button" class="btn btn-pa-green" onclick="writeToUser()">Написать</button>
         <div class="text-pa-red" id="contact-failed"></div>
         {% endif %}
       </li>

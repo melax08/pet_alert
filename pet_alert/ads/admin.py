@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Lost, Found, AnimalType
+from .models import Lost, Found, AnimalType, Message, Dialog
 
 
 class LostAdmin(admin.ModelAdmin):
@@ -26,3 +26,5 @@ class TypeAdmin(admin.ModelAdmin):
 admin.site.register(Lost, LostAdmin)
 admin.site.register(Found, FoundAdmin)
 admin.site.register(AnimalType, TypeAdmin)
+admin.site.register(Dialog)
+admin.site.register(Message)

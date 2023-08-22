@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import timedelta
 
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
@@ -63,6 +64,8 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'django_registration',
     'captcha',
+    'rest_framework',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -156,3 +159,26 @@ else:
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        # 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny'
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+SIMPLE_JWT = {
+   'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
+   'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': True,
+}
+

@@ -6,8 +6,7 @@ from operator import attrgetter
 from django.contrib.auth import get_user_model
 from django.views.generic import ListView
 from django.http import HttpResponseRedirect, Http404, JsonResponse
-from django.shortcuts import render
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from sorl.thumbnail import get_thumbnail
 from django_registration import signals
@@ -15,15 +14,15 @@ from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic import DetailView, View
 
-from .constants import ADS_PER_PAGE, DESCRIPTION_MAP_LIMIT
-from .models import Found, Lost
+from .constants import ADS_PER_PAGE, DESCRIPTION_MAP_LIMIT, DIALOGS_PER_PAGE
+from .models import Found, Lost, Message, Dialog
 from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
-                    AuthorizedLostForm, ChangeNameForm)
+                    AuthorizedLostForm, ChangeNameForm, SendMessageForm)
 from .filters import TypeFilter
 from users.forms import CreationForm, CreationFormWithoutPassword  # noqa
 
@@ -447,3 +446,103 @@ class CloseAd(OpenAd):
     Allows user to close his advertisement.
     """
     to_set = False
+
+
+class DialogList(LoginRequiredMixin, ListView):
+    """Shows the list of available chats."""
+    template_name = 'ads/messages/messages_list.html'
+    model = Dialog
+    allow_empty = True
+    paginate_by = DIALOGS_PER_PAGE
+    context_object_name = 'chats'
+
+    def get_queryset(self):
+        latest_message_date = Message.objects.filter(
+            dialog=OuterRef('pk')).order_by('-pub_date').values('pub_date')[:1]
+
+        chats = Dialog.objects.filter(
+            Q(author=self.request.user) | Q(questioner=self.request.user)
+        ).annotate(
+            latest_message_date=Subquery(latest_message_date)
+        ).order_by('-latest_message_date')
+
+        return chats
+
+
+class MessageChat(LoginRequiredMixin, View):
+
+    def get_dialog(self, request):
+        dialog = get_object_or_404(Dialog, pk=self.kwargs['dialog_id'])
+        if not (dialog.author == request.user
+                or dialog.questioner == request.user):
+            raise Http404
+        return dialog
+
+    def get(self, request, *args, **kwargs):
+        dialog = self.get_dialog(request)
+
+        form = SendMessageForm()
+        messages = dialog.messages.order_by('pub_date')
+        return render(
+            request, 'ads/messages/messages_chat.html', {
+                'messages': messages,
+                'form': form,
+                'advertisement': dialog.advertisement_group
+            }
+        )
+
+    def post(self, request, *args, **kwargs):
+        dialog = self.get_dialog(request)
+
+        form = SendMessageForm(request.POST or None)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.dialog = dialog
+            message.sender = request.user
+            message.recipient = dialog.author if dialog.author != request.user else dialog.questioner
+            message.save()
+
+        return redirect('ads:messages_chat', self.kwargs['dialog_id'])
+
+
+class GetOrCreateDialog(LoginRequiredMixin, View):
+    models = {
+        'l': Lost,
+        'f': Found
+    }
+
+    def post(self, request):
+        request_body = json.loads(request.body.decode())
+        ad_type = request_body.get('m')
+        ad_id = request_body.get('ad_id')
+        model = self.models.get(ad_type)
+        if model is None:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+        try:
+            ad = model.objects.get(pk=ad_id)
+
+        except model.DoesNotExist:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+        if ad_type == 'l':
+            params = {'advertisement_lost': ad}
+        else:
+            params = {'advertisement_found': ad}
+
+        try:
+            dialog = Dialog.objects.get(
+                author=ad.author,
+                questioner=request.user,
+                **params
+            )
+        except Dialog.DoesNotExist:
+            dialog = Dialog.objects.create(
+                author=ad.author,
+                questioner=request.user,
+                **params
+            )
+
+        return JsonResponse({'dialog_id': dialog.id}, status=HTTPStatus.OK)
+
+
