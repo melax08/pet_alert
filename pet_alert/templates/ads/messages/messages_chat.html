@@ -68,7 +68,9 @@
                 </div>
                 <div class="chat-history overflow-auto" style="max-height: 500px;" id="chat-history">
 
+                {% if not messages %}
                   <p class="text-muted">В диалоге нет сообщений</p>
+                {% endif %}
 
                     <ul class="m-b-0">
 
