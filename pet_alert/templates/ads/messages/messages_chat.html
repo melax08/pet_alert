@@ -66,7 +66,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="chat-history overflow-scroll" style="max-height: 500px;" id="chat-history">
+                <div class="chat-history overflow-auto" style="max-height: 500px;" id="chat-history">
+
+                  <p class="text-muted">В диалоге нет сообщений</p>
+
                     <ul class="m-b-0">
 
                       {% for message in messages %}
