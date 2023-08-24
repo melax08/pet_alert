@@ -24,6 +24,7 @@ from .models import Found, Lost, Message, Dialog
 from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
                     AuthorizedLostForm, ChangeNameForm, SendMessageForm)
 from .filters import TypeFilter
+from .exceptions import BadRequest
 from users.forms import CreationForm, CreationFormWithoutPassword  # noqa
 
 
@@ -383,71 +384,6 @@ def profile(request):
     return render(request, template, {'form': form})
 
 
-class GetContactInfo(LoginRequiredMixin, View):
-    """Processes fetch-request from ads detail page,
-    sends author contact information."""
-    models = {
-        'l': Lost,
-        'f': Found
-    }
-
-    def post(self, request):
-        request_body = json.loads(request.body.decode())
-        ad_type = request_body.get('m')
-        ad_id = request_body.get('ad_id')
-        model = self.models.get(ad_type)
-        if model is None:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-        try:
-            ad = model.objects.get(pk=ad_id)
-            if not ad.active and ad.author != request.user:
-                return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-            data = {
-                'email': str(ad.author.email),
-                'phone': str(ad.author.phone)
-            }
-            return JsonResponse(data, status=HTTPStatus.OK)
-        except model.DoesNotExist:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-
-class OpenAd(LoginRequiredMixin, View):
-    """
-    Service view for processing fetch requests from detail post page.
-    Allows user to open his advertisement.
-    """
-    to_set = True
-    models = {
-        'l': Lost,
-        'f': Found
-    }
-
-    def post(self, request):
-        request_body = json.loads(request.body.decode())
-        ad_type = request_body.get('m')
-        ad_id = request_body.get('ad_id')
-        model = self.models.get(ad_type)
-        if model is None:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-        try:
-            ad = model.objects.get(pk=ad_id)
-            if ad.author != request.user:
-                return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-            ad.open = self.to_set
-            ad.save()
-            return JsonResponse({'message': 'success'}, status=HTTPStatus.OK)
-        except model.DoesNotExist:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-
-class CloseAd(OpenAd):
-    """
-    Service view for processing fetch requests from detail post page.
-    Allows user to close his advertisement.
-    """
-    to_set = False
-
-
 class DialogList(LoginRequiredMixin, ListView):
     """Shows the list of available chats."""
     template_name = 'ads/messages/messages_list.html'
@@ -505,35 +441,101 @@ class MessageChat(LoginRequiredMixin, View):
         return redirect('ads:messages_chat', self.kwargs['dialog_id'])
 
 
-class GetDialog(LoginRequiredMixin, View):
-    models = {
+class FetchBase(LoginRequiredMixin, View):
+    """Class with base functions for fetch requests."""
+    MODELS = {
         'l': Lost,
         'f': Found
     }
 
-    def post(self, request):
+    def _get_advertisement(self, request):
         request_body = json.loads(request.body.decode())
         ad_type = request_body.get('m')
         ad_id = request_body.get('ad_id')
-        model = self.models.get(ad_type)
-        if model is None:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+        try:
+            model = self.MODELS[ad_type]
+        except KeyError:
+            raise BadRequest
 
         try:
             ad = model.objects.get(pk=ad_id)
         except model.DoesNotExist:
+            raise BadRequest
+
+        return ad
+
+
+class GetContactInfo(FetchBase):
+    """Processes fetch-request from ads detail page,
+    sends author contact information."""
+
+    def post(self, request):
+        try:
+            ad = self._get_advertisement(request)
+            if not ad.active and ad.author != request.user:
+                raise BadRequest
+        except BadRequest:
             return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
 
-        if ad_type == 'l':
-            params = {'advertisement_lost': ad}
-        else:
-            params = {'advertisement_found': ad}
+        data = {
+            'email': str(ad.author.email),
+            'phone': str(ad.author.phone)
+        }
+        return JsonResponse(data, status=HTTPStatus.OK)
+
+
+class OpenAd(FetchBase):
+    """
+    Service view for processing fetch requests from detail post page.
+    Allows user to open his advertisement.
+    """
+    to_set = True
+
+    def post(self, request):
+        try:
+            ad = self._get_advertisement(request)
+            if ad.author != request.user:
+                raise BadRequest
+        except BadRequest:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+        ad.open = self.to_set
+        ad.save()
+        return JsonResponse({'message': 'success'}, status=HTTPStatus.OK)
+
+
+class CloseAd(OpenAd):
+    """
+    Service view for processing fetch requests from detail post page.
+    Allows user to close his advertisement.
+    """
+    to_set = False
+
+
+class DialogBase(FetchBase):
+    """Base class for dialog views."""
+    @staticmethod
+    def _get_dialog_ad_field(ad):
+        if isinstance(ad, Lost):
+            return 'advertisement_lost'
+        return 'advertisement_found'
+
+
+class GetDialog(DialogBase):
+    """Fetch view for gets dialog if its exists."""
+
+    def post(self, request):
+        try:
+            ad = self._get_advertisement(request)
+        except BadRequest:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
 
         try:
             dialog = Dialog.objects.get(
                 author=ad.author,
                 questioner=request.user,
-                **params
+                **{self._get_dialog_ad_field(ad): ad}
             )
             dialog_id = dialog.id
         except Dialog.DoesNotExist:
@@ -542,30 +544,20 @@ class GetDialog(LoginRequiredMixin, View):
         return JsonResponse({'dialog_id':  dialog_id})
 
 
-class CreateDialog(LoginRequiredMixin, View):
-    models = {
-        'l': Lost,
-        'f': Found
-    }
+class CreateDialog(DialogBase):
+    """Fetch view for create dialog when the first message sent."""
 
     def post(self, request):
-        request_body = json.loads(request.body.decode())
-        ad_type = request_body.get('m')
-        ad_id = request_body.get('ad_id')
-        message = request_body.get('msg').strip()
-        model = self.models.get(ad_type)
-        if model is None or not message:
+        message = json.loads(request.body.decode()).get('msg').strip()
+        if not message:
             return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
 
         try:
-            ad = model.objects.get(pk=ad_id)
-        except model.DoesNotExist:
+            ad = self._get_advertisement(request)
+        except BadRequest:
             return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
 
-        if ad_type == 'l':
-            params = {'advertisement_lost': ad}
-        else:
-            params = {'advertisement_found': ad}
+        params = {self._get_dialog_ad_field(ad): ad}
 
         if Dialog.objects.filter(
                 author=ad.author, questioner=request.user, **params
@@ -584,4 +576,3 @@ class CreateDialog(LoginRequiredMixin, View):
             content=message
         )
         return JsonResponse({'dialog_id': dialog.id})
-

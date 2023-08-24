@@ -8,7 +8,6 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
 
     def test_ads_pages_unauthorized_user(self):
         """Guest user gets expected status codes on ads pages."""
-
         status_urls_map = {
             HTTPStatus.OK: [
                 reverse('ads:index'),
@@ -34,7 +33,14 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
                 reverse('ads:my_ads_inactive'),
                 reverse('ads:get_contact_information'),
                 reverse('ads:close_ad'),
-                reverse('ads:open_ad')
+                reverse('ads:open_ad'),
+                reverse('ads:get_dialog'),
+                reverse('ads:create_dialog'),
+                reverse('ads:messages'),
+                reverse(
+                    'ads:messages_chat',
+                    kwargs={'dialog_id': self.dialog.id}
+                )
             ],
             HTTPStatus.NOT_FOUND: [
                 '/aboba',
@@ -73,7 +79,6 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
 
     def test_ads_pages_authorized_user(self):
         """Authorized user gets expected status codes on ads pages."""
-
         status_urls_map = {
             HTTPStatus.OK: [
                 reverse('ads:index'),
@@ -119,7 +124,11 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
                     'ads:found_detail',
                     kwargs={'ad_id': self.found_closed_inactive_ad.id}
                 ),
-
+                reverse('ads:messages'),
+                reverse(
+                    'ads:messages_chat',
+                    kwargs={'dialog_id': self.dialog.id}
+                )
             ],
             HTTPStatus.NOT_FOUND: [
                 '/aboba'
@@ -127,7 +136,9 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
             HTTPStatus.METHOD_NOT_ALLOWED: [
                 reverse('ads:get_contact_information'),
                 reverse('ads:close_ad'),
-                reverse('ads:open_ad')
+                reverse('ads:open_ad'),
+                reverse('ads:get_dialog'),
+                reverse('ads:create_dialog')
             ]
         }
 
@@ -139,7 +150,6 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
 
     def test_urls_uses_correct_templates(self):
         """Ads urls uses correct templates."""
-
         url_template_map = {
             reverse('ads:index'): 'ads/index.html',
             reverse('ads:add_found'): 'ads/add_found.html',
@@ -160,6 +170,11 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
             reverse('ads:profile'): 'ads/profile.html',
             reverse('ads:my_ads'): 'ads/my_ads.html',
             reverse('ads:my_ads_inactive'): 'ads/my_ads.html',
+            reverse('ads:messages'): 'ads/messages/messages_list.html',
+            reverse(
+                'ads:messages_chat',
+                kwargs={'dialog_id': self.dialog.id}
+            ): 'ads/messages/messages_chat.html'
         }
 
         for url, template in url_template_map.items():

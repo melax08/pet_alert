@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 
-from ..models import AnimalType, Lost, Found
+from ..models import AnimalType, Lost, Found, Message, Dialog
 
 User = get_user_model()
 
@@ -10,7 +10,14 @@ class BaseTestCaseWithFixtures(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(email='testuser@example.ru')
+        cls.user = User.objects.create_user(
+            email='testuser@example.ru',
+            first_name='User1'
+        )
+        cls.another_user = User.objects.create_user(
+            email='anothertestuser@example.ru',
+            first_name='User2'
+        )
         cls.animal_type = AnimalType.objects.create(
             name='Animal',
             slug='animal'
@@ -90,6 +97,11 @@ class BaseTestCaseWithFixtures(TestCase):
             condition='OK',
             active=False,
             open=False,
+        )
+        cls.dialog = Dialog.objects.create(
+            author=cls.user,
+            questioner=cls.another_user,
+            advertisement_lost=cls.lost_open_active_ad
         )
 
     def setUp(self):
