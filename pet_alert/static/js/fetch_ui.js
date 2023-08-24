@@ -47,19 +47,59 @@ function getUserInfo() {
         }))
 }
 
-function writeToUser() {
+function getDialog() {
     if (isAuth == false) {
         window.location = loginUrl + '?next=' + window.location.pathname;
         return
     } else
+        $('#get-dialog-failed').html('')
+        $('#spinner-get-dialog').show();
+        document.querySelector('#write-button').disabled = true;
         fetch(getDialogUrl, {
             method: 'POST',
             body: JSON.stringify(manageData),
             headers: headers
         }).then(response => response.json().then(data => {
             if (response.ok) {
-                window.location = '/profile/messages/' + data['dialog_id']
+                $('#spinner-get-dialog').hide();
+                document.querySelector('#write-button').disabled = false;
+                if (data['dialog_id'] != null) {
+                    window.location = '/profile/messages/' + data['dialog_id']
+                    return data
+                }
+                else {
+                    $('#sendMessageModal').modal('show')
+                }
                 return data
             }
+            $('#spinner-get-dialog').hide();
+            document.querySelector('#write-button').disabled = false;
+            $("#get-dialog-failed").html('Ошибка при загрузке диалога');
         }))
+}
+
+function createDialog() {
+    if (isAuth == false) {
+        window.location = loginUrl + '?next=' + window.location.pathname;
+        return
+    } else
+           $('#send-msg-failed').html('')
+           $('#spinner-send-msg').show();
+           document.querySelector('#send-msg-button').disabled = true;
+           manageData["msg"] = document.getElementById("id_message").value
+           fetch(createDialogUrl, {
+               method: 'POST',
+               body: JSON.stringify(manageData),
+               headers: headers
+           }).then(response => response.json().then(data => {
+               if (response.ok) {
+                   $('#spinner-send-msg').hide();
+                   document.querySelector('#send-msg-button').disabled = false;
+                   window.location = '/profile/messages/' + data['dialog_id']
+                   return data
+               }
+               $('#spinner-send-msg').hide();
+               document.querySelector('#send-msg-button').disabled = false;
+               $("#send-msg-failed").html('Ошибка при отправке сообщения');
+           }))
 }

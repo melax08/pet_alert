@@ -505,7 +505,7 @@ class MessageChat(LoginRequiredMixin, View):
         return redirect('ads:messages_chat', self.kwargs['dialog_id'])
 
 
-class GetOrCreateDialog(LoginRequiredMixin, View):
+class GetDialog(LoginRequiredMixin, View):
     models = {
         'l': Lost,
         'f': Found
@@ -521,7 +521,6 @@ class GetOrCreateDialog(LoginRequiredMixin, View):
 
         try:
             ad = model.objects.get(pk=ad_id)
-
         except model.DoesNotExist:
             return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
 
@@ -536,13 +535,53 @@ class GetOrCreateDialog(LoginRequiredMixin, View):
                 questioner=request.user,
                 **params
             )
+            dialog_id = dialog.id
         except Dialog.DoesNotExist:
-            dialog = Dialog.objects.create(
-                author=ad.author,
-                questioner=request.user,
-                **params
-            )
+            dialog_id = None
 
-        return JsonResponse({'dialog_id': dialog.id}, status=HTTPStatus.OK)
+        return JsonResponse({'dialog_id':  dialog_id})
 
+
+class CreateDialog(LoginRequiredMixin, View):
+    models = {
+        'l': Lost,
+        'f': Found
+    }
+
+    def post(self, request):
+        request_body = json.loads(request.body.decode())
+        ad_type = request_body.get('m')
+        ad_id = request_body.get('ad_id')
+        message = request_body.get('msg').strip()
+        model = self.models.get(ad_type)
+        if model is None or not message:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+        try:
+            ad = model.objects.get(pk=ad_id)
+        except model.DoesNotExist:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+        if ad_type == 'l':
+            params = {'advertisement_lost': ad}
+        else:
+            params = {'advertisement_found': ad}
+
+        if Dialog.objects.filter(
+                author=ad.author, questioner=request.user, **params
+        ).exists():
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+        dialog = Dialog.objects.create(
+            author=ad.author,
+            questioner=request.user,
+            **params
+        )
+        Message.objects.create(
+            dialog=dialog,
+            sender=request.user,
+            recipient=ad.author,
+            content=message
+        )
+        return JsonResponse({'dialog_id': dialog.id})
 
