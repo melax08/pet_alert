@@ -209,3 +209,7 @@
   border-color: #1F8A7E;
   box-shadow: 0 0 0 0.25rem rgb(31, 138, 126, 0.25);
 }
+
+.bg-pa-red {
+  background-color: #D8303D !important;
+}

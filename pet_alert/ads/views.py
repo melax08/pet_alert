@@ -14,7 +14,7 @@ from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import Q, OuterRef, Subquery, Count, Exists
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic import DetailView, View
@@ -45,6 +45,8 @@ class IndexPage(TemplateView):
         context = super().get_context_data(**kwargs)
         context['founds'] = Found.objects.filter(active=True, open=True)[:4]
         context['losts'] = Lost.objects.filter(active=True, open=True)[:4]
+        # if self.request.user.is_authenticated:
+        #     context['new_messages_count'] = Message.objects.filter(recipient=self.request.user, checked=False).count()
 
         return context
 
@@ -399,7 +401,13 @@ class DialogList(LoginRequiredMixin, ListView):
         chats = Dialog.objects.filter(
             Q(author=self.request.user) | Q(questioner=self.request.user)
         ).annotate(
-            latest_message_date=Subquery(latest_message_date)
+            latest_message_date=Subquery(latest_message_date),
+            unread_messages=Count(
+                'messages',
+                filter=Q(
+                    messages__recipient=self.request.user,
+                    messages__checked=False)
+            )
         ).order_by('-latest_message_date')
 
         return chats
@@ -416,6 +424,10 @@ class MessageChat(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         dialog = self.get_dialog(request)
+
+        dialog.messages.filter(
+            recipient=self.request.user
+        ).update(checked=True)
 
         form = SendMessageForm()
         messages = dialog.messages.order_by('pub_date')

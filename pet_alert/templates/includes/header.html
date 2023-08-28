@@ -18,11 +18,21 @@
       <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Админка</a></li>
       {% endif %}
     <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ user.first_name }}</a>
+    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      {{ user.first_name }}
+    </a>
+
+    {% if new_messages > 0 %}
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pa-red">
+      {{ new_messages }}
+      <span class="visually-hidden">unread messages</span>
+    </span>
+    {% endif %}
+
     <div class="dropdown-menu">
       <a class="dropdown-item" href="{% url 'ads:profile' %}">Профиль</a>
       <a class="dropdown-item" href="{% url 'ads:my_ads' %}">Мои объявления</a>
-      <a class="dropdown-item" href="{% url 'ads:messages' %}">Мои сообщения</a>
+      <a class="dropdown-item" href="{% url 'ads:messages' %}">Мои сообщения {% if new_messages > 0 %}<span class="badge bg-pa-red rounded-pill"> {{ new_messages }}</span>{% endif %}</a>
       <a class="dropdown-item" href="{% url 'users:change_form' %}">Изменить пароль</a>
       <div class="dropdown-divider"></div>
       <a class="dropdown-item" href="{% url 'users:logout' %}">Выйти</a>
