@@ -61,6 +61,18 @@ class User(AbstractUser):
         max_length=254,
         help_text='Будет использоваться для логина на сайте'
     )
+    contact_email = models.BooleanField(
+        'Показывать контактный email',
+        default=False,
+        help_text=('Показывать ли контактный email '
+                   'на страницах объявлений пользователя?')
+    )
+    contact_phone = models.BooleanField(
+        'Показывать контактный телефон',
+        default=True,
+        help_text=('Показывать ли контактный телефон '
+                   'на страницах объявлений пользователя?')
+    )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 

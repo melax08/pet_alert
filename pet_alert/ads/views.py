@@ -22,7 +22,7 @@ from django.views.generic import DetailView, View
 from .constants import ADS_PER_PAGE, DESCRIPTION_MAP_LIMIT, DIALOGS_PER_PAGE
 from .models import Found, Lost, Message, Dialog
 from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
-                    AuthorizedLostForm, ChangeNameForm, SendMessageForm)
+                    AuthorizedLostForm, ProfileSettingsForm, SendMessageForm)
 from .filters import TypeFilter
 from .exceptions import BadRequest
 from users.forms import CreationForm, CreationFormWithoutPassword  # noqa
@@ -378,7 +378,7 @@ class ProfileInactiveList(ProfileAdsBase):
 @login_required
 def profile(request):
     template = 'ads/profile.html'
-    form = ChangeNameForm(request.POST or None, instance=request.user)
+    form = ProfileSettingsForm(request.POST or None, instance=request.user)
     if form.is_valid():
         request.user.first_name = form.cleaned_data['first_name']
         request.user.save()
@@ -490,9 +490,17 @@ class GetContactInfo(FetchBase):
         except BadRequest:
             return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
 
+        email, phone = '', ''
+
+        if ad.author.contact_email:
+            email = str(ad.author.email)
+
+        if ad.author.contact_phone:
+            phone = str(ad.author.phone)
+
         data = {
-            'email': str(ad.author.email),
-            'phone': str(ad.author.phone)
+            'email': email,
+            'phone': phone
         }
         return JsonResponse(data, status=HTTPStatus.OK)
 

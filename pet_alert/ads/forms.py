@@ -89,11 +89,11 @@ class AuthorizedFoundForm(BaseAddForm):
                   'condition')
 
 
-class ChangeNameForm(forms.ModelForm):
+class ProfileSettingsForm(forms.ModelForm):
     """Form for profile page, for change user info."""
     class Meta:
         model = User
-        fields = ('first_name', )
+        fields = ('first_name', 'contact_email', 'contact_phone')
 
 
 class SendMessageForm(forms.ModelForm):
