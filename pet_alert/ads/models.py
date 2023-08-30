@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -203,6 +204,18 @@ class Dialog(models.Model):
     class Meta:
         verbose_name = 'Диалог'
         verbose_name_plural = 'Диалоги'
+
+        constraints = [
+            models.CheckConstraint(
+                check=Q(
+                    advertisement_lost__isnull=False,
+                    advertisement_found=None) | Q(
+                    advertisement_lost=None,
+                    advertisement_found__isnull=False
+                ),
+                name='dialog_advertisement_constraint'
+            )
+        ]
 
     def __str__(self):
         return (

@@ -23,8 +23,21 @@ class TypeAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug')
 
 
+class MessageAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk', 'sender', 'recipient', 'content', 'pub_date', 'checked'
+    )
+    search_fields = ('content', )
+    list_filter = ('sender', 'recipient', 'dialog')
+
+
+class DialogAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'author', 'questioner', 'advertisement_lost',
+                    'advertisement_found')
+
+
 admin.site.register(Lost, LostAdmin)
 admin.site.register(Found, FoundAdmin)
 admin.site.register(AnimalType, TypeAdmin)
-admin.site.register(Dialog)
-admin.site.register(Message)
+admin.site.register(Dialog, DialogAdmin)
+admin.site.register(Message, MessageAdmin)
