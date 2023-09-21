@@ -14,7 +14,7 @@ from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, OuterRef, Subquery, Count, Exists
+from django.db.models import Q, OuterRef, Subquery, Count
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic import DetailView, View
@@ -87,6 +87,8 @@ class AdWithRegistration(RegistrationView):
         """
         form = self.get_form()
         ad_form = self.get_ad_form()
+        if form.errors.get('phone'):
+            del form.errors['phone']
         if form.is_valid() and ad_form.is_valid():
             return self.form_valid(form, ad_form)
         else:
