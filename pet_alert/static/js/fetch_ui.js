@@ -34,8 +34,20 @@ function getUserInfo() {
             headers: headers
         }).then(response => response.json().then(data => {
             if (response.ok) {
-                $("#id_email").html(data["email"]);
-                $("#id_phone").html(data["phone"]);
+                if (data["email"]) {
+                     $("#id_email").html(data["email"]);
+                     $("#email-item").show()
+                } else {
+                    $("#email-item").hide()
+                }
+
+                if (data["phone"]) {
+                    $("#id_phone").html(data["phone"]);
+                    $("#phone-item").show()
+                } else {
+                    $("#phone-item").hide()
+                }
+
                 $('#contactInfoModal').modal('show')
                 $('#spinner').hide();
                 document.querySelector('#contact-button').disabled = false;
