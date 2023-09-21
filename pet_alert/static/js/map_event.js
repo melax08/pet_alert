@@ -14,39 +14,43 @@ function getYaMap() {
         hintContentLayout: ymaps.templateLayoutFactory.createClass('$[properties.name]')
     });
 
-    var suggestView1 = new ymaps.SuggestView('suggest');
+    // Создание саджеста
+    var suggestView = new ymaps.SuggestView('suggest');
 
-    // $('#customMapButton').bind('click', function (e) {
-    //     select_location();
-    // });
-    //
-    // function select_location() {
-    //     var request = $('#suggest').val();
-    //     ymaps.geocode(request).then(function (res) {
-    //         var obj = res.geoObjects.get(0),
-    //             error, hint;
-    //
-    //         if (obj) {
-    //             if (myPlacemark) {
-    //                 myPlacemark.geometry.setCoordinates(obj);
-    //             }
-    //             else {
-    //                 myPlacemark = createPlacemark(obj);
-    //                 myMap.geoObjects.add(myPlacemark);
-    //                 // Слушаем событие окончания перетаскивания на метке.
-    //                 myPlacemark.events.add('dragend', function () {
-    //                 getAddress(myPlacemark.geometry.getCoordinates());
-    //                 });
-    //             }
-    //             getAddress(obj)
-    //         }
-    //         else {
-    //             error = 'Адрес не найден';
-    //             hint = 'Уточните адрес';
-    //         }
-    // }, function (e) {
-    //     console.log(e)
-    // })}
+    // Действие при выборе адреса в саджесте
+    suggestView.events.add('select', function (e) {
+        var selectedItem = e.get('item');
+
+        // Проверяем что selectedItem и value не пусты
+        if (selectedItem && selectedItem.value) {
+            // Получаем адрес из саджеста
+            var selectedAddress = selectedItem.value;
+
+            // Преобразуем адрес в координаты
+            ymaps.geocode(selectedAddress).then(function (res) {
+                var selectedCoords = res.geoObjects.get(0).geometry.getCoordinates();
+
+            // Если метка уже есть, перемещаем ее на новое место
+            if (myPlacemark) {
+                myPlacemark.geometry.setCoordinates(selectedCoords);
+            }
+            else {
+                // Иначе, создаем новую метку
+                myPlacemark = createPlacemark(selectedCoords)
+                myMap.geoObjects.add(myPlacemark);
+                myPlacemark.events.add('dragend', function () {
+                    getAddress(myPlacemark.geometry.getCoordinates());
+                });
+            }
+
+            getAddress(selectedCoords);
+
+            // Перемещаем карту к выбранной метке
+            myMap.setCenter(selectedCoords, 16);
+                });
+        }
+    });
+
 
 
     // Слушаем клик на карте.
@@ -104,6 +108,7 @@ function getYaMap() {
                 });
             $(".id_address").html(firstGeoObject.getAddressLine());
             $("#id_address").val(firstGeoObject.getAddressLine());
+            $("#suggest").val(firstGeoObject.getAddressLine());
             $("#id_coords").val(coords);
         });
     }
