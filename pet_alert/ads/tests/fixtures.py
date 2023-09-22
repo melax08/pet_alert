@@ -104,6 +104,20 @@ class BaseTestCaseWithFixtures(TestCase):
             advertisement_lost=cls.lost_open_active_ad
         )
 
+        cls.message_1 = Message.objects.create(
+            dialog=cls.dialog,
+            sender=cls.another_user,
+            recipient=cls.user,
+            content='Тестовое сообщение'
+        )
+
+        cls.message_2 = Message.objects.create(
+            dialog=cls.dialog,
+            sender=cls.user,
+            recipient=cls.another_user,
+            content='Тестовый ответ на тестовое сообщение'
+        )
+
     def setUp(self):
         self.guest_client = Client()
         self.authorized_client = Client()

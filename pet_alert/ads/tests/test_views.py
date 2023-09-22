@@ -105,5 +105,111 @@ class AdsViewTests(BaseTestCaseWithFixtures):
             Found.objects.get(pk=self.found_closed_inactive_ad.id).open
         )
 
+    def _test_context(self, response_obj, expected_obj):
+        """Gets all class attrs from the first context page object, compares
+        attrs of the first page object and the expected model object."""
+        context_fields = {
+            getattr(response_obj, attr): getattr(expected_obj, attr, None)
+            for attr in expected_obj.__dict__ if attr != '_state'
+        }
 
+        for field, expected in context_fields.items():
+            with self.subTest(field=field):
+                self.assertEqual(field, expected)
 
+    def test_lost_list_context(self):
+        """Lost ads list page has correct context."""
+        response = self.authorized_client.get(reverse('ads:lost'))
+        self._test_context(
+            response.context['page_obj'][0],
+            self.lost_open_active_ad
+        )
+
+    def test_found_list_context(self):
+        """Found ads list page has correct context."""
+        response = self.authorized_client.get(reverse('ads:found'))
+        self._test_context(
+            response.context['page_obj'][0],
+            self.found_open_active_ad
+        )
+
+    def test_lost_detail_context(self):
+        """Lost ad detail page has correct context."""
+        response = self.authorized_client.get(
+            reverse(
+                'ads:lost_detail',
+                kwargs={'ad_id': self.lost_open_active_ad.id}
+            )
+        )
+        self._test_context(
+            response.context.get('ad'),
+            self.lost_open_active_ad
+        )
+
+    def test_found_detail_context(self):
+        """Found ad detail page has correct context."""
+        response = self.authorized_client.get(
+            reverse(
+                'ads:found_detail',
+                kwargs={'ad_id': self.found_open_active_ad.id}
+            )
+        )
+        self._test_context(
+            response.context.get('ad'),
+            self.found_open_active_ad
+        )
+
+    def test_profile_active_context(self):
+        """Profile active page has correct context."""
+        response = self.authorized_client.get(reverse('ads:my_ads'))
+        self._test_context(
+            response.context['page_obj'][0],
+            self.found_open_active_ad
+        )
+
+    def test_profile_inactive_context(self):
+        """Profile inactive page has correct context."""
+        response = self.authorized_client.get(reverse('ads:my_ads_inactive'))
+        self._test_context(
+            response.context['page_obj'][0],
+            self.found_closed_inactive_ad
+        )
+
+    def test_index_context(self):
+        """Index page has correct context."""
+        response = self.authorized_client.get(reverse('ads:index'))
+        self._test_context(
+            response.context['losts'][0],
+            self.lost_open_active_ad
+        )
+        self._test_context(
+            response.context['founds'][0],
+            self.found_open_active_ad
+        )
+
+    def test_dialog_list_context(self):
+        """Dialog list page has correct context."""
+        response = self.authorized_client.get(reverse('ads:messages'))
+        self._test_context(
+            response.context['chats'][0],
+            self.dialog
+        )
+        self.assertEqual(1, response.context['chats'][0].unread_messages)
+        self.assertEqual(
+            response.context['chats'][0].messages.last().pub_date,
+            response.context['chats'][0].latest_message_date
+        )
+
+    def test_dialog_detail_context(self):
+        """Dialog detail page has correct context."""
+        response = self.authorized_client.get(
+            reverse(
+                'ads:messages_chat',
+                kwargs={'dialog_id': self.dialog.id}
+            )
+        )
+
+        self._test_context(
+            response.context['messages'][1],
+            self.message_2
+        )
