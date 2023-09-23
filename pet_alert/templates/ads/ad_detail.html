@@ -76,8 +76,7 @@
   <p>{{ ad.description }}</p>
 
   {% if ad.address %}
-      <script async src="https://api-maps.yandex.ru/2.1/?load=package.standard&lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104&onload=getYaMap"
-          type="text/javascript"></script>
+    {% include 'ads/includes/ya_maps.html' %}
   <script>
       var coords = [{{ ad.coords }}]
       var ballCont = '{{ balloon_content }}'

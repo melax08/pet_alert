@@ -6,8 +6,7 @@
 {% endblock %}
 {% block content %}
   {% include 'ads/includes/navigation.html' %}
-   <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=f82184cf-4914-45a8-87f6-1594ed68d104"
-          type="text/javascript"></script>
+  {% include 'ads/includes/ya_maps.html' %}
   <script>
       var map_objects = {{ map_objects | safe }}
   </script>

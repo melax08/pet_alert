@@ -93,7 +93,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.year.year',
-                'core.context_processors.new_messages.new_messages'
+                'core.context_processors.new_messages.new_messages',
             ],
         },
     },
@@ -143,7 +143,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-RU'
 
-TIME_ZONE = 'UTC'
+
+TIME_ZONE = os.getenv('TIMEZONE', default='Europe/Moscow')
 
 USE_I18N = True
 
@@ -183,3 +184,5 @@ DJOSER = {
     'HIDE_USERS': True,
 }
 
+YA_MAPS_API_KEY = os.getenv('YA_MAPS_API_KEY')
+YA_MAPS_SUGGEST_API_KEY = os.getenv('YA_MAPS_SUGGEST_API_KEY')

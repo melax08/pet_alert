@@ -56,13 +56,17 @@ jobs:
             DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET }}
             DJANGO_DEBUG=0
             DJANGO_ALLOWED_HOSTS=127.0.0.1 localhost pet-alert.ru testserver
+            TIMEZONE=Europe/Moscow
             DB_ENGINE=django.db.backends.postgresql
             DB_NAME=${{ secrets.DB_NAME }}
             POSTGRES_USER=${{ secrets.DB_USERNAME }}
             POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_HOST=${{ secrets.DB_HOST }}
             DB_PORT=${{ secrets.DB_PORT }}
-            # ReCaptcha keys
+            # Yandex maps API Keys
+            YA_MAPS_API_KEY=${{ secrets.YA_MAPS_API_KEY }}
+            YA_MAPS_SUGGEST_API_KEY=${{ secrets.YA_MAPS_SUGGEST_API_KEY }}
+            # ReCaptcha settings
             RECAPTCHA_PUBLIC_KEY=${{ secrets.RECAPTCHA_PUBLIC_KEY }}
             RECAPTCHA_PRIVATE_KEY=${{ secrets.RECAPTCHA_PRIVATE_KEY }}
             RECAPTCHA_REQUIRED_SCORE=${{ secrets.RECAPTCHA_REQUIRED_SCORE }}

@@ -1,4 +1,4 @@
-ymaps.ready(function () {
+function getYaMap () {
     var myMap = new ymaps.Map('map', {
             center: [55.75038481654759,37.61449992656688],
             zoom: 9
@@ -45,4 +45,4 @@ ymaps.ready(function () {
         myClusterer.add(myGeoObjects);
         myMap.geoObjects.add(myClusterer);
 
-});
+}
