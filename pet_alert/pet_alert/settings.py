@@ -162,6 +162,8 @@ else:
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+ANIMAL_ICONS_PATH = 'main/img/animal-icons'
+ANIMAL_DEFAULT_IMG_PATH = 'main/img/default-images'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

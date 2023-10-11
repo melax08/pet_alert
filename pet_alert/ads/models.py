@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -25,12 +26,12 @@ class AnimalType(models.Model):
     )
     icon = models.ImageField(
         'Иконка',
-        upload_to='main/img/animal-icons',
+        upload_to=settings.ANIMAL_ICONS_PATH,
         help_text='Иконка для вида животного, будет отображаться на карте.'
     )
     default_image = models.ImageField(
         'Изображение по умолчанию',
-        upload_to='main/img/default-images',
+        upload_to=settings.ANIMAL_DEFAULT_IMG_PATH,
         help_text=('Изображение для животного, '
                    'которое будет отображаться по умолчанию.')
     )
