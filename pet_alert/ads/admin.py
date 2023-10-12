@@ -34,6 +34,12 @@ class MessageAdmin(admin.ModelAdmin):
 class DialogAdmin(admin.ModelAdmin):
     list_display = ('pk', 'author', 'questioner', 'advertisement_lost',
                     'advertisement_found')
+    readonly_fields = ('messages_count',)
+
+    @admin.display(description='Сообщений в диалоге')
+    def messages_count(self, obj):
+        """Shows count of messages in dialog."""
+        return obj.messages.count()
 
 
 admin.site.register(Lost, LostAdmin)

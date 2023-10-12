@@ -42,9 +42,9 @@
             <div class="col-xs-9 col-xl-10 p-3">
               <div class="d-flex justify-content-between">
                 <p>{% if request.user == chat.author %} {{ chat.questioner.first_name }} {% else %} {{ chat.author.first_name }} {% endif %} {% if chat.unread_messages %} <span class="badge bg-pa-red rounded-pill"> {{ chat.unread_messages }} </span> {% endif %}</p>
-                <p class="text-muted">{{ chat.messages.last.pub_date|date:"j E" }}</p>
+                <p class="text-muted">{{ chat.latest_message_date|date:"j E" }}</p>
               </div>
-              <p class="text-muted text-break">{{ chat.messages.last.content|truncatechars:100 }}</p>
+              <p class="text-muted text-break">{{ chat.latest_message_content|truncatechars:100 }}</p>
 
               <a href="{% url 'ads:messages_chat' chat.id %}" class="pa-link stretched-link"></a>
             </div>

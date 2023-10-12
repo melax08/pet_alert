@@ -14,7 +14,8 @@ from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, OuterRef, Subquery, Count
+from django.db.models import Q, OuterRef, Subquery, Count, F, TextField
+from django.db.models.functions import Coalesce
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic import DetailView, View
@@ -43,8 +44,10 @@ class IndexPage(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['founds'] = Found.objects.filter(active=True, open=True)[:4]
-        context['losts'] = Lost.objects.filter(active=True, open=True)[:4]
+        context['founds'] = Found.objects.select_related(
+            'type').filter(active=True, open=True)[:4]
+        context['losts'] = Lost.objects.select_related(
+            'type').filter(active=True, open=True)[:4]
         # if self.request.user.is_authenticated:
         #     context['new_messages_count'] = Message.objects.filter(recipient=self.request.user, checked=False).count()
 
@@ -196,7 +199,7 @@ class LostList(ListView):
     def get_queryset(self):
         """Creates filterset by filterset_class,
         returns the resulting queryset."""
-        queryset = self.model.objects.filter(active=True, open=True)
+        queryset = self.model.objects.select_related('type').filter(active=True, open=True)
         self.filterset = self.filterset_class(
             self.request.GET,
             queryset=queryset
@@ -220,7 +223,7 @@ class FoundList(LostList):
 
 
 def map_generation(request, template, model, header, reverse_url):
-    ads = model.objects.filter(active=True, open=True)
+    ads = model.objects.prefetch_related('type').filter(active=True, open=True)
     f = TypeFilter(request.GET, queryset=ads)
     map_objects = []
     for ad in f.qs:
@@ -283,13 +286,20 @@ class BaseDetail(DetailView):
     def check_access(self):
         """Only opening and active ads are available on the site.
         The user can see their ads even if they are closed."""
-        ad = self.get_object()
-        if not (ad.active and ad.open) and ad.author != self.request.user:
+        if (not (self.object.active and self.object.open)
+                and self.object.author != self.request.user):
             raise Http404
 
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        """Add check_access function call after get object."""
+        self.object = self.get_object()
         self.check_access()
-        return super().get(*args, **kwargs)
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
+    def get_queryset(self):
+        """Get queryset with join tables author and type."""
+        return self.model.objects.select_related('author', 'type')
 
 
 class LostDetail(BaseDetail):
@@ -328,14 +338,18 @@ class ProfileAdsBase(LoginRequiredMixin, ListView):
 
     def get_active_user_ads(self):
         return (
-            self.request.user.lost_ads.filter(active=True, open=True),
-            self.request.user.found_ads.filter(active=True, open=True)
+            self.request.user.lost_ads.select_related(
+                'type').filter(active=True, open=True),
+            self.request.user.found_ads.select_related(
+                'type').filter(active=True, open=True)
         )
 
     def get_inactive_user_ads(self):
         return (
-            self.request.user.lost_ads.filter(Q(active=False) | Q(open=False)),
-            self.request.user.found_ads.filter(Q(active=False) | Q(open=False))
+            self.request.user.lost_ads.select_related(
+                'type').filter(Q(active=False) | Q(open=False)),
+            self.request.user.found_ads.select_related(
+                'type').filter(Q(active=False) | Q(open=False))
         )
 
     def get_mixed_ads(self):
@@ -343,18 +357,21 @@ class ProfileAdsBase(LoginRequiredMixin, ListView):
         to_count = self.get_inactive_user_ads()
         if not self.active:
             to_mix, to_count = to_count, to_mix
+
         #  https://stackoverflow.com/a/434755/21420819
         ads_mix = sorted(
             chain(*to_mix),
             key=attrgetter('pub_date'),
             reverse=True
         )
+
         if self.active:
             self.active_count = len(ads_mix)
             self.inactive_count = sum([q.count() for q in to_count])
         else:
             self.inactive_count = len(ads_mix)
             self.active_count = sum([q.count() for q in to_count])
+
         return ads_mix
 
     def get_queryset(self):
@@ -397,18 +414,27 @@ class DialogList(LoginRequiredMixin, ListView):
     context_object_name = 'chats'
 
     def get_queryset(self):
-        latest_message_date = Message.objects.filter(
+        latest_message_pubdate = Message.objects.filter(
             dialog=OuterRef('pk')).order_by('-pub_date').values('pub_date')[:1]
 
-        chats = Dialog.objects.filter(
+        latest_message_content = Message.objects.filter(
+            dialog=OuterRef('pk')).order_by('-pub_date').values('content')[:1]
+
+        chats = Dialog.objects.select_related(
+            'author', 'questioner', 'advertisement_lost',
+            'advertisement_found', 'advertisement_lost__type',
+            'advertisement_found__type'
+        ).filter(
             Q(author=self.request.user) | Q(questioner=self.request.user)
         ).annotate(
-            latest_message_date=Subquery(latest_message_date),
+            latest_message_date=Subquery(latest_message_pubdate),
+            latest_message_content=Subquery(latest_message_content),
             unread_messages=Count(
                 'messages',
                 filter=Q(
                     messages__recipient=self.request.user,
-                    messages__checked=False)
+                    messages__checked=False
+                )
             )
         ).order_by('-latest_message_date')
 
@@ -418,21 +444,36 @@ class DialogList(LoginRequiredMixin, ListView):
 class MessageChat(LoginRequiredMixin, View):
 
     def get_dialog(self, request):
-        dialog = get_object_or_404(Dialog, pk=self.kwargs['dialog_id'])
+        dialog = get_object_or_404(
+            Dialog.objects.select_related(
+                'author',
+                'questioner',
+                'advertisement_lost__author',
+                'advertisement_found__author',
+                'advertisement_lost__type',
+                'advertisement_found__type',
+            ),
+            pk=self.kwargs['dialog_id']
+        )
+
         if not (dialog.author == request.user
                 or dialog.questioner == request.user):
             raise Http404
+
         return dialog
 
     def get(self, request, *args, **kwargs):
         dialog = self.get_dialog(request)
 
         dialog.messages.filter(
-            recipient=self.request.user
+            recipient=self.request.user, checked=False
         ).update(checked=True)
 
         form = SendMessageForm()
-        messages = dialog.messages.order_by('pub_date')
+        messages = dialog.messages.prefetch_related(
+            'sender', 'recipient'
+        ).order_by('pub_date')
+
         return render(
             request, 'ads/messages/messages_chat.html', {
                 'messages': messages,
@@ -449,7 +490,11 @@ class MessageChat(LoginRequiredMixin, View):
             message = form.save(commit=False)
             message.dialog = dialog
             message.sender = request.user
-            message.recipient = dialog.author if dialog.author != request.user else dialog.questioner
+            message.recipient = (
+                dialog.author
+                if dialog.author != request.user
+                else dialog.questioner
+            )
             message.save()
 
         return redirect('ads:messages_chat', self.kwargs['dialog_id'])
