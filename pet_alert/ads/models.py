@@ -90,6 +90,9 @@ class AdsAbstract(models.Model):
 
     class Meta:
         ordering = ['-pub_date']
+        indexes = [
+            models.Index(fields=['active', 'open'])
+        ]
         abstract = True
 
     def __str__(self):
@@ -267,6 +270,12 @@ class Message(models.Model):
     class Meta:
         verbose_name = 'Сообщение'
         verbose_name_plural = 'Сообщения'
+        indexes = [
+            models.Index(
+                fields=['recipient', 'checked'],
+                name='recipient checked idx'
+            )
+        ]
 
     def __str__(self):
         return (f'От {self.sender.first_name} к {self.recipient.first_name}: '
