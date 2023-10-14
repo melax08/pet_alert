@@ -1,2 +1,3 @@
 {% load user_filters %}
-{{ yamaps_stub|addyamaps|safe }}
+{% addyamaps as yamap %}
+{{ yamap|safe }}

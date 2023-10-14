@@ -14,8 +14,7 @@ from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, OuterRef, Subquery, Count, F, TextField
-from django.db.models.functions import Coalesce
+from django.db.models import Q, OuterRef, Subquery, Count
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic import DetailView, View
@@ -199,7 +198,8 @@ class LostList(ListView):
     def get_queryset(self):
         """Creates filterset by filterset_class,
         returns the resulting queryset."""
-        queryset = self.model.objects.select_related('type').filter(active=True, open=True)
+        queryset = self.model.objects.select_related('type').filter(
+            active=True, open=True)
         self.filterset = self.filterset_class(
             self.request.GET,
             queryset=queryset
