@@ -31,7 +31,8 @@ class BaseAddForm(forms.ModelForm):
     class Meta:
         widgets = {
             'address': forms.HiddenInput(),
-            'coords': forms.HiddenInput()
+            'latitude': forms.HiddenInput(),
+            'longitude': forms.HiddenInput()
         }
 
 
@@ -61,7 +62,7 @@ class LostForm(BaseAddForm):
 
     class Meta(BaseAddForm.Meta):
         model = Lost
-        fields = ('address', 'coords', 'type', 'image', 'description',
+        fields = ('address', 'latitude', 'longitude', 'type', 'image', 'description',
                   'pet_name', 'age', 'first_name', 'phone', 'email', 'captcha')
 
 
@@ -69,7 +70,7 @@ class FoundForm(LostForm):
     """Form for add found advertisement with hidden user registration."""
     class Meta(LostForm.Meta):
         model = Found
-        fields = ('address', 'coords', 'type', 'image', 'description', 'age',
+        fields = ('address', 'latitude', 'longitude', 'type', 'image', 'description', 'age',
                   'condition', 'first_name', 'phone', 'email', 'captcha')
 
 
@@ -77,7 +78,7 @@ class AuthorizedLostForm(BaseAddForm):
     """Form for add lost advertisement for authorized users."""
     class Meta(BaseAddForm.Meta):
         model = Lost
-        fields = ('address', 'coords', 'type', 'image', 'description',
+        fields = ('address', 'latitude', 'longitude', 'type', 'image', 'description',
                   'pet_name', 'age')
 
 
@@ -85,7 +86,7 @@ class AuthorizedFoundForm(BaseAddForm):
     """Form for add found advertisement for authorized users."""
     class Meta(BaseAddForm.Meta):
         model = Found
-        fields = ('address', 'coords', 'type', 'image', 'description', 'age',
+        fields = ('address', 'latitude', 'longitude', 'type', 'image', 'description', 'age',
                   'condition')
 
 

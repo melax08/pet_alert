@@ -8,7 +8,11 @@
   {% include 'ads/includes/navigation.html' %}
   {% include 'ads/includes/ya_maps.html' %}
   <script>
-      var map_objects = {{ map_objects | safe }}
+      const headers = {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Content-Type": "application/json"
+      }
+      const model = '{{ ad_model }}'
   </script>
   <script src="{% static 'js/map_marks.js' %}"
           type="text/javascript">

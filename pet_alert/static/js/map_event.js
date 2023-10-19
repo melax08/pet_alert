@@ -90,6 +90,9 @@ function getYaMap() {
 
     // Определяем адрес по координатам (обратное геокодирование).
     function getAddress(coords) {
+        var [latitude, longitude] = coords
+        latitude = latitude.toFixed(6)
+        longitude = longitude.toFixed(6)
         myPlacemark.properties.set('iconCaption', 'поиск...');
         ymaps.geocode(coords).then(function (res) {
             var firstGeoObject = res.geoObjects.get(0);
@@ -110,6 +113,8 @@ function getYaMap() {
             $("#id_address").val(firstGeoObject.getAddressLine());
             $("#suggest").val(firstGeoObject.getAddressLine());
             $("#id_coords").val(coords);
+            $("#id_latitude").val(latitude)
+            $("#id_longitude").val(longitude)
         });
     }
 }

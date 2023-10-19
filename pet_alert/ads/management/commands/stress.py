@@ -16,8 +16,10 @@ def _get_random_animal_type():
 
 
 def _get_random_coords():
-    return (f'{random.random() * random.randint(1, 179)},'
-            f'{random.random() * random.randint(1, 89)}')
+    return {
+        'latitude': round(random.random() * random.randint(1, 179), 6),
+        'longitude': round(random.random() * random.randint(1, 89), 6)
+    }
 
 
 def _get_random_age():
@@ -57,13 +59,13 @@ class Command(BaseCommand):
         for _ in range(options['number_ads']):
             ads.append(Lost(
                 address=_get_random_description(),
-                coords=_get_random_coords(),
                 description=_get_random_description(),
                 age=_get_random_age(),
                 active=True,
                 open=True,
                 pet_name=_get_random_pet_name(),
                 type=_get_random_animal_type(),
-                author=user
+                author=user,
+                **_get_random_coords()
             ))
         Lost.objects.bulk_create(ads)

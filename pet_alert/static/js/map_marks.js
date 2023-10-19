@@ -6,43 +6,69 @@ function getYaMap () {
             searchControlProvider: 'yandex#search'
         });
 
-        var myGeoObjects = [];
-
-        for (var i = 0; i<map_objects.length; i++) {
-            myGeoObjects[i] = new ymaps.GeoObject({
-                geometry: {
-                    type: "Point",
-                    coordinates: map_objects[i].coordinates
-                },
-                properties: {
-                    hintContent: map_objects[i].hintContent,
-                    balloonContentHeader: map_objects[i].balloonContentHeader,
-                    balloonContentBody: map_objects[i].balloonContentBody,
-                    balloonContentFooter: map_objects[i].balloonContentFooter
-                },
-            },
-                {
-                    // preset: "islands#blueDogIcon"
-                    iconLayout: 'default#image',
-                    iconImageHref: map_objects[i].iconHref,
-                    iconImageSize: [60, 60],
-                    iconImageOffset: [-30, -60]
-                }
-                );
-        }
-
-        var myClusterer = new ymaps.Clusterer(
+        clusterer = new ymaps.Clusterer(
             {
-            // preset: 'islands#redClusterIcons',
-
-                clusterIcons: [{
+                    clusterIcons: [{
                     href: '/static/img/map_icons/cluster.png',
                     size: [50, 50],
                     offset: [-30, -30]
                 }]
             }
-            );
-        myClusterer.add(myGeoObjects);
-        myMap.geoObjects.add(myClusterer);
+        );
 
+        myMap.geoObjects.add(clusterer);
+
+        // Function to load data from the server based on the map bounds
+        function loadData(bounds) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const animalType = urlParams.get('type');
+            data = {
+                'coords': bounds,
+                'model': model,
+                'animal_type': animalType
+            }
+            fetch('/service/coords/', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                clusterer.removeAll(); // Clear existing placemarks
+                data.forEach(item => {
+                    var coordinates = item.coordinates;
+                    var placemark = new ymaps.Placemark(coordinates, {
+                        hintContent: item.hintContent,
+                        balloonContentHeader: item.balloonContentHeader,
+                        balloonContentBody: item.balloonContentBody,
+                        balloonContentFooter: item.balloonContentFooter
+                    }, {
+                        iconLayout: 'default#image',
+                        iconImageHref: item.iconHref,
+                        iconImageSize: [60, 60],
+                        iconImageOffset: [-30, -60]
+                        }
+
+                        );
+                    clusterer.add(placemark);
+                });
+            });
+        }
+
+        // Function to update markers when the map is dragged
+        function updateMarkers() {
+            var bounds = myMap.getBounds();
+            loadData(bounds);
+        }
+
+        // Listen for the map bounds change event
+        myMap.events.add('boundschange', function (event) {
+            // This event fires continuously while the map is being dragged.
+            updateMarkers();
+        });
+
+
+        // Initial data load
+        var initialBounds = myMap.getBounds();
+        loadData(initialBounds);
 }

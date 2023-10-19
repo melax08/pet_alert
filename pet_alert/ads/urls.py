@@ -14,14 +14,14 @@ urlpatterns = [
          name='add_success_reg'
          ),
     path('lost/list/', views.LostList.as_view(), name='lost'),
-    path('lost/map/', views.lost_map, name='lost_map'),
+    path('lost/map/', views.LostMap.as_view(), name='lost_map'),
     path('lost/<int:ad_id>/', views.LostDetail.as_view(), name='lost_detail'),
     path('found/list/', views.FoundList.as_view(), name='found'),
     path('found/<int:ad_id>/',
          views.FoundDetail.as_view(),
          name='found_detail'
          ),
-    path('found/map/', views.found_map, name='found_map'),
+    path('found/map/', views.FoundMap.as_view(), name='found_map'),
     path('profile/', views.profile, name='profile'),
     path('profile/active/', views.ProfileActiveList.as_view(), name='my_ads'),
     path('profile/inactive/',
@@ -47,5 +47,9 @@ urlpatterns = [
          views.MessageChat.as_view(),
          name='messages_chat'
          ),
+    path('service/coords/',
+         views.GetAdsBound.as_view(),
+         name='coords'
+         )
 ]
 

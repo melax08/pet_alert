@@ -2,6 +2,9 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.urls import reverse_lazy
+from sorl.thumbnail import get_thumbnail
+from .constants import DESCRIPTION_MAP_LIMIT
 
 User = get_user_model()
 
@@ -55,12 +58,16 @@ class AdsAbstract(models.Model):
         help_text='Укажите адрес где потеряли питомца',
         blank=True
     )
-    coords = models.CharField(
-        'Координаты',
-        max_length=300,
-        help_text='Координаты адреса',
-        blank=True
-    )
+    latitude = models.DecimalField(
+        'Широта', max_digits=9, decimal_places=6, blank=True)
+    longitude = models.DecimalField(
+        'Долгота', max_digits=9, decimal_places=6, blank=True)
+    # coords = models.CharField(
+    #     'Координаты',
+    #     max_length=300,
+    #     help_text='Координаты адреса',
+    #     blank=True
+    # )
     image = models.ImageField(
         'Фотография',
         upload_to='main/img',
@@ -98,6 +105,41 @@ class AdsAbstract(models.Model):
     def __str__(self):
         return self.description[:30]
 
+    def _get_map_dict(self, reverse_url, header):
+        pet_name = getattr(self, 'pet_name', '')
+        if pet_name:
+            hint_content = f'{header}: {pet_name}'
+        else:
+            hint_content = header
+
+        if self.image:
+            small_img = get_thumbnail(self.image, '50x50', crop='center',
+                                      quality=99)
+            img = f'<img src="/media/{small_img}" class="rounded"'
+            balloon_content_header = f'{img} <br> {hint_content}'
+        else:
+            balloon_content_header = hint_content
+
+        if len(self.description) <= DESCRIPTION_MAP_LIMIT:
+            balloon_content_body = self.description
+        else:
+            balloon_content_body = (self.description[:DESCRIPTION_MAP_LIMIT]
+                                    + '...')
+
+        url = reverse_lazy(reverse_url, kwargs={'ad_id': self.id})
+        balloon_content_footer = (f'<a href="{url}" '
+                                  f'target="_blank">Перейти</a>')
+        icon_href = f'/media/{self.type.icon}'
+
+        return {
+                    "coordinates": [self.latitude, self.longitude],
+                    "hintContent": hint_content,
+                    "balloonContentHeader": balloon_content_header,
+                    "balloonContentBody": balloon_content_body,
+                    "balloonContentFooter": balloon_content_footer,
+                    "iconHref": icon_href
+                }
+
 
 class Lost(AdsAbstract):
     pet_name = models.CharField(
@@ -125,6 +167,10 @@ class Lost(AdsAbstract):
     class Meta(AdsAbstract.Meta):
         verbose_name = 'Потерян'
         verbose_name_plural = 'Потеряны'
+
+    def get_map_dict(self):
+        """Get the dict with balloon information for yandex maps."""
+        return self._get_map_dict('ads:lost_detail', 'Потерялся')
 
 
 class Found(AdsAbstract):
@@ -170,6 +216,10 @@ class Found(AdsAbstract):
     class Meta(AdsAbstract.Meta):
         verbose_name = 'Найден'
         verbose_name_plural = 'Найдены'
+
+    def get_map_dict(self):
+        """Get the dict with balloon information for yandex maps."""
+        return self._get_map_dict('ads:found_detail', 'Нашелся')
 
 
 class Dialog(models.Model):

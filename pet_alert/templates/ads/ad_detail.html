@@ -78,7 +78,7 @@
   {% if ad.address %}
     {% include 'ads/includes/ya_maps.html' %}
   <script>
-      var coords = [{{ ad.coords }}]
+      var coords = [{{ ad.latitude|escapejs }},{{ ad.longitude|escapejs }}]
       var ballCont = '{{ balloon_content }}'
       var iconHref = '/media/{{ ad.type.icon }}'
   </script>

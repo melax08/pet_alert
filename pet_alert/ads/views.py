@@ -8,7 +8,6 @@ from django.views.generic import ListView
 from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
-from sorl.thumbnail import get_thumbnail
 from django_registration import signals
 from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
@@ -19,7 +18,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic import DetailView, View
 
-from .constants import ADS_PER_PAGE, DESCRIPTION_MAP_LIMIT, DIALOGS_PER_PAGE
+from .constants import ADS_PER_PAGE, DIALOGS_PER_PAGE
 from .models import Found, Lost, Message, Dialog
 from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
                     AuthorizedLostForm, ProfileSettingsForm, SendMessageForm)
@@ -222,56 +221,33 @@ class FoundList(LostList):
     model = Found
 
 
-def map_generation(request, template, model, header, reverse_url):
-    ads = model.objects.prefetch_related('type').filter(active=True, open=True)
-    f = TypeFilter(request.GET, queryset=ads)
-    map_objects = []
-    for ad in f.qs:
-        if ad.coords:
-            if getattr(ad, 'pet_name', ''):
-                header_to_show = f'{header}: {ad.pet_name}'
-            else:
-                header_to_show = header
-            hint_content = header_to_show
-            if ad.image:
-                small_img = get_thumbnail(ad.image, '50x50', crop='center',
-                                          quality=99)
-                img = f'<img src="/media/{small_img}" class="rounded"'
-                balloon_content_header = f'{img} <br> {header_to_show}'
-            else:
-                balloon_content_header = header_to_show
-            if len(ad.description) <= DESCRIPTION_MAP_LIMIT:
-                balloon_content_body = ad.description
-            else:
-                balloon_content_body = (ad.description[:DESCRIPTION_MAP_LIMIT]
-                                        + '...')
-            url = reverse_lazy(reverse_url, kwargs={'ad_id': ad.id})
-            balloon_content_footer = (f'<a href="{url}" '
-                                      f'target="_blank">Перейти</a>')
-            icon_href = f'/media/{ad.type.icon}'
-            map_objects.append({
-                "coordinates": list(map(float, ad.coords.split(','))),
-                "hintContent": hint_content,
-                "balloonContentHeader": balloon_content_header,
-                "balloonContentBody": balloon_content_body,
-                "balloonContentFooter": balloon_content_footer,
-                "iconHref": icon_href
-            })
-    context = {
-        'map_objects': map_objects,
-        'filter': f
-    }
-    return render(request, template, context)
+class LostMap(TemplateView):
+    """Lost advertisements map page."""
+    template_name = 'ads/map.html'
+    model = Lost
+    ad_model = 'l'
+    template_title = 'Потерялись'
+
+    def _get_advertisements_queryset(self):
+        return self.model.objects.prefetch_related('type').filter(
+            active=True, open=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = TypeFilter(
+            self.request.GET,
+            queryset=self._get_advertisements_queryset()
+        )
+        context['ad_model'] = self.ad_model
+        context['title'] = self.template_title
+        return context
 
 
-def lost_map(request):
-    return map_generation(request, 'ads/lost_map.html', Lost, 'Потерялся',
-                          'ads:lost_detail')
-
-
-def found_map(request):
-    return map_generation(request, 'ads/found_map.html', Found, 'Нашелся',
-                          'ads:found_detail')
+class FoundMap(LostMap):
+    """Found advertisements map page."""
+    model = Found
+    ad_model = 'f'
+    template_title = 'Нашлись'
 
 
 class BaseDetail(DetailView):
@@ -500,22 +476,29 @@ class MessageChat(LoginRequiredMixin, View):
         return redirect('ads:messages_chat', self.kwargs['dialog_id'])
 
 
-class FetchBase(LoginRequiredMixin, View):
+class FetchBase(View):
     """Class with base functions for fetch requests."""
     MODELS = {
         'l': Lost,
         'f': Found
     }
 
-    def _get_advertisement(self, request):
-        request_body = json.loads(request.body.decode())
-        ad_type = request_body.get('m')
-        ad_id = request_body.get('ad_id')
+    @staticmethod
+    def _get_request_data(request):
+        return json.loads(request.body.decode())
 
+    def _get_model(self, ad_type):
         try:
             model = self.MODELS[ad_type]
         except KeyError:
             raise BadRequest
+
+        return model
+
+    def _get_advertisement(self, request):
+        request_body = self._get_request_data(request)
+        model = self._get_model(request_body.get('m'))
+        ad_id = request_body.get('ad_id')
 
         try:
             ad = model.objects.get(pk=ad_id)
@@ -525,7 +508,12 @@ class FetchBase(LoginRequiredMixin, View):
         return ad
 
 
-class GetContactInfo(FetchBase):
+class AuthFetchBase(LoginRequiredMixin, FetchBase):
+    """Fetch base class with LoginRequiredMixin."""
+    pass
+
+
+class GetContactInfo(AuthFetchBase):
     """Processes fetch-request from ads detail page,
     sends author contact information."""
 
@@ -552,7 +540,7 @@ class GetContactInfo(FetchBase):
         return JsonResponse(data, status=HTTPStatus.OK)
 
 
-class OpenAd(FetchBase):
+class OpenAd(AuthFetchBase):
     """
     Service view for processing fetch requests from detail post page.
     Allows user to open his advertisement.
@@ -580,7 +568,7 @@ class CloseAd(OpenAd):
     to_set = False
 
 
-class DialogBase(FetchBase):
+class DialogBase(AuthFetchBase):
     """Base class for dialog views."""
     @staticmethod
     def _get_dialog_ad_field(ad):
@@ -643,3 +631,35 @@ class CreateDialog(DialogBase):
             content=message
         )
         return JsonResponse({'dialog_id': dialog.id})
+
+
+class GetAdsBound(FetchBase):
+    """Return advertisements within the specified boundaries."""
+    def post(self, request):
+        request_data = self._get_request_data(request)
+
+        try:
+            model = self._get_model(request_data['model'])
+            min_x, min_y = request_data['coords'][0]
+            max_x, max_y = request_data['coords'][1]
+            animal_type = request_data['animal_type']
+
+            additional_params = dict()
+            if animal_type:
+                additional_params['type__slug'] = animal_type
+
+            advertisements = model.objects.prefetch_related('type').filter(
+                active=True,
+                open=True,
+                latitude__gte=min_x,
+                latitude__lte=max_x,
+                longitude__gte=min_y,
+                longitude__lte=max_y,
+                **additional_params
+            )
+
+            data = [ad.get_map_dict() for ad in advertisements]
+            return JsonResponse(data, safe=False)
+
+        except (KeyError, IndexError, BadRequest):
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
