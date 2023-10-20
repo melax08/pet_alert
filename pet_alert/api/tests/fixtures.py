@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -35,8 +37,9 @@ class BaseApiTestCaseWithFixtures(APITestCase):
         )
 
         cls.lost_open_active_ad = Lost.objects.create(
-            address='Москва, улица Охотный Ряд, 2',
-            coords='55.75721007158518,37.61778268413295',
+            address='Санкт-Петербург, территория Петропавловская крепость, 3Д',
+            latitude=Decimal(59),
+            longitude=Decimal(30),
             # image=...,
             description='Test lost description',
             age='5 years',
@@ -48,8 +51,9 @@ class BaseApiTestCaseWithFixtures(APITestCase):
         )
 
         cls.found_open_active_ad = Found.objects.create(
-            address='Москва, улица Охотный Ряд, 2',
-            coords='55.75721007158518,37.61778268413295',
+            address='Санкт-Петербург, территория Петропавловская крепость, 3Д',
+            latitude=Decimal(59),
+            longitude=Decimal(30),
             # image=...,
             description='Test found description',
             age='6 years',

@@ -59,15 +59,9 @@ class AdsAbstract(models.Model):
         blank=True
     )
     latitude = models.DecimalField(
-        'Широта', max_digits=9, decimal_places=6, blank=True)
+        'Широта', max_digits=9, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(
-        'Долгота', max_digits=9, decimal_places=6, blank=True)
-    # coords = models.CharField(
-    #     'Координаты',
-    #     max_length=300,
-    #     help_text='Координаты адреса',
-    #     blank=True
-    # )
+        'Долгота', max_digits=9, decimal_places=6, blank=True, null=True)
     image = models.ImageField(
         'Фотография',
         upload_to='main/img',

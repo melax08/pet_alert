@@ -138,7 +138,8 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
                 reverse('ads:close_ad'),
                 reverse('ads:open_ad'),
                 reverse('ads:get_dialog'),
-                reverse('ads:create_dialog')
+                reverse('ads:create_dialog'),
+                reverse('ads:coords')
             ]
         }
 
@@ -157,7 +158,7 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
             reverse('ads:add_success'): 'ads/add_success.html',
             reverse('ads:add_success_reg'): 'ads/add_success_reg.html',
             reverse('ads:lost'): 'ads/lost.html',
-            reverse('ads:lost_map'): 'ads/lost_map.html',
+            reverse('ads:lost_map'): 'ads/map.html',
             reverse(
                 'ads:lost_detail',
                 kwargs={'ad_id': self.lost_open_active_ad.id}
@@ -166,7 +167,7 @@ class AdsUrlsTests(BaseTestCaseWithFixtures):
                 'ads:found_detail',
                 kwargs={'ad_id': self.found_open_active_ad.id}
             ): 'ads/ad_detail.html',
-            reverse('ads:found_map'): 'ads/found_map.html',
+            reverse('ads:found_map'): 'ads/map.html',
             reverse('ads:profile'): 'ads/profile.html',
             reverse('ads:my_ads'): 'ads/my_ads.html',
             reverse('ads:my_ads_inactive'): 'ads/my_ads.html',
