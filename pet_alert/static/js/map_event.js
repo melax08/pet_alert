@@ -3,10 +3,17 @@
 function getYaMap() {
     var myPlacemark,
         myMap = new ymaps.Map('map', {
-            center: [55.753994, 37.622093],
-            zoom: 9
+            center: [59.938,30.3],
+            zoom: 9,
+            controls: []
         }, {
-            searchControlProvider: 'yandex#search'
+            searchControlProvider: 'yandex#search',
+            restrictMapArea: [
+                [59.838,29.511],
+                [60.056,30.829]
+            ],
+            suppressMapOpenBlock: true,
+            yandexMapDisablePoiInteractivity: true
         });
 
 
@@ -15,7 +22,14 @@ function getYaMap() {
     });
 
     // Создание саджеста
-    var suggestView = new ymaps.SuggestView('suggest');
+    // var suggestView = new ymaps.SuggestView('suggest');
+    var suggestView = new ymaps.SuggestView('suggest', {
+        provider: {
+            suggest:(function(request, options){
+                return ymaps.suggest("Санкт-Петербург, " + request);
+            })
+        }
+    });
 
     // Действие при выборе адреса в саджесте
     suggestView.events.add('select', function (e) {

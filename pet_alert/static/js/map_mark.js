@@ -1,9 +1,11 @@
 function getYaMap () {
     var myMap = new ymaps.Map('map', {
             center: coords,
-            zoom: 16
+            zoom: 16,
+            controls: []
         }, {
-            searchControlProvider: 'yandex#search'
+            suppressMapOpenBlock: true,
+            yandexMapDisablePoiInteractivity: true
         }),
 
         myPlacemarkWithContent = new ymaps.Placemark(coords, {

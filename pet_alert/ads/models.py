@@ -98,7 +98,8 @@ class AdsAbstract(models.Model):
     class Meta:
         ordering = ['-pub_date']
         indexes = [
-            models.Index(fields=['active', 'open'])
+            models.Index(fields=['active', 'open']),
+            models.Index(fields=['active', 'open', 'latitude', 'longitude'])
         ]
         abstract = True
 
@@ -132,12 +133,12 @@ class AdsAbstract(models.Model):
         icon_href = f'/media/{self.type.icon}'
 
         return {
-                    "coordinates": [self.latitude, self.longitude],
-                    "hintContent": hint_content,
-                    "balloonContentHeader": balloon_content_header,
-                    "balloonContentBody": balloon_content_body,
-                    "balloonContentFooter": balloon_content_footer,
-                    "iconHref": icon_href
+                    "c": [self.latitude, self.longitude],
+                    "h": hint_content,
+                    "ch": balloon_content_header,
+                    "cb": balloon_content_body,
+                    "cf": balloon_content_footer,
+                    "i": icon_href
                 }
 
 

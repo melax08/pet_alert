@@ -1,9 +1,15 @@
 function getYaMap () {
     var myMap = new ymaps.Map('map', {
-            center: [55.75038481654759,37.61449992656688],
-            zoom: 9
+            center: [59.938,30.3],
+            zoom: 9,
+            controls: []
         }, {
-            searchControlProvider: 'yandex#search'
+            restrictMapArea: [
+                [59.838,29.511],
+                [60.056,30.829]
+            ],
+            suppressMapOpenBlock: true,
+            yandexMapDisablePoiInteractivity: true
         });
 
         clusterer = new ymaps.Clusterer(
@@ -18,7 +24,6 @@ function getYaMap () {
 
         myMap.geoObjects.add(clusterer);
 
-        // Function to load data from the server based on the map bounds
         function loadData(bounds) {
             const urlParams = new URLSearchParams(window.location.search);
             const animalType = urlParams.get('type');
@@ -35,25 +40,27 @@ function getYaMap () {
             .then(response => response.json())
             .then(data => {
                 clusterer.removeAll(); // Clear existing placemarks
+                const placemarks = []
                 data.forEach(item => {
-                    var coordinates = item.coordinates;
-                    var placemark = new ymaps.Placemark(coordinates, {
-                        hintContent: item.hintContent,
-                        balloonContentHeader: item.balloonContentHeader,
-                        balloonContentBody: item.balloonContentBody,
-                        balloonContentFooter: item.balloonContentFooter
+                    var placemark = new ymaps.Placemark(item.c, {
+                        hintContent: item.h,
+                        balloonContentHeader: item.ch,
+                        balloonContentBody: item.cb,
+                        balloonContentFooter: item.cf
                     }, {
                         iconLayout: 'default#image',
-                        iconImageHref: item.iconHref,
+                        iconImageHref: item.i,
                         iconImageSize: [60, 60],
                         iconImageOffset: [-30, -60]
                         }
 
                         );
-                    clusterer.add(placemark);
+                    placemarks.push(placemark);
                 });
+                clusterer.add(placemarks)
             });
         }
+
 
         // Function to update markers when the map is dragged
         function updateMarkers() {
