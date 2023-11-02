@@ -1,6 +1,9 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
 from ads.models import AnimalType, Lost, Found  # noqa
+
+User = get_user_model()
 
 
 class AnimalTypeSerializer(serializers.ModelSerializer):
@@ -11,9 +14,9 @@ class AnimalTypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LostAdSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        slug_field='email',
+class AdsBaseSerializer(serializers.ModelSerializer):
+    """Base serializer class for advertisement views."""
+    author = serializers.PrimaryKeyRelatedField(
         default=serializers.CurrentUserDefault(),
         read_only=True
     )
@@ -23,12 +26,41 @@ class LostAdSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+        read_only_fields = ('author', 'pub_date', 'id')
+
+
+class LostAdListSerializer(AdsBaseSerializer):
+    """
+    Serializer for Lost advertisements view list actions.
+    - Exclude active and open fields from response.
+    """
+
+    class Meta(AdsBaseSerializer.Meta):
+        model = Lost
+        exclude = ('active', 'open')
+
+
+class FoundAdListSerializer(LostAdListSerializer):
+    """Serializer for Found advertisements view list actions."""
+
+    class Meta(LostAdListSerializer.Meta):
+        model = Found
+
+
+class LostAdDetailSerializer(AdsBaseSerializer):
+    """
+    Serializer for Lost advertisements view detail actions.
+    - Include all fields to response.
+    """
+
+    class Meta(AdsBaseSerializer.Meta):
         model = Lost
         fields = '__all__'
-        read_only_fields = ('author', 'active', 'open', 'pub_date', 'id')
+        read_only_fields = ('author', 'pub_date', 'id', 'open', 'active')
 
 
-class FoundAdSerializer(LostAdSerializer):
+class FoundAdDetailSerializer(LostAdDetailSerializer):
+    """Serializer for Found advertisements view detail actions."""
 
-    class Meta(LostAdSerializer.Meta):
+    class Meta(LostAdDetailSerializer.Meta):
         model = Found

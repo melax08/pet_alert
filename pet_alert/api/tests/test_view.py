@@ -18,6 +18,33 @@ class AdsApiTests(BaseApiTestCaseWithFixtures):
             reverse('api:animal_type-detail',
                     kwargs={'slug': self.animal_type.slug}):
                 (status.HTTP_200_OK, status.HTTP_200_OK),
+            reverse('api:lost-list'): (status.HTTP_200_OK, status.HTTP_200_OK),
+            reverse('api:found-list'):
+                (status.HTTP_200_OK, status.HTTP_200_OK),
+            reverse('api:lost-detail',
+                    kwargs={'pk': self.lost_open_active_ad.id}):
+                (status.HTTP_200_OK, status.HTTP_200_OK),
+            reverse('api:found-detail',
+                    kwargs={'pk': self.found_open_active_ad.id}):
+                (status.HTTP_200_OK, status.HTTP_200_OK),
+            reverse('api:lost-detail',
+                    kwargs={'pk': self.lost_closed_active_ad.id}):
+                (status.HTTP_404_NOT_FOUND, status.HTTP_200_OK),
+            reverse('api:found-detail',
+                    kwargs={'pk': self.found_closed_active_ad.id}):
+                (status.HTTP_404_NOT_FOUND, status.HTTP_200_OK),
+            reverse('api:lost-detail',
+                    kwargs={'pk': self.lost_open_inactive_ad.id}):
+                (status.HTTP_404_NOT_FOUND, status.HTTP_200_OK),
+            reverse('api:found-detail',
+                    kwargs={'pk': self.found_open_inactive_ad.id}):
+                (status.HTTP_404_NOT_FOUND, status.HTTP_200_OK),
+            reverse('api:lost-detail',
+                    kwargs={'pk': self.lost_closed_inactive_ad.id}):
+                (status.HTTP_404_NOT_FOUND, status.HTTP_200_OK),
+            reverse('api:found-detail',
+                    kwargs={'pk': self.found_closed_inactive_ad.id}):
+                (status.HTTP_404_NOT_FOUND, status.HTTP_200_OK),
         }
 
         client = self.author_client if is_auth else self.guest_client
@@ -35,6 +62,41 @@ class AdsApiTests(BaseApiTestCaseWithFixtures):
         """Authorized user gets the right response codes with
         GET-requests."""
         self._check_response_status_codes(is_auth=True)
+
+    def test_api_another_user_requests_to_open_active_ads(self):
+        """User get correct response code while trying to get another user
+        ads."""
+        urls_codes_map = {
+            reverse('api:lost-detail',
+                    kwargs={'pk': self.lost_open_active_ad.id}
+                    ): status.HTTP_200_OK,
+            reverse('api:found-detail',
+                    kwargs={'pk': self.found_open_active_ad.id}
+                    ): status.HTTP_200_OK,
+            reverse('api:lost-detail',
+                    kwargs={'pk': self.lost_closed_active_ad.id}
+                    ): status.HTTP_404_NOT_FOUND,
+            reverse('api:found-detail',
+                    kwargs={'pk': self.found_closed_active_ad.id}
+                    ): status.HTTP_404_NOT_FOUND,
+            reverse('api:lost-detail',
+                    kwargs={'pk': self.lost_open_inactive_ad.id}
+                    ): status.HTTP_404_NOT_FOUND,
+            reverse('api:found-detail',
+                    kwargs={'pk': self.found_open_inactive_ad.id}
+                    ): status.HTTP_404_NOT_FOUND,
+            reverse('api:lost-detail',
+                    kwargs={'pk': self.lost_closed_inactive_ad.id}
+                    ): status.HTTP_404_NOT_FOUND,
+            reverse('api:found-detail',
+                    kwargs={'pk': self.found_closed_inactive_ad.id}
+                    ): status.HTTP_404_NOT_FOUND
+        }
+
+        for url, status_code in urls_codes_map.items():
+            with self.subTest(url=url):
+                response = self.another_client.get(url)
+                self.assertEqual(response.status_code, status_code)
 
     def test_api_create_animal_type(self):
         """Only admin can create animal types."""

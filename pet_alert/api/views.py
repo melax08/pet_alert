@@ -4,14 +4,19 @@ from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.exceptions import PermissionDenied
+from django.db.models import Q
 
 from ads.models import AnimalType, Lost, Found  # noqa
 from .serializers import (
     AnimalTypeSerializer,
-    LostAdSerializer,
-    FoundAdSerializer
+    LostAdListSerializer,
+    FoundAdListSerializer,
+    LostAdDetailSerializer,
+    FoundAdDetailSerializer
 )
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
+from .filters import AdFilter
 
 
 class AnimalTypeViewSet(ModelViewSet):
@@ -24,14 +29,33 @@ class AnimalTypeViewSet(ModelViewSet):
 
 class LostAdViewSet(ModelViewSet):
     """View set to manage Lost ads."""
-    queryset = Lost.objects.all()
-    serializer_class = LostAdSerializer
+    model = Lost
+    serializer_class = LostAdListSerializer
+    detail_serializer_class = LostAdDetailSerializer
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('type',)  # ToDo: сделать возможность фильтрации по type__slug.
+    filterset_class = AdFilter
+
+    def get_queryset(self):
+        """
+        - Admin can work with all model objects.
+        - Authenticated user can work with active, open and own objects.
+        - Anonymous can work with open and active objects.
+        """
+        if self.request.user.is_staff:
+            return self.model.objects.select_related('type', 'author').all()
+
+        if (self.request.user.is_authenticated
+                and self.action in ('retrieve', 'open', 'close')):
+            return self.model.objects.select_related('type', 'author').filter(
+                Q(active=True, open=True) | Q(author=self.request.user))
+
+        return self.model.objects.select_related('type', 'author').filter(
+            active=True, open=True)
 
     def perform_create(self, serializer):
+        """Set the author of created ad to the request user."""
         serializer.save(author=self.request.user)
 
     def get_permissions(self):
@@ -39,15 +63,33 @@ class LostAdViewSet(ModelViewSet):
             return IsAdminOrReadOnly(),
         return super().get_permissions()
 
+    def get_serializer_class(self):
+        """Detail GET, PATCH, PUT and management requests use special
+        serializer."""
+        if self.action in (
+                'retrieve',
+                'partial_update',
+                'update',
+                'open',
+                'close',
+                'activate',
+                'deactivate'
+        ):
+            return self.detail_serializer_class
+
+        return self.serializer_class
+
     def _open_processing(self, request, to_set: bool, error_message: str):
+        """
+        Open or close the advertisement.
+        Only author of advertisement or admin can make this action.
+        """
         ad = self.get_object()
         if ad.author != request.user and not request.user.is_staff:
-            return Response({'errors': 'Доступ запрещен'},
-                            status=status.HTTP_403_FORBIDDEN)
-        if ad.open == to_set:
-            raise serializers.ValidationError(
-                {'detail': error_message}
-            )
+            raise PermissionDenied({'errors': 'Доступ запрещен'})
+
+        if ad.open is to_set:
+            raise serializers.ValidationError({'detail': error_message})
 
         ad.open = to_set
         ad.save()
@@ -57,11 +99,12 @@ class LostAdViewSet(ModelViewSet):
         )
 
     def _activation_processing(self, to_set: bool, error_message: str):
+        """Activate or deactivate the advertisement."""
         ad = self.get_object()
-        if ad.active == to_set:
-            raise serializers.ValidationError(
-                {'detail': error_message}
-            )
+
+        if ad.active is to_set:
+            raise serializers.ValidationError({'detail': error_message})
+
         ad.active = to_set
         ad.save()
         return Response(
@@ -85,11 +128,11 @@ class LostAdViewSet(ModelViewSet):
     @action(methods=['post'], detail=True,
             permission_classes=(IsAdminOrReadOnly,))
     def deactivate(self, request, *args, **kwargs):
-        return self._activation_processing(
-            False, 'Объявление уже деактивировано'
-        )
+        return self._activation_processing(False, 'Объявление уже неактивно')
 
 
 class FoundAdViewSet(LostAdViewSet):
-    queryset = Found.objects.all()
-    serializer_class = FoundAdSerializer
+    """View set to manage Found ads."""
+    model = Found
+    serializer_class = FoundAdListSerializer
+    detail_serializer_class = FoundAdDetailSerializer
