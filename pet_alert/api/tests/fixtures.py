@@ -1,16 +1,46 @@
+import shutil
 from decimal import Decimal
+import tempfile
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient, APITestCase, override_settings
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils.crypto import get_random_string
 
 from ads.models import Lost, Found, AnimalType
 
 User = get_user_model()
-AUTH_TOKEN_PREFIX = 'Bearer'
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
+
+SMALL_GIF = (
+    b'\x47\x49\x46\x38\x39\x61\x02\x00'
+    b'\x01\x00\x80\x00\x00\x00\x00\x00'
+    b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+    b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+    b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+    b'\x0A\x00\x3B'
+)
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class BaseApiTestCaseWithFixtures(APITestCase):
+    AUTH_TOKEN_PREFIX = 'Bearer'
+    DEFAULT_FORMAT = 'json'
+    FILES_FORMAT = 'multipart'
+
+    @staticmethod
+    def generate_image():
+        """Generates a small image with random name that can be sent in
+        multipart POST requests."""
+        uploaded = SimpleUploadedFile(
+            name=f'{get_random_string(length=20)}.gif',
+            content=SMALL_GIF,
+            content_type='image/gif'
+        )
+        return uploaded
 
     @classmethod
     def setUpClass(cls):
@@ -18,8 +48,9 @@ class BaseApiTestCaseWithFixtures(APITestCase):
         cls.user_author = User.objects.create_user(
             email='author@example.com'
         )
-        cls.user_admin = User.objects.create_user(
-            email='admin@example.com'
+        cls.user_admin = User.objects.create_superuser(
+            email='admin@example.com',
+            password='123123'
         )
         cls.user_another = User.objects.create_user(
             email='another@example.com'
@@ -33,14 +64,16 @@ class BaseApiTestCaseWithFixtures(APITestCase):
 
         cls.animal_type = AnimalType.objects.create(
             name='Animal',
-            slug='animal'
+            slug='animal',
+            icon=cls.generate_image(),
+            default_image=cls.generate_image()
         )
 
         cls.lost_open_active_ad = Lost.objects.create(
             address='Санкт-Петербург, территория Петропавловская крепость, 3Д',
             latitude=Decimal(59),
             longitude=Decimal(30),
-            # image=...,
+            image=cls.generate_image(),
             description='Test lost description',
             age='5 years',
             active=True,
@@ -54,7 +87,7 @@ class BaseApiTestCaseWithFixtures(APITestCase):
             address='Санкт-Петербург, территория Петропавловская крепость, 3Д',
             latitude=Decimal(59),
             longitude=Decimal(30),
-            # image=...,
+            image=cls.generate_image(),
             description='Test found description',
             age='6 years',
             active=True,
@@ -68,6 +101,7 @@ class BaseApiTestCaseWithFixtures(APITestCase):
             description='Test lost closed description',
             type=cls.animal_type,
             author=cls.user_author,
+            image=cls.generate_image(),
             active=True,
             open=False,
         )
@@ -76,6 +110,7 @@ class BaseApiTestCaseWithFixtures(APITestCase):
             description='Test found closed description',
             type=cls.animal_type,
             author=cls.user_author,
+            image=cls.generate_image(),
             condition='OK',
             active=True,
             open=False,
@@ -85,6 +120,7 @@ class BaseApiTestCaseWithFixtures(APITestCase):
             description='Test lost inactive description',
             type=cls.animal_type,
             author=cls.user_author,
+            image=cls.generate_image(),
             active=False,
             open=True,
         )
@@ -94,6 +130,7 @@ class BaseApiTestCaseWithFixtures(APITestCase):
             type=cls.animal_type,
             author=cls.user_author,
             condition='OK',
+            image=cls.generate_image(),
             active=False,
             open=True,
         )
@@ -102,6 +139,7 @@ class BaseApiTestCaseWithFixtures(APITestCase):
             description='Test lost inactive closed description',
             type=cls.animal_type,
             author=cls.user_author,
+            image=cls.generate_image(),
             active=False,
             open=False,
         )
@@ -111,6 +149,7 @@ class BaseApiTestCaseWithFixtures(APITestCase):
             type=cls.animal_type,
             author=cls.user_author,
             condition='OK',
+            image=cls.generate_image(),
             active=False,
             open=False,
         )
@@ -122,11 +161,19 @@ class BaseApiTestCaseWithFixtures(APITestCase):
         self.another_client = APIClient()
 
         self.author_client.credentials(
-            HTTP_AUTHORIZATION=f'{AUTH_TOKEN_PREFIX} {self.user_author_token}'
+            HTTP_AUTHORIZATION=f'{self.AUTH_TOKEN_PREFIX} '
+                               f'{self.user_author_token}'
         )
         self.admin_client.credentials(
-            HTTP_AUTHORIZATION=f'{AUTH_TOKEN_PREFIX} {self.user_admin_token}'
+            HTTP_AUTHORIZATION=f'{self.AUTH_TOKEN_PREFIX} '
+                               f'{self.user_admin_token}'
         )
         self.another_client.credentials(
-            HTTP_AUTHORIZATION=f'{AUTH_TOKEN_PREFIX} {self.user_another_token}'
+            HTTP_AUTHORIZATION=f'{self.AUTH_TOKEN_PREFIX} '
+                               f'{self.user_another_token}'
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
