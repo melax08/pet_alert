@@ -13,6 +13,14 @@
           {{ card_header }}
         </div>
         <div class="card-body">
+        {% if not request.user.is_authenticated %}
+          <div class="alert alert-success d-flex align-items-center" role="alert">
+            <div>
+              При создании объявления вы будете зарегистрированы на сайте. Если вы уже зарегистрированы, то сначала <a class="alert-link" href="{% url 'users:login' %}?next={{ request.path }}">войдите в свой аккаунт</a>.
+            </div>
+          </div>
+        {% endif %}
+
           {% if ad_form.errors %}
             {% for field in ad_form %}
               {% for error in field.errors %}

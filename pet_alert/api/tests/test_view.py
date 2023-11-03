@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.test import override_settings
 
 from .fixtures import BaseApiTestCaseWithFixtures, TEMP_MEDIA_ROOT
-from ads.models import AnimalType
+from ads.models import AnimalType, Lost, Found
 
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
@@ -220,3 +220,82 @@ class AdsApiTests(BaseApiTestCaseWithFixtures):
         )
         self.assertEqual(animal_types_count, AnimalType.objects.count())
 
+    def _test_create_advertisement(self, url, request_data, model):
+        lost_advertisements_count = model.objects.count()
+
+        # Guest user can't create an ad
+        guest_response = self.guest_client.post(
+            url,
+            request_data,
+            format=self.FILES_FORMAT
+        )
+        self.assertEqual(
+            guest_response.status_code,
+            status.HTTP_401_UNAUTHORIZED
+        )
+        self.assertEqual(model.objects.count(), lost_advertisements_count)
+        self.assertNotEqual(
+            model.objects.first().description,
+            request_data['description']
+        )
+
+        # Authorized user can create an ad
+        request_data['image'] = self.generate_image()
+        user_response = self.author_client.post(
+            url,
+            request_data,
+            format=self.FILES_FORMAT
+        )
+        self.assertEqual(user_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(model.objects.count(), lost_advertisements_count + 1)
+        self.assertEqual(
+            model.objects.first().description,
+            request_data['description']
+        )
+
+        # Author of the new post is request user.
+        self.assertEqual(model.objects.first().author, self.user_author)
+
+        # New advertisement is open and nonactive.
+        self.assertTrue(model.objects.first().open)
+        self.assertFalse(model.objects.first().active)
+
+    def test_api_create_lost(self):
+        """Authorized user can create lost advertisements.
+        Anonymous user can't create lost advertisements."""
+        request_data = {
+            'type': self.animal_type.slug,
+            'description': 'Потерялось тестовое животное',
+            'image': self.generate_image(),
+            'address': 'Пушкина-Колотушкина',
+            'latitude': 10,
+            'longitude': 15,
+            'age': '5 лет',
+            'pet_name': 'Карасик'
+        }
+
+        self._test_create_advertisement(
+            reverse('api:lost-list'),
+            request_data,
+            Lost
+        )
+
+    def test_api_create_found(self):
+        """Authorized user can create found advertisements.
+        Anonymous user can't create found advertisements."""
+        request_data = {
+            'type': self.animal_type.slug,
+            'description': 'Нашлось тестовое животное',
+            'image': self.generate_image(),
+            'address': 'Пушкина-Колотушкина st, APT 2',
+            'latitude': 5,
+            'longitude': 20,
+            'condition': 'OK',
+            'age': '2 года',
+        }
+
+        self._test_create_advertisement(
+            reverse('api:found-list'),
+            request_data,
+            Found
+        )
