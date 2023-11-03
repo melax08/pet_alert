@@ -36,6 +36,7 @@ class LostAdViewSet(ModelViewSet):
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = AdFilter
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
         """

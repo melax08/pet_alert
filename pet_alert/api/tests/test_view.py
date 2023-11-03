@@ -221,7 +221,7 @@ class AdsApiTests(BaseApiTestCaseWithFixtures):
         self.assertEqual(animal_types_count, AnimalType.objects.count())
 
     def _test_create_advertisement(self, url, request_data, model):
-        lost_advertisements_count = model.objects.count()
+        advertisements_count = model.objects.count()
 
         # Guest user can't create an ad
         guest_response = self.guest_client.post(
@@ -233,7 +233,7 @@ class AdsApiTests(BaseApiTestCaseWithFixtures):
             guest_response.status_code,
             status.HTTP_401_UNAUTHORIZED
         )
-        self.assertEqual(model.objects.count(), lost_advertisements_count)
+        self.assertEqual(model.objects.count(), advertisements_count)
         self.assertNotEqual(
             model.objects.first().description,
             request_data['description']
@@ -247,7 +247,7 @@ class AdsApiTests(BaseApiTestCaseWithFixtures):
             format=self.FILES_FORMAT
         )
         self.assertEqual(user_response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(model.objects.count(), lost_advertisements_count + 1)
+        self.assertEqual(model.objects.count(), advertisements_count + 1)
         self.assertEqual(
             model.objects.first().description,
             request_data['description']
@@ -299,3 +299,101 @@ class AdsApiTests(BaseApiTestCaseWithFixtures):
             request_data,
             Found
         )
+
+    def _test_create_with_readonly_fields(self, url, model):
+        request_data = {
+            'description': 'Попытка задать readonly поля в объявлении',
+            'type': self.animal_type.slug,
+            'id': 666,
+            'pub_date': 'время покушать',
+            'author': self.user_another.id,
+            'open': False,
+            'active': True
+        }
+
+        self.author_client.post(
+            url,
+            request_data,
+            format=self.DEFAULT_FORMAT
+        )
+
+        new_advertisement = model.objects.first()
+
+        self.assertNotEqual(new_advertisement.author, self.another_client)
+        self.assertNotEqual(new_advertisement.id, 666)
+        self.assertNotEqual(new_advertisement.pub_date, 'время кушать')
+        self.assertTrue(new_advertisement.open)
+        self.assertFalse(new_advertisement.active)
+
+    def test_create_with_readonly_fields_lost(self):
+        """User can't set id, pub_date, author, open, active fields while
+        create lost advertisement."""
+        self._test_create_with_readonly_fields(reverse('api:lost-list'), Lost)
+
+    def test_create_with_readonly_fields_found(self):
+        """User can't set id, pub_date, author, open, active fields while
+        create found advertisement."""
+        self._test_create_with_readonly_fields(
+            reverse('api:found-list'), Found)
+
+    def _test_api_patch(self, reverse_url, model):
+        new_advertisement = model.objects.create(
+            author=self.user_author,
+            type=self.animal_type,
+            description='Тестовое животное для изменения',
+        )
+        request_url = reverse(
+            reverse_url,
+            kwargs={'pk': new_advertisement.pk}
+        )
+        advertisements_count = model.objects.count()
+
+        # Anonymous can't modify an advertisement.
+        new_description = 'Аноним попытался изменить объявление'
+        guest_response = self.guest_client.patch(
+            request_url,
+            {'description': new_description}
+        )
+
+        self.assertEqual(
+            guest_response.status_code,
+            status.HTTP_401_UNAUTHORIZED
+        )
+        self.assertNotEqual(model.objects.first().description, new_description)
+        self.assertEqual(advertisements_count, model.objects.count())
+
+        # Author can't modify an advertisement.
+        new_description = 'Автор объявления попытался его изменить'
+        author_response = self.author_client.patch(
+            request_url,
+            {'description': new_description}
+        )
+
+        self.assertEqual(
+            author_response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+        self.assertNotEqual(model.objects.first().description, new_description)
+        self.assertEqual(advertisements_count, model.objects.count())
+
+        # Admin can modify an advertisement.
+        new_description = 'Админ изменил описание объявления'
+        admin_response = self.admin_client.patch(
+            request_url,
+            {'description': new_description}
+        )
+
+        self.assertEqual(
+            admin_response.status_code,
+            status.HTTP_200_OK
+        )
+        self.assertEqual(model.objects.first().description, new_description)
+        self.assertEqual(advertisements_count, model.objects.count())
+
+    def test_api_patch_lost(self):
+        """Only admin can modify lost advertisement."""
+        self._test_api_patch('api:lost-detail', Lost)
+
+    def test_api_patch_found(self):
+        """Only admin can modify found advertisement."""
+        self._test_api_patch('api:found-detail', Found)
