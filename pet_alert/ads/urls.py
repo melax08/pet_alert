@@ -22,7 +22,7 @@ urlpatterns = [
          name='found_detail'
          ),
     path('found/map/', views.FoundMap.as_view(), name='found_map'),
-    path('profile/', views.profile, name='profile'),
+    path('profile/', views.Profile.as_view(), name='profile'),
     path('profile/active/', views.ProfileActiveList.as_view(), name='my_ads'),
     path('profile/inactive/',
          views.ProfileInactiveList.as_view(),

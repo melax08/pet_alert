@@ -397,3 +397,19 @@ class AdsApiTests(BaseApiTestCaseWithFixtures):
     def test_api_patch_found(self):
         """Only admin can modify found advertisement."""
         self._test_api_patch('api:found-detail', Found)
+
+    def test_api_delete_advertisement(self):
+        ...
+
+    def test_api_open_advertisement(self):
+        ...
+
+    def test_api_close_advertisement(self):
+        ...
+
+    def test_api_activate_advertisement(self):
+        ...
+
+    def test_api_deactivate_advertisement(self):
+        ...
+

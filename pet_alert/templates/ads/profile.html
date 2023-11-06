@@ -11,13 +11,13 @@
       {% include 'ads/includes/profile_nav.html' %}
     </aside>
     <div class="col-12 col-md-10">
-    {% if request.GET.success %}
-      <div class="alert alert-success" role="alert">
-  Данные были успешно изменены!
-</div>
-    {% endif %}
+      {% if request.GET.success %}
+        <div class="alert alert-success" role="alert">
+          Данные были успешно изменены!
+        </div>
+      {% endif %}
       <h3 class="mb-3">Настройки</h3>
-            {% if form.errors %}
+        {% if form.errors %}
           {% for field in form %}
             {% for error in field.errors %}
               <div class="alert alert-danger">
@@ -32,18 +32,16 @@
           {% endfor %}
         {% endif %}
       <form method="post">
-
       <div class="border-top border-bottom pt-3 pb-3">
-
-
-      <h6 class="mb-3">Личные данные</h6>
-      {% csrf_token %}
+        <h6 class="mb-3">Личные данные</h6>
+        {% csrf_token %}
         <div class="row mb-3">
           <label for="id_first_name" class="col-sm-2 col-form-label">Имя</label>
           <div class="col-sm-10">
             {{ form.first_name|addclass:'form-control' }}
           </div>
         </div>
+
         <div class="row mb-3">
           <label for="staticEmail"
                  class="col-sm-2 col-form-label">Email</label>
@@ -65,36 +63,31 @@
         </div>
 
         <div class="border-bottom pt-3 pb-3">
+          <h6 class="mb-3">Какая контактная информация видна в объявлениях?</h6>
 
-        <h6 class="mb-3">Какая контактная информация видна в объявлениях?</h6>
-
-        <div class="row pb-2">
-          <label for="id_contact_email" class="col-sm-2">Email</label>
-          <div class="col-sm-10">
-            <div class="form-check form-switch">
-              {{ form.contact_email|addclass:"form-check-input"}}
+          <div class="row pb-2">
+            <label for="id_contact_email" class="col-sm-2">Email</label>
+            <div class="col-sm-10">
+              <div class="form-check form-switch">
+                {{ form.contact_email|addclass:"form-check-input"}}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="row">
-          <label for="id_contact_phone" class="col-sm-2">Номер телефона</label>
-          <div class="col-sm-10 ">
-            <div class="form-check form-switch">
-              {{ form.contact_phone|addclass:"form-check-input"}}
+          <div class="row">
+            <label for="id_contact_phone" class="col-sm-2">Номер телефона</label>
+            <div class="col-sm-10 ">
+              <div class="form-check form-switch">
+                {{ form.contact_phone|addclass:"form-check-input"}}
+              </div>
             </div>
           </div>
+
         </div>
-
-      </div>
-
-
         <div class="mt-3">
-        <button type="submit" class="btn btn-pa-green mb-2">Сохранить</button>
-          </div>
+          <button type="submit" class="btn btn-pa-green mb-2">Сохранить</button>
+        </div>
       </form>
-
-
     </div>
   </div>
 {% endblock %}

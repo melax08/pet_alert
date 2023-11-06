@@ -11,12 +11,11 @@ from django.urls import reverse_lazy, reverse
 from django_registration import signals
 from django.conf import settings
 from django_registration.backends.activation.views import RegistrationView
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, OuterRef, Subquery, Count
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView
-from django.views.generic import DetailView, View
+from django.views.generic import DetailView, View, UpdateView
 
 from .constants import ADS_PER_PAGE, DIALOGS_PER_PAGE
 from .models import Found, Lost, Message, Dialog
@@ -24,7 +23,7 @@ from .forms import (FoundForm, LostForm, AuthorizedFoundForm,
                     AuthorizedLostForm, ProfileSettingsForm, SendMessageForm)
 from .filters import TypeFilter
 from .exceptions import BadRequest
-from users.forms import CreationForm, CreationFormWithoutPassword  # noqa
+from users.forms import CreationFormWithoutPassword
 
 
 REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
@@ -46,8 +45,6 @@ class IndexPage(TemplateView):
             'type').filter(active=True, open=True)[:4]
         context['losts'] = Lost.objects.select_related(
             'type').filter(active=True, open=True)[:4]
-        # if self.request.user.is_authenticated:
-        #     context['new_messages_count'] = Message.objects.filter(recipient=self.request.user, checked=False).count()
 
         return context
 
@@ -370,15 +367,18 @@ class ProfileInactiveList(ProfileAdsBase):
     active = False
 
 
-@login_required
-def profile(request):
-    template = 'ads/profile.html'
-    form = ProfileSettingsForm(request.POST or None, instance=request.user)
-    if form.is_valid():
-        request.user.first_name = form.cleaned_data['first_name']
-        request.user.save()
-        return redirect(reverse('ads:profile') + '?success=1')
-    return render(request, template, {'form': form})
+class Profile(LoginRequiredMixin, UpdateView):
+    """Show the current user settings and allow to edit some of them."""
+    template_name = 'ads/profile.html'
+    form_class = ProfileSettingsForm
+
+    def get_object(self, queryset=None):
+        """Set the current request user as instance of form."""
+        return self.request.user
+
+    def get_success_url(self):
+        """Return user to profile settings page with additional query param."""
+        return reverse('ads:profile') + '?success=1'
 
 
 class DialogList(LoginRequiredMixin, ListView):
