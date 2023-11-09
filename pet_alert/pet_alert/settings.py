@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+SILENCED_SYSTEM_CHECKS = []
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', default=get_random_secret_key())
 DEBUG = int(os.getenv('DJANGO_DEBUG', default=1))
@@ -127,10 +129,17 @@ else:
     }
 
 if 'test' in sys.argv:
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+    # https://developers.google.com/recaptcha/docs/faq?hl=ru#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+    SILENCED_SYSTEM_CHECKS.append('captcha.recaptcha_test_key_error')
+    RECAPTCHA_PUBLIC_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+    RECAPTCHA_PRIVATE_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -181,6 +190,8 @@ REST_FRAMEWORK = {
     ],
     'PAGE_SIZE': 10
 }
+
+SILENCED_SYSTEM_CHECKS.append('rest_framework.W001')
 
 SIMPLE_JWT = {
    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),

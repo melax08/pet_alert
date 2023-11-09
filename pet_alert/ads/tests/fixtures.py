@@ -14,7 +14,8 @@ class BaseTestCaseWithFixtures(TestCase):
         super().setUpClass()
         cls.user = User.objects.create_user(
             email='testuser@example.ru',
-            first_name='User1'
+            first_name='User1',
+            phone='88005553535'
         )
         cls.another_user = User.objects.create_user(
             email='anothertestuser@example.ru',
