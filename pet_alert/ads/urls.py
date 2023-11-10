@@ -6,8 +6,8 @@ app_name = 'ads'
 
 urlpatterns = [
     path('', views.IndexPage.as_view(), name='index'),
-    path('add/found/', views.add_found, name='add_found'),
-    path('add/lost/', views.add_lost, name='add_lost'),
+    path('add/found/', views.CreateFoundAdvertisement.as_view(), name='add_found'),
+    path('add/lost/', views.CreateLostAdvertisement.as_view(), name='add_lost'),
     path('add/success/', views.CreateAdSuccess.as_view(), name='add_success'),
     path('add/success-reg/',
          views.CreateAdWithRegSuccess.as_view(),
