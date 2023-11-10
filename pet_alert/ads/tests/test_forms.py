@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from django.urls import reverse
+from django.test import Client
 from django.contrib.auth.hashers import check_password
 from django_registration.backends.activation.views import RegistrationView
 
@@ -7,13 +8,13 @@ from .fixtures import BaseTestCaseWithFixtures
 from ..models import Lost, Found
 from users.forms import CreationFormWithoutPassword
 from users.models import User
-from ads.forms import LostForm
+from ads.forms import LostForm, FoundForm
 from users.views import INTERNAL_SET_SESSION_TOKEN
 
 
-class AdsFormsTests(BaseTestCaseWithFixtures):
-    # print(form['phone'].errors)
+# ToDo: проверить, что происходит при отправке почты.
 
+class AdsFormsTests(BaseTestCaseWithFixtures):
     def test_creation_form_without_password(self):
         """Creation form without password works correct."""
         count_of_users = User.objects.count()
@@ -73,20 +74,86 @@ class AdsFormsTests(BaseTestCaseWithFixtures):
                     'существует.')
         )
 
-    def test_lost_form_with_registration(self):
+    def _test_set_password_and_activate_user_with_empty_password(self, user):
         """
-        Guest user can create lost advertisement and register on a site at
+        User, who was registered by add new advertisement form (user without
+        password and is_active=False) has to go by link in his email. After
+        this, user has to set a new password for his account.
+        """
+        guest_client = Client()
+        registration_view = RegistrationView()
+        activation_key = registration_view.get_activation_key(user)
+        guest_client.get(
+            reverse(
+                'users:registration_activate',
+                kwargs={'activation_key': activation_key}
+            ),
+            follow=True
+        )
+
+        # Checks whether the client has the required parameter in the session
+        # to set a new password
+        self.assertTrue(guest_client.session.get(
+            INTERNAL_SET_SESSION_TOKEN))
+
+        new_password = 'PasPasPassWord!123'
+
+        form_data = {
+            'new_password1': new_password,
+            'new_password2': new_password
+        }
+
+        # User successful set the password and activate his account.
+        activation_response = guest_client.post(
+            reverse(
+                'users:registration_activate',
+                kwargs={'activation_key': 'set-password'}
+            ),
+            data=form_data,
+            follow=True
+        )
+
+        user.refresh_from_db()
+
+        self.assertRedirects(
+            activation_response, reverse('users:set_password_done')
+        )
+
+        self.assertTrue(user.is_active)
+        self.assertTrue(check_password(new_password, user.password))
+        # Auto login is working correctly.
+        self.assertTrue(activation_response.context['user'].is_authenticated)
+
+    def test_set_password_and_activate_new_user(self):
+        """Set password for nonactive user without password works correct."""
+        user = User.objects.create_user(
+            email='nonpassworduser@example.com',
+            password='',
+            is_active=False,
+            first_name='nonpassworduser'
+        )
+        self._test_set_password_and_activate_user_with_empty_password(user)
+
+    def _test_add_advertisement_form_with_registration(
+            self, model, model_form, add_advertisement_url, form_data
+    ):
+        """
+        Guest user can create advertisement and register on a site at
         the same time.
         - Advertisement creates with active = False, open = True
         and author = new author.
         - User creates with is_active = False and without password.
+        After registration, user has to go by link, that was sent to his email,
+        and set a new password for his account.
         """
-        ads_count_before = Lost.objects.count()
+        ads_count_before = model.objects.count()
         users_count_before = User.objects.count()
+
+        guest_client = Client()
 
         # Page with add advertisement form contains two forms
         # (for user creation and for advertisement creation).
-        guest_response = self.guest_client.get(reverse('ads:add_lost'))
+        guest_response = guest_client.get(add_advertisement_url)
         self.assertTrue(
             isinstance(
                 guest_response.context.get('form'),
@@ -96,10 +163,46 @@ class AdsFormsTests(BaseTestCaseWithFixtures):
         self.assertTrue(
             isinstance(
                 guest_response.context.get('ad_form'),
-                LostForm
+                model_form
             )
         )
 
+        guest_response = guest_client.post(
+            add_advertisement_url,
+            data=form_data,
+            follow=True
+        )
+        self.assertRedirects(guest_response, reverse('ads:add_success_reg'))
+        self.assertEqual(ads_count_before + 1, model.objects.count())
+        self.assertEqual(users_count_before + 1, User.objects.count())
+
+        # New user was correctly created.
+        new_user = User.objects.last()
+        self.assertTrue(User.objects.filter(
+            email=form_data['email'],
+            first_name=form_data['first_name']
+        ).exists())
+        self.assertTrue(check_password('', new_user.password))
+        self.assertFalse(new_user.is_active)
+
+        # New advertisement correctly created.
+        new_advertisement = model.objects.filter(
+                description=form_data['description'],
+                author=new_user,
+                address=form_data['address']
+            )
+        self.assertTrue(new_advertisement.exists())
+        new_advertisement = new_advertisement.first()
+        self.assertTrue(new_advertisement.open)
+        self.assertFalse(new_advertisement.active)
+        self.assertEqual(new_advertisement.author, new_user)
+
+        # Continuation of registration work correctly.
+        self._test_set_password_and_activate_user_with_empty_password(new_user)
+
+    def test_lost_form_with_registration(self):
+        """Lost advertisement created, user registered by unauthorized Lost
+        advertisement form."""
         form_data = {
             'address': 'Санкт-Петербург, Звенигородская улица, 26',
             'latitude': 59.918296,
@@ -113,84 +216,98 @@ class AdsFormsTests(BaseTestCaseWithFixtures):
             'g-recaptcha-response': '123123123'
         }
 
-        guest_response = self.guest_client.post(
+        self._test_add_advertisement_form_with_registration(
+            Lost,
+            LostForm,
             reverse('ads:add_lost'),
+            form_data
+        )
+
+    def test_found_form_with_registration(self):
+        """Found advertisement created, user registered by unauthorized Lost
+        advertisement form."""
+        form_data = {
+            'address': 'Санкт-Петербург, Звенигородская улица, 26',
+            'latitude': 59.918296,
+            'longitude': 30.341885,
+            'type': self.animal_type.pk,
+            'description': 'Нашел и регистрируюсь',
+            'condition': 'OK',
+            'first_name': 'Бен',
+            'phone': '88005553571',
+            'email': 'user3@example.com',
+            'g-recaptcha-response': '123123123'
+        }
+
+        self._test_add_advertisement_form_with_registration(
+            Found,
+            FoundForm,
+            reverse('ads:add_found'),
+            form_data
+        )
+
+    def _test_add_advertisement_form(
+            self, model, add_advertisement_url, form_data
+    ):
+        """Authorized user can create an advertisement."""
+        ads_count_before = model.objects.count()
+        users_count_before = User.objects.count()
+
+        response = self.authorized_client.post(
+            add_advertisement_url,
             data=form_data,
             follow=True
         )
-        self.assertRedirects(guest_response, reverse('ads:add_success_reg'))
-        self.assertEqual(ads_count_before + 1, Lost.objects.count())
-        self.assertEqual(users_count_before + 1, User.objects.count())
 
-        # New user was correctly created.
-        new_user = User.objects.last()
-        self.assertTrue(User.objects.filter(
-            email=form_data['email'],
-            first_name=form_data['first_name']
-        ).exists())
-        self.assertTrue(check_password('', new_user.password))
-        self.assertFalse(new_user.is_active)
+        self.assertRedirects(response, reverse('ads:add_success'))
+        self.assertEqual(ads_count_before + 1, model.objects.count())
+        self.assertEqual(users_count_before, User.objects.count())
 
-        # New advertisement correctly created.
-        new_advertisement = Lost.objects.filter(
+        new_advertisement = model.objects.filter(
                 description=form_data['description'],
-                pet_name=form_data['pet_name'],
+                author=self.user,
                 address=form_data['address']
             )
         self.assertTrue(new_advertisement.exists())
         new_advertisement = new_advertisement.first()
         self.assertTrue(new_advertisement.open)
         self.assertFalse(new_advertisement.active)
-        self.assertEqual(new_advertisement.author, new_user)
+        self.assertEqual(new_advertisement.author, self.user)
 
-        # Continuation of registration work correctly.
-
-        # Get the activation key for the new user and make a response to
-        # activate url with this key.
-        registration_view = RegistrationView()
-        activation_key = registration_view.get_activation_key(new_user)
-        self.guest_client.get(
-            reverse(
-                'users:registration_activate',
-                kwargs={'activation_key': activation_key}
-            ),
-            follow=True
-        )
-
-        # Check is client have a session to set password
-        self.assertTrue(self.guest_client.session.get(
-            INTERNAL_SET_SESSION_TOKEN))
-
-        new_password = 'SomeHardPassword123'
-
+    def test_lost_add_advertisement_form(self):
+        """Lost advertisement form with authorized user works correct."""
         form_data = {
-            'new_password1': new_password,
-            'new_password2': new_password
+            'address': 'Санкт-Петербург, Кронштадт, Екатерининский парк',
+            'latitude': 59.994768,
+            'longitude': 29.769865,
+            'type': self.animal_type.pk,
+            'description': 'Потерял животное и я уже зареган',
+            'pet_name': 'Бетон',
+            'g-recaptcha-response': '123123123'
         }
 
-        # User successful set the password and activate his account.
-        activation_response = self.guest_client.post(
-            reverse(
-                'users:registration_activate',
-                kwargs={'activation_key': 'set-password'}
-            ),
-            data=form_data,
-            follow=True
+        self._test_add_advertisement_form(
+            Lost,
+            reverse('ads:add_lost'),
+            form_data
         )
 
-        new_user.refresh_from_db()
+    def test_found_add_advertisement_form(self):
+        """Found advertisement form with authorized user works correct."""
+        form_data = {
+            'address': 'Санкт-Петербург, Кронштадт, Екатерининский парк',
+            'latitude': 59.994768,
+            'longitude': 29.769865,
+            'type': self.animal_type.pk,
+            'description': 'Нашел и я уже зареган',
+            'condition': 'OK',
+            'g-recaptcha-response': '123123123'
+        }
 
-        self.assertRedirects(
-            activation_response, reverse('users:set_password_done')
+        self._test_add_advertisement_form(
+            Found,
+            reverse('ads:add_found'),
+            form_data
         )
 
-        self.assertTrue(new_user.is_active)
-        self.assertTrue(check_password(new_password, new_user.password))
-        # Auto login is working correct.
-        self.assertTrue(activation_response.context['user'].is_authenticated)
 
-
-        # ToDo: Перепроверить метод выше
-        # ToDo: заменить guest_client на другого клиента, который будет только в этом методе
-        # ToDo: Сделать ее универсальной и сделать проверку для Found объявлений
-        # ToDo: разбить функцию на отдельные юнит тесты?
