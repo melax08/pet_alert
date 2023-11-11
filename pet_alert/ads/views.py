@@ -14,7 +14,6 @@ from django_registration.backends.activation.views import RegistrationView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, OuterRef, Subquery, Count
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import CreateView
 from django.views.generic import DetailView, View, UpdateView
 
 from .constants import ADS_PER_PAGE, DIALOGS_PER_PAGE
@@ -61,136 +60,103 @@ class CreateLostAdvertisement(RegistrationView):
     email_subject_template = 'users/activation_email_subject.txt'
     email_body_template = 'users/activation_email_body.txt'
     template_name = 'ads/add_lost.html'
-    form_class = CreationFormWithoutPassword
+    registration_form_class = CreationFormWithoutPassword
     ad_with_reg_form_class = LostForm
     ad_without_reg_form_class = AuthorizedLostForm
     disallowed_url = reverse_lazy("users:signup_disallowed")
 
-    def register(self, ad_form, form=None):
+    def register(self, ad_form, reg_form=None):
         """
         Register a new (inactive) user account, generate an activation key
         and email it to the user, create advertisement
         and set new user the author of it.
         """
-        if form:
-            new_user = self.create_inactive_user(form)
+        if reg_form:
+            new_user = self.create_inactive_user(reg_form)
             signals.user_registered.send(
                 sender=self.__class__, user=new_user, request=self.request
             )
-            adv_instance = ad_form.save(commit=False)
-            adv_instance.author = new_user
-            adv_instance.save()
-            return new_user
+            author_to_set = new_user
         else:
-            adv_instance = ad_form.save(commit=False)
-            adv_instance.author = self.request.user
-            adv_instance.save()
+            author_to_set = self.request.user
+
+        adv_instance = ad_form.save(commit=False)
+        adv_instance.author = author_to_set
+        adv_instance.save()
+
+        if reg_form:
+            return author_to_set
 
     def post(self, request, *args, **kwargs):
         """
         Handle POST requests: instantiate the forms instance with the passed
         POST variables and then check if it's valid.
         """
-        form = self.get_form()
-        ad_form = self.get_ad_form()
-        if form and form.errors.get('phone'):
-            del form.errors['phone']
-        if ad_form.is_valid() and (form is None or form.is_valid()):
-            return self.form_valid(form, ad_form)
-        else:
-            return self.form_invalid(form, ad_form)
+        reg_form = self.get_registration_form()
+        ad_form = self.get_form()
+
+        if reg_form and reg_form.errors.get('phone'):
+            del reg_form.errors['phone']
+
+        if ad_form.is_valid() and (reg_form is None or reg_form.is_valid()):
+            return self.form_valid(reg_form, ad_form)
+
+        return self.form_invalid(reg_form, ad_form)
 
     def get_success_url(self, user=None):
+        """Return the URL to redirect after successful POST request."""
         if self.request.user.is_authenticated:
             return reverse_lazy('ads:add_success')
 
         return reverse_lazy('ads:add_success_reg')
 
-    def form_valid(self, form, ad_form):
+    def form_valid(self, reg_form, ad_form):
         """If the forms are valid, register user, create
         post and return success url."""
         return HttpResponseRedirect(
-            self.get_success_url(self.register(ad_form=ad_form, form=form)))
+            self.get_success_url(
+                self.register(ad_form=ad_form, reg_form=reg_form)
+            )
+        )
 
-    def form_invalid(self, form, ad_form):
+    def form_invalid(self, reg_form, ad_form):
         """If the forms are invalid, render the invalid forms."""
-        return self.render_to_response(self.get_context_data(form=form,
-                                                             ad_form=ad_form))
+        return self.render_to_response(
+            self.get_context_data(reg_form=reg_form, ad_form=ad_form))
 
     def get_form(self, form_class=None):
-        """Returns an instance of the form to be used in this view.
-        Deleted check for user_model."""
-        if not self.request.user.is_authenticated:
-            if form_class is None:
-                form_class = self.get_form_class()
-            return form_class(**self.get_form_kwargs())
+        """Returns an instance of add advertisement form to be used in this
+        view. Deleted check for user_model from RegistrationView."""
+        if form_class is None:
+            form_class = self.get_form_class()
 
-    def get_ad_form(self):
-        """Returns an instance of the ad form to be used in this view."""
+        return form_class(**self.get_form_kwargs())
+
+    def get_form_class(self):
+        """Return a form class depending on whether the user is logged in."""
         if self.request.user.is_authenticated:
-            return self.ad_without_reg_form_class(**self.get_form_kwargs())
+            return self.ad_without_reg_form_class
 
-        return self.ad_with_reg_form_class(**self.get_form_kwargs())
+        return self.ad_with_reg_form_class
+
+    def get_registration_form(self):
+        """If user is not authenticated return the registration form."""
+        if not self.request.user.is_authenticated:
+            return self.registration_form_class(**self.get_form_kwargs())
 
     def get_context_data(self, **kwargs):
         """Insert the forms into the context dict."""
-        if "form" not in kwargs:
-            kwargs["form"] = self.get_form()
-            kwargs["ad_form"] = self.get_ad_form()
+        if "ad_form" not in kwargs:
+            kwargs["reg_form"] = self.get_registration_form()
+            kwargs["ad_form"] = self.get_form()
         return super().get_context_data(**kwargs)
 
 
 class CreateFoundAdvertisement(CreateLostAdvertisement):
+    """Just like the CreateLostAdvertisement but for Found advertisements."""
     template_name = 'ads/add_found.html'
     ad_with_reg_form_class = FoundForm
     ad_without_reg_form_class = AuthorizedFoundForm
-
-# class CreateAdAuthorized(LoginRequiredMixin, CreateView):
-#     """Base class for create advertisement pages.
-#     You need to specify template_name and form_class while inheritance."""
-#     success_url = reverse_lazy('ads:add_success')
-#
-#     def form_valid(self, form):
-#         """Save current user as author of advertisement."""
-#         form.instance.author = self.request.user
-#         return super().form_valid(form)
-#
-#     def get_context_data(self, **kwargs):
-#         """Insert the form into the context dict with custom
-#         template variable name."""
-#         # ToDo: изменить во вьюхе с добавлением объявления и регистрацией
-#         #  дефолтное поле для формы объявления с ad_form на просто form
-#         #  после этого, убрать этот метод
-#         context = super().get_context_data(**kwargs)
-#         context["ad_form"] = context["form"]
-#         context["form"] = None
-#         return context
-#
-#
-# def add_found(request):
-#     """Handler for add found page.
-#     Authorized user and guest will see different pages."""
-#     if request.user.is_authenticated:
-#         return CreateAdAuthorized.as_view(
-#             template_name='ads/add_found.html',
-#             form_class=AuthorizedFoundForm
-#         )(request)
-#     return AdWithRegistration.as_view(
-#         template_name='ads/add_found.html'
-#     )(request)
-#
-#
-# def add_lost(request):
-#     """Handler for add lost page.
-#     Authorized user and guest will see different pages."""
-#     if request.user.is_authenticated:
-#         return CreateAdAuthorized.as_view(
-#             template_name='ads/add_lost.html',
-#             form_class=AuthorizedLostForm
-#         )(request)
-#     return AdWithRegistration.as_view(
-#         template_name='ads/add_lost.html'
-#     )(request)
 
 
 class CreateAdSuccess(TemplateView):

@@ -156,7 +156,7 @@ class AdsFormsTests(BaseTestCaseWithFixtures):
         guest_response = guest_client.get(add_advertisement_url)
         self.assertTrue(
             isinstance(
-                guest_response.context.get('form'),
+                guest_response.context.get('reg_form'),
                 CreationFormWithoutPassword
             )
         )
