@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% load static %}
+{% load user_filters %}
+{% block title %}
+  Список чатов
+{% endblock %}
+{% block content %}
+  {% include 'ads/includes/navigation.html' %}
+
+  <div class="row">
+
+    <aside class="col-12 col-md-2">
+      {% include 'ads/includes/profile_nav.html' %}
+    </aside>
+
+    <div class="col-12 col-md-10">
+
+      <h3 class="pb-2">Список диалогов</h3>
+
+    {% if not chats %}
+      <p class="text-muted">У вас еще нет начатых диалогов</p>
+    {% else %}
+
+      {% for chat in chats %}
+        <article class="border-top border-start border-end {% if forloop.last %}rounded-bottom border-bottom{% endif %}">
+          <div class="row g-0 position-relative">
+            <div class="col-xs-3 col-xl-2 mb-md-0 p-3 pb-0 pb-md-3">
+              {% if chat.advertisement_group.image %}
+                {% thumbnail chat.advertisement_group.image "100x100" crop="center" as im %}
+                <img src="{{ im.url }}" width="{{ im.width }}"
+                     height="{{ im.height }}" class="rounded">
+                {% endthumbnail %}
+              {% else %}
+                {% thumbnail chat.advertisement_group.type.default_image "100x100" crop="center" as im %}
+                  <img src="{{ im.url }}" width="{{ im.width }}"
+                      height="{{ im.height }}" class="rounded">
+                {% endthumbnail %}
+              {% endif %}
+            </div>
+
+            <div class="col-xs-9 col-xl-10 p-3">
+              <div class="d-flex justify-content-between">
+                <p>{% if request.user == chat.author %} {{ chat.questioner.first_name }} {% else %} {{ chat.author.first_name }} {% endif %} {% if chat.unread_messages %} <span class="badge bg-pa-red rounded-pill"> {{ chat.unread_messages }} </span> {% endif %}</p>
+                <p class="text-muted">{{ chat.latest_message_date|date:"j E" }}</p>
+              </div>
+              <p class="text-muted text-break">{{ chat.latest_message_content|truncatechars:100 }}</p>
+
+              <a href="{% url 'ads:messages_chat' chat.id %}" class="pa-link stretched-link"></a>
+            </div>
+
+          </div>
+        </article>
+
+      {% endfor %}
+
+      {% include 'ads/includes/paginator.html' %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

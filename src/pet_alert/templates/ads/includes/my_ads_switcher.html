@@ -1,0 +1,22 @@
+  {% with request.resolver_match.view_name as view_name %}
+    <div class="row g-0 position-relative">
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a
+                  class="nav-link {% if view_name == 'ads:my_ads' %}active{% endif %}"
+                  href="{% url 'ads:my_ads' %}"
+          >
+            Активные ({{ active_count }})
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+                  class="nav-link {% if view_name == 'ads:my_ads_inactive' %}active{% endif %}"
+                  href="{% url 'ads:my_ads_inactive' %}"
+          >
+            Неактивные ({{ inactive_count }})
+          </a>
+        </li>
+      </ul>
+    </div>
+  {% endwith %}

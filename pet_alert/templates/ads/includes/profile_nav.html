@@ -1,9 +1,0 @@
-{% with request.resolver_match.view_name as view_name %}
-<div class="list-group list-group-flush pb-2">
-  <a href="{% url 'ads:my_ads' %}" class="list-group-item list-group-item-action {% if view_name == 'ads:my_ads' or view_name == 'ads:my_ads_inactive' %} text-pa-green {% endif %}">
-    Мои объявления
-  </a>
-  <a href="{% url 'ads:messages' %}" class="list-group-item list-group-item-action {% if view_name == 'ads:messages' or view_name == 'ads:messages_chat' %} text-pa-green {% endif %}">Сообщения</a>
-  <a href="{% url 'ads:profile' %}" class="list-group-item list-group-item-action {% if view_name == 'ads:profile' %} text-pa-green {% endif %}">Настройки</a>
-</div>
-{% endwith %}
