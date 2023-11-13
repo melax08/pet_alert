@@ -8,7 +8,7 @@ register = template.Library()
 @register.filter
 def addclass(field, css):
     """Add specified custom css class to the field."""
-    return field.as_widget(attrs={'class': css})
+    return field.as_widget(attrs={"class": css})
 
 
 @register.filter
@@ -31,13 +31,15 @@ def addyamaps():
     {{ yamap|safe }}
     """
     maps_url_with_api_key = (
-        f'https://api-maps.yandex.ru/2.1/?load=package.standard&lang=ru_RU'
-        f'&amp;apikey={settings.YA_MAPS_API_KEY}'
-        f'&suggest_apikey={settings.YA_MAPS_SUGGEST_API_KEY}'
+        f"https://api-maps.yandex.ru/2.1/?load=package.standard&lang=ru_RU"
+        f"&amp;apikey={settings.YA_MAPS_API_KEY}"
+        f"&suggest_apikey={settings.YA_MAPS_SUGGEST_API_KEY}"
     )
 
-    return (f'<script async src="{maps_url_with_api_key}&onload=getYaMap" '
-            f'type="text/javascript"></script>')
+    return (
+        f'<script async src="{maps_url_with_api_key}&onload=getYaMap" '
+        f'type="text/javascript"></script>'
+    )
 
 
 @register.simple_tag
@@ -51,6 +53,6 @@ def get_proper_elided_page_range(p, number, on_each_side=3, on_ends=2):
     {% endfor %}
     """
     paginator = Paginator(p.object_list, p.per_page)
-    return paginator.get_elided_page_range(number=number,
-                                           on_each_side=on_each_side,
-                                           on_ends=on_ends)
+    return paginator.get_elided_page_range(
+        number=number, on_each_side=on_each_side, on_ends=on_ends
+    )

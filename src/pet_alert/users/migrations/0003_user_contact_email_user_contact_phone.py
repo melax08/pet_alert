@@ -4,20 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0002_alter_user_email_alter_user_first_name'),
+        ("users", "0002_alter_user_email_alter_user_first_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='contact_email',
-            field=models.BooleanField(default=False, help_text='Показывать ли контактный email на страницах объявлений пользователя?', verbose_name='Показывать контактный email'),
+            model_name="user",
+            name="contact_email",
+            field=models.BooleanField(
+                default=False,
+                help_text="Показывать ли контактный email на страницах объявлений пользователя?",
+                verbose_name="Показывать контактный email",
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='contact_phone',
-            field=models.BooleanField(default=True, help_text='Показывать ли контактный телефон на страницах объявлений пользователя?', verbose_name='Показывать контактный телефон'),
+            model_name="user",
+            name="contact_phone",
+            field=models.BooleanField(
+                default=True,
+                help_text="Показывать ли контактный телефон на страницах объявлений пользователя?",
+                verbose_name="Показывать контактный телефон",
+            ),
         ),
     ]

@@ -1,7 +1,6 @@
-from rest_framework import serializers
+from ads.models import AnimalType, Found, Lost  # noqa
 from django.contrib.auth import get_user_model
-
-from ads.models import AnimalType, Lost, Found  # noqa
+from rest_framework import serializers
 
 User = get_user_model()
 
@@ -11,22 +10,21 @@ class AnimalTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AnimalType
-        fields = '__all__'
+        fields = "__all__"
 
 
 class AdsBaseSerializer(serializers.ModelSerializer):
     """Base serializer class for advertisement views."""
+
     author = serializers.PrimaryKeyRelatedField(
-        default=serializers.CurrentUserDefault(),
-        read_only=True
+        default=serializers.CurrentUserDefault(), read_only=True
     )
     type = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=AnimalType.objects.all()
+        slug_field="slug", queryset=AnimalType.objects.all()
     )
 
     class Meta:
-        read_only_fields = ('author', 'pub_date', 'id')
+        read_only_fields = ("author", "pub_date", "id")
 
 
 class LostAdListSerializer(AdsBaseSerializer):
@@ -37,7 +35,7 @@ class LostAdListSerializer(AdsBaseSerializer):
 
     class Meta(AdsBaseSerializer.Meta):
         model = Lost
-        exclude = ('active', 'open')
+        exclude = ("active", "open")
 
 
 class FoundAdListSerializer(LostAdListSerializer):
@@ -55,8 +53,8 @@ class LostAdDetailSerializer(AdsBaseSerializer):
 
     class Meta(AdsBaseSerializer.Meta):
         model = Lost
-        fields = '__all__'
-        read_only_fields = ('author', 'pub_date', 'id', 'open', 'active')
+        fields = "__all__"
+        read_only_fields = ("author", "pub_date", "id", "open", "active")
 
 
 class FoundAdDetailSerializer(LostAdDetailSerializer):

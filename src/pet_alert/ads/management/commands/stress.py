@@ -1,10 +1,9 @@
 import random
 import string
 
-from django.core.management.base import BaseCommand, CommandError
+from ads.models import AnimalType, Lost
 from django.contrib.auth import get_user_model
-
-from ads.models import Lost, AnimalType
+from django.core.management.base import BaseCommand
 
 NUMBER_OF_ADS_TO_CREATE: int = 10000
 
@@ -17,8 +16,8 @@ def _get_random_animal_type():
 
 def _get_random_coords():
     return {
-        'latitude': round(random.random() * random.randint(1, 179), 6),
-        'longitude': round(random.random() * random.randint(1, 89), 6)
+        "latitude": round(random.random() * random.randint(1, 179), 6),
+        "longitude": round(random.random() * random.randint(1, 89), 6),
     }
 
 
@@ -27,8 +26,12 @@ def _get_random_age():
 
 
 def _get_random_string(x, y):
-    return ''.join([''.join(random.choices(string.ascii_letters))
-                    for _ in range(random.randint(x, y))])
+    return "".join(
+        [
+            "".join(random.choices(string.ascii_letters))
+            for _ in range(random.randint(x, y))
+        ]
+    )
 
 
 def _get_random_description():
@@ -40,32 +43,34 @@ def _get_random_pet_name():
 
 
 class Command(BaseCommand):
-    help = 'Создает много объявлений с рандомными данными.'
+    help = "Создает много объявлений с рандомными данными."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '-n', '--number_ads', type=int, default=NUMBER_OF_ADS_TO_CREATE
+            "-n", "--number_ads", type=int, default=NUMBER_OF_ADS_TO_CREATE
         )
 
     def handle(self, *args, **options):
         user = User.objects.create_user(
-            email='stress@example.com',
-            first_name='Stress',
-            password='SomePass123',
-            phone='+78005553535'
+            email="stress@example.com",
+            first_name="Stress",
+            password="SomePass123",
+            phone="+78005553535",
         )
 
         ads = []
-        for _ in range(options['number_ads']):
-            ads.append(Lost(
-                address=_get_random_description(),
-                description=_get_random_description(),
-                age=_get_random_age(),
-                active=True,
-                open=True,
-                pet_name=_get_random_pet_name(),
-                type=_get_random_animal_type(),
-                author=user,
-                **_get_random_coords()
-            ))
+        for _ in range(options["number_ads"]):
+            ads.append(
+                Lost(
+                    address=_get_random_description(),
+                    description=_get_random_description(),
+                    age=_get_random_age(),
+                    active=True,
+                    open=True,
+                    pet_name=_get_random_pet_name(),
+                    type=_get_random_animal_type(),
+                    author=user,
+                    **_get_random_coords()
+                )
+            )
         Lost.objects.bulk_create(ads)

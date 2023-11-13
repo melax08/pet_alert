@@ -1,16 +1,16 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.views import PasswordContextMixin
 from django.core import signing
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView
-from django.urls import reverse_lazy
-from django.shortcuts import redirect
-from django.contrib.auth.views import PasswordContextMixin
-from django.contrib.auth import login as auth_login
-from django.utils.translation import gettext_lazy as _
 from django_registration import signals
 
 from .forms import CustomSetPasswordForm
@@ -29,8 +29,9 @@ class CustomActivationView(PasswordContextMixin, FormView):
     he needs to follow the link and set a password for the account,
     after that, the account will be activated.
     """
+
     success_url = reverse_lazy("users:set_password_done")
-    template_name = 'users/password_set_confirm.html'
+    template_name = "users/password_set_confirm.html"
     form_class = CustomSetPasswordForm
     post_reset_login = True
     post_reset_login_backend = None
@@ -41,13 +42,12 @@ class CustomActivationView(PasswordContextMixin, FormView):
     @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):
         self.validlink = False
-        key = kwargs.get('activation_key')
+        key = kwargs.get("activation_key")
         self.user = self.get_user(key)
 
         if self.user is None:
             if key == self.reset_url_token:
-                session_token = self.request.session.get(
-                    INTERNAL_SET_SESSION_TOKEN)
+                session_token = self.request.session.get(INTERNAL_SET_SESSION_TOKEN)
                 self.user = self.get_user(session_token)
                 if self.user is not None:
                     self.validlink = True
@@ -55,8 +55,7 @@ class CustomActivationView(PasswordContextMixin, FormView):
         else:
             if self.user.is_empty_password:
                 self.request.session[INTERNAL_SET_SESSION_TOKEN] = key
-                redirect_url = self.request.path.replace(key,
-                                                         self.reset_url_token)
+                redirect_url = self.request.path.replace(key, self.reset_url_token)
                 return HttpResponseRedirect(redirect_url)
             else:
                 self.user.is_active = True
@@ -65,8 +64,7 @@ class CustomActivationView(PasswordContextMixin, FormView):
                 )
                 self.user.save()
                 auth_login(self.request, self.user)
-                return redirect(reverse_lazy(
-                    'users:signup_activation_complete'))
+                return redirect(reverse_lazy("users:signup_activation_complete"))
 
         # Display the "account activation unsuccessful" page.
         return self.render_to_response(self.get_context_data())
@@ -85,10 +83,12 @@ class CustomActivationView(PasswordContextMixin, FormView):
             user = User.objects.get(**{User.USERNAME_FIELD: username})
             if user.is_active:
                 user = None
-        except (signing.SignatureExpired,
-                signing.BadSignature,
-                User.DoesNotExist,
-                TypeError):
+        except (
+            signing.SignatureExpired,
+            signing.BadSignature,
+            User.DoesNotExist,
+            TypeError,
+        ):
             user = None
         return user
 

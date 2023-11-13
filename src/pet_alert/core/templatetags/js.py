@@ -1,8 +1,7 @@
-from django.utils.safestring import mark_safe
-from django import template
-
 import json
 
+from django import template
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
