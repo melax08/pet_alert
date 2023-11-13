@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "pet-alert"
+version = "1.0.0"
+description = "A web application that allows people to search for missing animals and report those found"
+authors = ["Ilya Malashenko (github: melax08)"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "4.2.1"
+django-filter = "23.2"
+django-phonenumber-field = "7.1.0"
+django-recaptcha = "3.0.0"
+django-registration = "3.3"
+gunicorn = "20.1.0"
+phonenumberslite = "8.13.11"
+pillow = "10.0.0"
+psycopg2-binary = "2.9.6"
+python-dotenv = "0.21.1"
+sorl-thumbnail = "12.9.0"
+djangorestframework = "3.14.0"
+djoser = "2.2.0"
+djangorestframework-simplejwt = "5.2.2"
+django-debug-toolbar = "4.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

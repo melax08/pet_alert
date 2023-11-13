@@ -10,7 +10,9 @@ services:
     environment:
       - TZ=Europe/Moscow
   web:
-    build: ../src/pet_alert
+    build:
+      context: ..
+      dockerfile: Dockerfile
     restart: always
     volumes:
       - static_volume:/app/static/
