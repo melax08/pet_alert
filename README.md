@@ -91,6 +91,63 @@
 
 </details>
 
+## Установка и эксплуатация
+
+<details>
+  <summary>Локальная установка, запуск, тестирование (без Docker)</summary>
+  <br>
+
+### Установка проекта локально (без Docker)
+
+1. Устанавливаем инструмент для работы с виртуальным окружением и сборки пакетов `poetry`, [инструкция в официальной документации](https://python-poetry.org/docs/#installation).
+2. Клонируем репозиторий с проектом и переходим в его директорию:
+```shell
+git clone https://github.com/melax08/pet_alert.git && cd pet_alert
+```
+3. Устанавливаем зависимости:
+```shell
+poetry install
+```
+4. Копируем файл `.env.example` с новыми названием `.env` и заполняем его необходимыми данными:
+```shell
+cp .env.example .env && nano .env
+```
+5. Подготавливаем бэкенд к работе:
+```shell
+poetry run python3 src/pet_alert/manage.py migrate
+```
+
+Опционально. Создаем суперпользователя:
+```shell
+poetry run python3 manage.py createsuperuser
+```
+
+### Запуск проекта локально (без Docker)
+
+Переходим в каталог с проектом:
+```shell
+cd src/pet_alert
+```
+
+Запускаем проект:
+```shell
+poetry run python3 manage.py runserver
+```
+
+Локальный проект будет доступен по http://127.0.0.1:8000
+
+### Запуск тестов
+
+Чтобы запустить `unittest` тестирование работы функционала Django-приложений, выполним команду:
+
+```shell
+poetry run python3 manage.py test -v 2
+```
+
+</details>
+
+
+
 <!-- MARKDOWN LINKS & BADGES -->
 
 [Python-url]: https://www.python.org/

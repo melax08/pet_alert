@@ -10,7 +10,7 @@ RUN poetry config virtualenvs.create false && poetry install --no-root --no-dire
 
 COPY src/pet_alert ./
 
-COPY entrypoint.sh ./
+COPY entrypoint.sh .env ./
 
 RUN chmod +x entrypoint.sh
 

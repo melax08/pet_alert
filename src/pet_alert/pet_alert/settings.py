@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import timedelta
+from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
@@ -9,16 +10,18 @@ load_dotenv()
 
 SILENCED_SYSTEM_CHECKS = []
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", default=get_random_secret_key())
-DEBUG = int(os.getenv("DJANGO_DEBUG", default=1))
+DEBUG = int(os.getenv("DJANGO_DEBUG", default=0))
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", default="*").split()
 LOCAL = int(os.getenv("LOCAL", default=0))
 
 CSRF_FAILURE_VIEW = "core.views.csrf_failure"
 if not LOCAL:
     CSRF_COOKIE_SECURE = True
-    CSRF_TRUSTED_ORIGINS = ["https://*.pet-alert.ru"]
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://*.{os.getenv('WEBSITE_HOST', default='127.0.0.1')}"
+    ]
 
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "ads:index"
@@ -31,12 +34,15 @@ AUTH_USER_MODEL = "users.User"
 ACCOUNT_ACTIVATION_DAYS = 30
 REGISTRATION_OPEN = True
 
+EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
 
-if LOCAL:
-    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-    EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.filebased.EmailBackend"
+    if LOCAL
+    else "django.core.mail.backends.smtp.EmailBackend",
+)
 
 DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER", default="no-reply@pet-alert.ru")
 EMAIL_HOST = os.getenv("EMAIL_HOST", default="localhost")
@@ -46,10 +52,9 @@ EMAIL_USE_SSL = int(os.getenv("EMAIL_USE_SSL", default=1))
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", default="no-reply@pet-alert.ru")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", default="123123")
 
-RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY", default="123")
-RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY", default="321")
+RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
+RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
 RECAPTCHA_REQUIRED_SCORE = float(os.getenv("RECAPTCHA_REQUIRED_SCORE", default=0.6))
-
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -88,7 +93,7 @@ INTERNAL_IPS = [
 
 ROOT_URLCONF = "pet_alert.urls"
 
-TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+TEMPLATES_DIR = BASE_DIR / "templates"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -113,7 +118,7 @@ if LOCAL:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 else:
@@ -130,15 +135,12 @@ else:
 
 if "test" in sys.argv:
     EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-    EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
+    EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "NAME": BASE_DIR / "db.sqlite3",
     }
-    # https://developers.google.com/recaptcha/docs/faq?hl=ru#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
     SILENCED_SYSTEM_CHECKS.append("captcha.recaptcha_test_key_error")
-    RECAPTCHA_PUBLIC_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-    RECAPTCHA_PRIVATE_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -167,15 +169,50 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOG_PATH = BASE_DIR.parent / ".data" / os.getenv("LOG_DIR", "logs")
+LOG_PATH.mkdir(parents=True, exist_ok=True)
+LOG_PATH = LOG_PATH / "backend.log"
+LOG_LEVEL = os.getenv("LOG_LEVEL", default="INFO")
+LOG_FORMAT = "[%(asctime)s,%(msecs)d] %(levelname)s [%(name)s:%(lineno)s] %(message)s"
+LOG_DT_FORMAT = "%d.%m.%y %H:%M:%S"
+
+LOGGING = {
+    "version": 1,
+    "disable_exising_loggers": False,
+    "formatters": {
+        "general": {
+            "format": LOG_FORMAT,
+            "datefmt": LOG_DT_FORMAT,
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": LOG_LEVEL,
+            "formatter": "general",
+        },
+        "file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 14,
+            "level": LOG_LEVEL,
+            "filename": LOG_PATH,
+            "formatter": "general",
+        },
+    },
+    "loggers": {"django": {"level": LOG_LEVEL, "handlers": ["console", "file"]}},
+}
+
+
 STATIC_URL = "/static/"
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 if LOCAL:
-    STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+    STATICFILES_DIRS = ((BASE_DIR / "static"),)
 else:
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = BASE_DIR / "media"
 
 ANIMAL_ICONS_PATH = "main/img/animal-icons"
 ANIMAL_DEFAULT_IMG_PATH = "main/img/default-images"

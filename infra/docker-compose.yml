@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:13.0-alpine
+    image: postgres:16-bookworm
     volumes:
       - database:/var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - ../.env
     environment:
       - TZ=Europe/Moscow
   web:
@@ -17,10 +17,11 @@ services:
     volumes:
       - static_volume:/app/static/
       - media_volume:/app/media/
+      - ./.data/:/.data/
     depends_on:
       - db
     env_file:
-      - ./.env
+      - ../.env
     environment:
       - TZ=Europe/Moscow
   nginx:
