@@ -146,6 +146,13 @@ poetry run python3 manage.py test -v 2
 
 </details>
 
+<details><summary>Установка и запуск в Docker-контейнерах</summary>
+
+<br>
+
+Инструкция в разработке.
+
+</details>
 
 
 <!-- MARKDOWN LINKS & BADGES -->

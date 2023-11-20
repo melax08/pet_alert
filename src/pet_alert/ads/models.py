@@ -10,9 +10,13 @@ from .constants import DESCRIPTION_MAP_LIMIT
 User = get_user_model()
 
 CONDITIONS_OF_PET = [("OK", "Здоровое"), ("BD", "Больное"), ("CR", "Критическое")]
+MAP_IMAGE_QUALITY = 99
 
 
 class AnimalType(models.Model):
+    """The kind of animal. Used for filtering and to display default icons and images
+    for various ads."""
+
     name = models.CharField(
         "Название вида",
         max_length=50,
@@ -31,7 +35,7 @@ class AnimalType(models.Model):
         "Изображение по умолчанию",
         upload_to=settings.ANIMAL_DEFAULT_IMG_PATH,
         help_text=(
-            "Изображение для животного, " "которое будет отображаться по умолчанию."
+            "Изображение для животного, которое будет отображаться по умолчанию."
         ),
     )
 
@@ -44,11 +48,13 @@ class AnimalType(models.Model):
 
 
 class AdsAbstract(models.Model):
-    pub_date = models.DateTimeField("Дата создания", auto_now_add=True)
+    """Abstract class with common field for Lost and Found advertisements."""
+
+    pub_date = models.DateTimeField("Дата создания объявления", auto_now_add=True)
     address = models.CharField(
         "Адрес",
         max_length=300,
-        help_text="Укажите адрес где потеряли питомца",
+        help_text="Укажите адрес",
         blank=True,
     )
     latitude = models.DecimalField(
@@ -69,7 +75,7 @@ class AdsAbstract(models.Model):
     age = models.CharField(
         "Возраст питомца",
         max_length=50,
-        help_text="Примерный или точный возраст животного",
+        help_text="Примерный или точный возраст питомца",
         blank=True,
     )
     active = models.BooleanField(
@@ -93,6 +99,7 @@ class AdsAbstract(models.Model):
         return self.description[:30]
 
     def _get_map_dict(self, reverse_url, header):
+        """Get the dict with balloon information for yandex maps."""
         pet_name = getattr(self, "pet_name", "")
         if pet_name:
             hint_content = f"{header}: {pet_name}"
@@ -100,7 +107,9 @@ class AdsAbstract(models.Model):
             hint_content = header
 
         if self.image:
-            small_img = get_thumbnail(self.image, "50x50", crop="center", quality=99)
+            small_img = get_thumbnail(
+                self.image, "50x50", crop="center", quality=MAP_IMAGE_QUALITY
+            )
             img = f'<img src="/media/{small_img}" class="rounded"'
             balloon_content_header = f"{img} <br> {hint_content}"
         else:
@@ -112,7 +121,9 @@ class AdsAbstract(models.Model):
             balloon_content_body = self.description[:DESCRIPTION_MAP_LIMIT] + "..."
 
         url = reverse_lazy(reverse_url, kwargs={"ad_id": self.id})
-        balloon_content_footer = f'<a href="{url}" ' f'target="_blank">Перейти</a>'
+        balloon_content_footer = (
+            f'<a href="{url}" target="_blank" class="pa-link">Перейти</a>'
+        )
         icon_href = f"/media/{self.type.icon}"
 
         return {
@@ -126,6 +137,12 @@ class AdsAbstract(models.Model):
 
 
 class Lost(AdsAbstract):
+    """
+    Model for Lost advertisements.
+    Fields that only this ad type has:
+    - pet_name.
+    """
+
     pet_name = models.CharField(
         "Кличка", max_length=50, help_text="Кличка потерянного питомца", blank=True
     )
@@ -134,7 +151,7 @@ class Lost(AdsAbstract):
         on_delete=models.SET_NULL,
         related_name="lost",
         verbose_name="Вид животного",
-        help_text="Выберите вид потерянного животного",
+        help_text="Выберите вид потерянного питомца",
         null=True,
     )
     author = models.ForeignKey(
@@ -155,6 +172,12 @@ class Lost(AdsAbstract):
 
 
 class Found(AdsAbstract):
+    """
+    Model for Found advertisements.
+    Fields that only this ad type has:
+    - condition.
+    """
+
     condition = models.CharField(
         "Состояние животного",
         max_length=2,
@@ -201,7 +224,15 @@ class Found(AdsAbstract):
 
 
 class Dialog(models.Model):
-    # ToDo: убрать автора диалога, брать еще через related_name по объявлению.
+    """
+    Dialog model for conversation purposes.
+    When some user sends the first message on an advertisement page,
+    a new dialog will be created.
+    - author in dialog is the author of an advertisement.
+    - questioner - the another user who sent a message to author of an advertisement.
+    """
+
+    # ToDo: убрать автора диалога, брать его через related_name по объявлению.
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -253,14 +284,13 @@ class Dialog(models.Model):
 
     @property
     def advertisement_group(self):
-        if self.advertisement_lost_id is not None:
-            return self.advertisement_lost
-        if self.advertisement_found_id is not None:
-            return self.advertisement_found
-        raise AssertionError("Message doesn't have any advertisement group")
+        """Get the advertisement that bound to this dialog."""
+        return self.advertisement_lost or self.advertisement_found
 
 
 class Message(models.Model):
+    """Message model that bound to some Dialog model."""
+
     dialog = models.ForeignKey(
         Dialog, on_delete=models.CASCADE, related_name="messages", verbose_name="Диалог"
     )
@@ -276,6 +306,7 @@ class Message(models.Model):
         related_name="received_messages",
         verbose_name="Получатель",
     )
+    # ToDo: ограничить размер текста одного сообщения
     content = models.TextField("Содержимое сообщения")
     pub_date = models.DateTimeField("Дата создания", auto_now_add=True)
     checked = models.BooleanField("Просмотрено?", default=False)

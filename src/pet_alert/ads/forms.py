@@ -4,6 +4,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from phonenumber_field.formfields import PhoneNumberField
 
+from .constants import ROWS_IN_DIALOG_MESSAGE_FORM
 from .models import Found, Lost, Message
 
 User = get_user_model()
@@ -37,7 +38,8 @@ class BaseAddForm(forms.ModelForm):
 
 
 class LostForm(BaseAddForm):
-    """Form for add lost advertisement with hidden user registration."""
+    """Form for creating an advertisement about a lost animal with hidden
+    registration."""
 
     first_name = forms.CharField(
         label="Ваше имя",
@@ -79,7 +81,8 @@ class LostForm(BaseAddForm):
 
 
 class FoundForm(LostForm):
-    """Form for add found advertisement with hidden user registration."""
+    """Form for creating an advertisement about a found animal with hidden
+    registration."""
 
     class Meta(LostForm.Meta):
         model = Found
@@ -100,7 +103,7 @@ class FoundForm(LostForm):
 
 
 class AuthorizedLostForm(BaseAddForm):
-    """Form for add lost advertisement for authorized users."""
+    """Form for creating an advertisement about a lost animal."""
 
     class Meta(BaseAddForm.Meta):
         model = Lost
@@ -117,7 +120,7 @@ class AuthorizedLostForm(BaseAddForm):
 
 
 class AuthorizedFoundForm(BaseAddForm):
-    """Form for add found advertisement for authorized users."""
+    """Form for creating an advertisement about a found animal."""
 
     class Meta(BaseAddForm.Meta):
         model = Found
@@ -134,7 +137,7 @@ class AuthorizedFoundForm(BaseAddForm):
 
 
 class ProfileSettingsForm(forms.ModelForm):
-    """Form for profile page, for change user info."""
+    """Form for changing user settings in his profile."""
 
     class Meta:
         model = User
@@ -142,6 +145,8 @@ class ProfileSettingsForm(forms.ModelForm):
 
 
 class SendMessageForm(forms.ModelForm):
+    """Form for sending a message in a dialogue between two users."""
+
     class Meta:
         model = Message
         fields = ("content",)
@@ -149,8 +154,7 @@ class SendMessageForm(forms.ModelForm):
         widgets = {
             "content": forms.Textarea(
                 attrs={
-                    # 'rows': 6,
-                    "rows": 1,
+                    "rows": ROWS_IN_DIALOG_MESSAGE_FORM,
                     "placeholder": "Введите сообщение",
                 }
             )

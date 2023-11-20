@@ -129,7 +129,7 @@ dmypy.json
 
 # Custom
 .idea/
-pet_alert/media/
+src/pet_alert/media/
 .DS_Store
 sent_emails/
 .data/

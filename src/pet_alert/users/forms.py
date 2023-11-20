@@ -14,7 +14,7 @@ User = get_user_model()
 
 
 class CreationForm(CustomWidgetMixin, RegistrationForm):
-    """Custom registration from with form-control classes,
+    """Custom registration form with form-control classes,
     placeholder and captcha."""
 
     captcha = ReCaptchaField(
@@ -27,6 +27,12 @@ class CreationForm(CustomWidgetMixin, RegistrationForm):
 
 
 class CreationFormWithoutPassword(RegistrationForm):
+    """
+    Registration form without password fields.
+    Required for hidden registration during creating of advertisement for
+    an unauthorized users.
+    """
+
     def __init__(self, *args, **kwargs):
         super(RegistrationForm, self).__init__(*args, **kwargs)
         self.fields["password1"].required = False

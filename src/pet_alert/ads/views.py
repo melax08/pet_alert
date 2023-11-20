@@ -34,12 +34,12 @@ REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 EMAIL_BODY_TEMPLATE = "users/activation_email_body.txt"
 EMAIL_SUBJECT_TEMPLATE = "users/activation_email_subject.txt"
 
-
 User = get_user_model()
 
 
 class IndexPage(TemplateView):
-    """Main page with some information about project."""
+    """Main page with some information about project and last four
+    Lost and four Found advertisements."""
 
     template_name = "ads/index.html"
 
@@ -256,8 +256,8 @@ class BaseDetail(DetailView):
     pk_url_kwarg = "ad_id"
 
     def check_access(self):
-        """Only opening and active ads are available on the site.
-        The user can see their ads even if they are closed."""
+        """Only open and active ads are available on the site.
+        The user can view his ads even if they are closed."""
         if (
             not (self.object.active and self.object.open)
             and self.object.author != self.request.user
@@ -436,6 +436,8 @@ class DialogList(LoginRequiredMixin, ListView):
 
 
 class MessageChat(LoginRequiredMixin, View):
+    """Show the messages in the dialog. Users can post the new messages."""
+
     def get_dialog(self, request):
         dialog = get_object_or_404(
             Dialog.objects.select_related(
@@ -587,9 +589,7 @@ class DialogBase(AuthFetchBase):
 
     @staticmethod
     def _get_dialog_ad_field(ad):
-        if isinstance(ad, Lost):
-            return "advertisement_lost"
-        return "advertisement_found"
+        return "advertisement_lost" if isinstance(ad, Lost) else "advertisement_found"
 
 
 class GetDialog(DialogBase):

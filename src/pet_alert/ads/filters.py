@@ -5,7 +5,7 @@ from .models import AnimalType
 
 
 class TypeFilter(django_filters.FilterSet):
-    """Filter by animal type for advertisements."""
+    """Filter by animal type model for advertisements."""
 
     type = django_filters.ModelChoiceFilter(
         queryset=AnimalType.objects.all(),
