@@ -36,9 +36,6 @@ jobs:
           cat <<EOF > .env
           LOCAL=1
           DJANGO_DEBUG=1
-          # https://developers.google.com/recaptcha/docs/faq
-          RECAPTCHA_PUBLIC_KEY=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
-          RECAPTCHA_PRIVATE_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
           EOF
           cd src/pet_alert && poetry run python manage.py test -v 2
 

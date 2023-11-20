@@ -52,10 +52,6 @@ EMAIL_USE_SSL = int(os.getenv("EMAIL_USE_SSL", default=1))
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", default="no-reply@pet-alert.ru")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", default="123123")
 
-RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
-RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
-RECAPTCHA_REQUIRED_SCORE = float(os.getenv("RECAPTCHA_REQUIRED_SCORE", default=0.6))
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -133,44 +129,6 @@ else:
         }
     }
 
-if "test" in sys.argv:
-    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-    EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
-    DATABASES["default"] = {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-    RECAPTCHA_PUBLIC_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-    RECAPTCHA_PRIVATE_KEY = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
-    SILENCED_SYSTEM_CHECKS.append("captcha.recaptcha_test_key_error")
-
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
-
-LANGUAGE_CODE = "ru-RU"
-
-
-TIME_ZONE = os.getenv("TIMEZONE", default="Europe/Moscow")
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
 LOG_PATH = BASE_DIR.parent / ".data" / os.getenv("LOG_DIR", "logs")
 LOG_PATH.mkdir(parents=True, exist_ok=True)
 LOG_PATH = LOG_PATH / "backend.log"
@@ -206,6 +164,47 @@ LOGGING = {
     "loggers": {"django": {"level": LOG_LEVEL, "handlers": ["console", "file"]}},
 }
 
+
+if "test" in sys.argv:
+    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+    EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+    SILENCED_SYSTEM_CHECKS.append("captcha.recaptcha_test_key_error")
+    LOGGING = {}
+else:
+    RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
+    RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
+    RECAPTCHA_REQUIRED_SCORE = float(os.getenv("RECAPTCHA_REQUIRED_SCORE", default=0.6))
+
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
+
+LANGUAGE_CODE = "ru-RU"
+
+
+TIME_ZONE = os.getenv("TIMEZONE", default="Europe/Moscow")
+
+USE_I18N = True
+
+USE_L10N = True
+
+USE_TZ = True
 
 STATIC_URL = "/static/"
 if LOCAL:
