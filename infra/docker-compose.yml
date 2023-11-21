@@ -31,7 +31,7 @@ services:
       - "443:443"
     restart: always
     volumes:
-      - ./nginx/nginx_pet_alert.conf:/etc/nginx/conf.d/default.conf
+      - ${PET_MAIN_NGINX_CONF-./nginx/nginx_pet_alert.template}:/etc/nginx/templates/default.conf.template
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/bot.conf:/etc/nginx/conf.d/bot.conf
       - ./nginx/bot_include.conf:/etc/nginx/vhosts-includes/bot.conf
@@ -39,6 +39,8 @@ services:
       - media_volume:/var/html/media/
       - certbot_conf:/etc/letsencrypt
       - certbot_www:/var/www/certbot
+    env_file:
+      - ../.env
     depends_on:
       - web
     environment:
@@ -48,11 +50,13 @@ services:
     volumes:
       - certbot_conf:/etc/letsencrypt
       - certbot_www:/var/www/certbot
+    env_file:
+      - ../.env
     depends_on:
       - nginx
     environment:
       - TZ=Europe/Moscow
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@pet-alert.ru -d pet-alert.ru --agree-tos
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@$${WEBSITE_HOST} -d $${WEBSITE_HOST} --agree-tos
 
 volumes:
   database:

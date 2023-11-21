@@ -4,10 +4,6 @@
       <a class="navbar-brand" href="{% url 'ads:index' %}">
       <img src="{% static 'img/logo.png' %}" class="d-inline-block align-top" style="width: auto; height: 50px;">
         </a>
-{#      <div class="text-end">#}
-        {% comment %}
-        <p>"Вернем потерянных домой" - наш слоган. Мы помогаем владельцам потерянных домашних животных быстро и эффективно их найти.</p>
-        {% endcomment %}
 <ul class="nav nav-pills">
 {% with request.resolver_match.view_name as view_name %}
   {% if user.is_anonymous %}

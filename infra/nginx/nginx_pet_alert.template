@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name 127.0.0.1 localhost .pet-alert.ru;
+    server_name 127.0.0.1 localhost .${WEBSITE_HOST};
     include /etc/nginx/vhosts-includes/*.conf;
 
     gzip on;
@@ -18,11 +18,11 @@ server {
 }
 server {
     listen 443 ssl;
-    server_name 127.0.0.1 localhost .pet-alert.ru;
+    server_name 127.0.0.1 localhost .${WEBSITE_HOST};
     include /etc/nginx/vhosts-includes/*.conf;
 
-    ssl_certificate /etc/letsencrypt/live/pet-alert.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/pet-alert.ru/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/${WEBSITE_HOST}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${WEBSITE_HOST}/privkey.pem;
 
     gzip on;
     gzip_comp_level 6;
