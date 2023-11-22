@@ -56,7 +56,7 @@ services:
       - nginx
     environment:
       - TZ=Europe/Moscow
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@$${WEBSITE_HOST} -d $${WEBSITE_HOST} --agree-tos
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@${WEBSITE_HOST} -d ${WEBSITE_HOST} --agree-tos
 
 volumes:
   database:

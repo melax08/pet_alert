@@ -92,7 +92,7 @@ jobs:
             LOG_LEVEL=WARNING
             # DONE WORKFLOW ENVS
             EOF
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose up -d --build web nginx
+             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose --env-file ../.env up -d --build web nginx
 
 
   send_message:
