@@ -232,15 +232,28 @@ crontab -e
 Вставим в конец открывшегося редактора:
 
 ```shell
-5 1 1 * *  docker compose --env-file /home/petalert/pet_alert/.env --file /home/petalert/pet_alert/infra/docker-compose.yml up certbot
+5 1 1 * *  docker compose --env-file /home/petalert/pet_alert/.env --file /home/petalert/pet_alert/infra/docker-compose.yml up certbot && docker compose --file /home/petalert/pet_alert/infra/docker-compose.yml exec nginx nginx -s reload
 ```
 
-Вместо `/home/petalert` нужно в двух местах указать путь до каталога, где хранится клонированный проект.
+Вместо `/home/petalert` нужно в трех местах указать путь до каталога, где хранится клонированный проект.
 
 Данная задача будет выполняться каждое первое число месяца в 1:05 и перевыпускать SSL-сертификат для сайта.
 
 </details>
 
+<details><summary>Создание суперпользователя</summary>
+
+<br>
+
+Если вы хотите создать `суперпользователя Django` в запущенном проекте, используйте команду:
+
+```shell
+docker compose exec web python manage.py createsuperuser
+```
+
+Команду необходимо использовать в каталоге `infra`.
+
+</details>
 
 </details>
 
