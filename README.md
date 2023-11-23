@@ -120,7 +120,7 @@ poetry run python3 src/pet_alert/manage.py migrate
 
 Опционально. Создаем суперпользователя:
 ```shell
-poetry run python3 manage.py createsuperuser
+poetry run python3 src/pet_alert/manage.py createsuperuser
 ```
 
 ### Запуск проекта локально (без Docker)
@@ -157,7 +157,7 @@ poetry run python3 manage.py test -v 2
 
 Перед началом установки, подготовьте сервер:
 
-1. Установив на него `Docker` и `Docker Compose`.
+1. Установите на него `Docker` и `Docker Compose` по [инструкции](https://docs.docker.com/engine/install/).
 2. Подготовьте домен, направьте его на ваш сервер.
 
 Когда предварительные меры будут приняты, можно будет приступить к установке проекта на сервер.

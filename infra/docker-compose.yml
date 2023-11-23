@@ -9,6 +9,7 @@ services:
       - ../.env
     environment:
       - TZ=Europe/Moscow
+    restart: always
   web:
     build:
       context: ..
