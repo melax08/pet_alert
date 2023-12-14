@@ -21,3 +21,12 @@ repos:
   rev: 1.5.1
   hooks:
     - id: poetry-check
+
+- repo: local
+  hooks:
+    - id: django-test
+      name: django-test
+      entry: bash -c "cd src/pet_alert/ && python3 manage.py test"
+      always_run: true
+      pass_filenames: false
+      language: system

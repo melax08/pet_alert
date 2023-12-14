@@ -144,11 +144,38 @@ class AdsViewTests(BaseTestCaseWithFixtures):
             response.context["page_obj"][0], self.found_closed_inactive_ad
         )
 
+    def _test_map_equal(self, context_map):
+        """Checks equals of key and value in specified dict."""
+        for field, expected in context_map.items():
+            with self.subTest(field=field):
+                self.assertEqual(field, expected)
+
     def test_index_context(self):
         """Index page has correct context."""
         response = self.authorized_client.get(reverse("ads:index"))
-        self._test_context(response.context["losts"][0], self.lost_open_active_ad)
-        self._test_context(response.context["founds"][0], self.found_open_active_ad)
+        # self._test_context(response.context["losts"][0], self.lost_open_active_ad)
+        # self._test_context(response.context["founds"][0], self.found_open_active_ad)
+        first_lost_object = response.context["losts"][0]
+        lost_context_fields = {
+            first_lost_object.get("id"): self.lost_open_active_ad.id,
+            first_lost_object.get("pub_date"): self.lost_open_active_ad.pub_date,
+            first_lost_object.get("image"): self.lost_open_active_ad.image,
+            first_lost_object.get(
+                "type__default_image"
+            ): self.lost_open_active_ad.type.default_image,
+        }
+        self._test_map_equal(lost_context_fields)
+
+        first_found_object = response.context["founds"][0]
+        found_context_fields = {
+            first_found_object.get("id"): self.found_open_active_ad.id,
+            first_found_object.get("pub_date"): self.found_open_active_ad.pub_date,
+            first_found_object.get("image"): self.found_open_active_ad.image,
+            first_found_object.get(
+                "type__default_image"
+            ): self.found_open_active_ad.type.default_image,
+        }
+        self._test_map_equal(found_context_fields)
 
     def test_dialog_list_context(self):
         """Dialog list page has correct context."""
