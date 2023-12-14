@@ -198,7 +198,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "ru-RU"
 
 
-TIME_ZONE = os.getenv("TIMEZONE", default="Europe/Moscow")
+TIME_ZONE = os.getenv("TZ", default="Europe/Moscow")
 
 USE_I18N = True
 

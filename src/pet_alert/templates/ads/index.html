@@ -50,7 +50,7 @@
                     height="{{ im.height }}" class="rounded">
                 {% endthumbnail %}
               {% else %}
-                {% thumbnail found.type.default_image "250x250" crop="center" as im %}
+                {% thumbnail found.type__default_image "250x250" crop="center" as im %}
                   <img src="{{ im.url }}" width="{{ im.width }}"
                     height="{{ im.height }}" class="rounded">
                 {% endthumbnail %}
@@ -80,7 +80,7 @@
                        height="{{ im.height }}" class="rounded">
                 {% endthumbnail %}
               {% else %}
-                {% thumbnail lost.type.default_image "250x250" crop="center" as im %}
+                {% thumbnail lost.type__default_image "250x250" crop="center" as im %}
                   <img src="{{ im.url }}" width="{{ im.width }}"
                        height="{{ im.height }}" class="rounded">
                 {% endthumbnail %}

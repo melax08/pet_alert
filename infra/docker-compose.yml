@@ -7,8 +7,6 @@ services:
       - database:/var/lib/postgresql/data/
     env_file:
       - ../.env
-    environment:
-      - TZ=Europe/Moscow
     restart: always
   web:
     build:
@@ -23,8 +21,6 @@ services:
       - db
     env_file:
       - ../.env
-    environment:
-      - TZ=Europe/Moscow
   nginx:
     image: nginx:1.23.4-alpine
     ports:
@@ -44,8 +40,6 @@ services:
       - ../.env
     depends_on:
       - web
-    environment:
-      - TZ=Europe/Moscow
   certbot:
     image: certbot/certbot
     volumes:
@@ -55,8 +49,6 @@ services:
       - ../.env
     depends_on:
       - nginx
-    environment:
-      - TZ=Europe/Moscow
     command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@${WEBSITE_HOST} -d ${WEBSITE_HOST} --agree-tos
 
 volumes:

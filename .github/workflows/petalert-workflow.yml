@@ -66,7 +66,7 @@ jobs:
             DJANGO_DEBUG=0
             DJANGO_ALLOWED_HOSTS=127.0.0.1 localhost pet-alert.ru testserver
             WEBSITE_HOST=pet-alert.ru
-            TIMEZONE=Europe/Moscow
+            TZ=Europe/Moscow
             DB_ENGINE=django.db.backends.postgresql
             DB_NAME=${{ secrets.DB_NAME }}
             POSTGRES_USER=${{ secrets.DB_USERNAME }}

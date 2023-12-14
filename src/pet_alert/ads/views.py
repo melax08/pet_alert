@@ -45,12 +45,16 @@ class IndexPage(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["founds"] = Found.objects.select_related("type").filter(
-            active=True, open=True
-        )[:4]
-        context["losts"] = Lost.objects.select_related("type").filter(
-            active=True, open=True
-        )[:4]
+        context["founds"] = (
+            Found.objects.select_related("type")
+            .filter(active=True, open=True)
+            .values("id", "pub_date", "image", "type__default_image")[:4]
+        )
+        context["losts"] = (
+            Lost.objects.select_related("type")
+            .filter(active=True, open=True)
+            .values("id", "pub_date", "image", "type__default_image")[:4]
+        )
 
         return context
 
