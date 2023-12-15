@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from ads.forms import FoundForm, LostForm
 from django.contrib.auth.hashers import check_password
 from django.test import Client
@@ -120,8 +122,9 @@ class AdsFormsTests(BaseTestCaseWithFixtures):
         )
         self._test_set_password_and_activate_user_with_empty_password(user)
 
+    @patch("users.models.User.email_user")
     def _test_add_advertisement_form_with_registration(
-        self, model, model_form, add_advertisement_url, form_data
+        self, model, model_form, add_advertisement_url, form_data, mock_email_user
     ):
         """
         Guest user can create advertisement and register on a site at
@@ -178,6 +181,9 @@ class AdsFormsTests(BaseTestCaseWithFixtures):
 
         # Continuation of registration work correctly.
         self._test_set_password_and_activate_user_with_empty_password(new_user)
+
+        # Send Email user method has been called.
+        mock_email_user.assert_called_once()
 
     def test_lost_form_with_registration(self):
         """Lost advertisement created, user registered by unauthorized Lost

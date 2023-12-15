@@ -242,3 +242,10 @@ DJOSER = {
 
 YA_MAPS_API_KEY = os.getenv("YA_MAPS_API_KEY")
 YA_MAPS_SUGGEST_API_KEY = os.getenv("YA_MAPS_SUGGEST_API_KEY")
+
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", default="redis://localhost:6379")
+CELERY_RESULT_BACKEND = os.getenv(
+    "CELERY_RESULT_BACKEND", default="redis://localhost:6379"
+)
+CELERY_TIMEZONE = os.getenv("TZ", default="Europe/Moscow")

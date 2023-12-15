@@ -4,6 +4,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
+from .tasks import send_mail_task
+
 
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
@@ -85,3 +87,7 @@ class User(AbstractUser):
     @property
     def is_empty_password(self):
         return check_password("", self.password)
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        """Send an email to this user via Celery."""
+        send_mail_task.delay(subject, message, self.email, from_email, **kwargs)

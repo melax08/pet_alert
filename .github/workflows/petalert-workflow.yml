@@ -59,7 +59,7 @@ jobs:
             git pull
             cd infra
              echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose stop
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose rm -sf web nginx
+             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose rm -sf web petalert_worker nginx
              echo "${{ secrets.SUDO_PASS }}" | sudo -S docker volume rm infra_static_volume
             cat <<EOF > ../.env
             DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET }}
@@ -90,9 +90,12 @@ jobs:
             EMAIL_HOST_PASSWORD=${{ secrets.SMTP_PASSWORD }}
             # Logging settings
             LOG_LEVEL=WARNING
+            # Celery settings
+            CELERY_BROKER_URL=redis://petalert_redis:6379
+            CELERY_RESULT_BACKEND=redis://petalert_redis:6379
             # DONE WORKFLOW ENVS
             EOF
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose --env-file ../.env up -d --build web nginx
+             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose --env-file ../.env up -d --build web petalert_worker nginx
 
 
   send_message:

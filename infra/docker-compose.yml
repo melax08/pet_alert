@@ -8,10 +8,14 @@ services:
     env_file:
       - ../.env
     restart: always
+  petalert_redis:
+    image: redis
+    restart: always
   web:
     build:
       context: ..
       dockerfile: Dockerfile
+    entrypoint: ./entrypoint_server.sh
     restart: always
     volumes:
       - static_volume:/app/static/
@@ -19,6 +23,20 @@ services:
       - ./.data/:/.data/
     depends_on:
       - db
+    env_file:
+      - ../.env
+  petalert_worker:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    entrypoint: ./entrypoint_worker.sh
+    restart: always
+    volumes:
+      - static_volume:/app/static/
+      - media_volume:/app/media/
+      - ./.data/:/.data/
+    depends_on:
+      - web
     env_file:
       - ../.env
   nginx:
