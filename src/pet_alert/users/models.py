@@ -67,16 +67,23 @@ class User(AbstractUser):
         "Показывать контактный email",
         default=False,
         help_text=(
-            "Показывать ли контактный email " "на страницах объявлений пользователя?"
+            "Показывать ли контактный email на страницах объявлений пользователя?"
         ),
     )
     contact_phone = models.BooleanField(
         "Показывать контактный телефон",
         default=True,
         help_text=(
-            "Показывать ли контактный телефон " "на страницах объявлений пользователя?"
+            "Показывать ли контактный телефон на страницах объявлений пользователя?"
         ),
     )
+    telegram_id = models.PositiveIntegerField(
+        "Telegram ID пользователя",
+        null=True,
+        blank=True,
+        help_text="Используется для отправки сообщений пользователям в telegram",
+    )
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

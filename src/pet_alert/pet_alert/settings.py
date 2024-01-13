@@ -133,7 +133,7 @@ LOG_PATH = BASE_DIR.parent / ".data" / os.getenv("LOG_DIR", "logs")
 LOG_PATH.mkdir(parents=True, exist_ok=True)
 LOG_PATH = LOG_PATH / "backend.log"
 LOG_LEVEL = os.getenv("LOG_LEVEL", default="INFO")
-LOG_FORMAT = "[%(asctime)s,%(msecs)d] %(levelname)s [%(name)s:%(lineno)s] %(message)s"
+LOG_FORMAT = "[%(asctime)s,%(msecs)d] %(levelname)s [%(name)s] [%(module)s - %(funcName)s:%(lineno)s] %(message)s"
 LOG_DT_FORMAT = "%d.%m.%y %H:%M:%S"
 
 LOGGING = {
@@ -161,7 +161,10 @@ LOGGING = {
             "formatter": "general",
         },
     },
-    "loggers": {"django": {"level": LOG_LEVEL, "handlers": ["console", "file"]}},
+    "loggers": {
+        "": {"level": LOG_LEVEL, "handlers": ["console", "file"]},
+        "django": {"level": LOG_LEVEL, "handlers": ["console", "file"]},
+    },
 }
 
 
@@ -249,3 +252,5 @@ CELERY_RESULT_BACKEND = os.getenv(
     "CELERY_RESULT_BACKEND", default="redis://localhost:6379"
 )
 CELERY_TIMEZONE = os.getenv("TZ", default="Europe/Moscow")
+
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", default="")

@@ -3,9 +3,11 @@ import tempfile
 from decimal import Decimal
 
 from ads.models import AnimalType, Found, Lost
+from ads.signals import post_save_advertisement
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models.signals import post_save
 from django.utils.crypto import get_random_string
 from rest_framework.test import APIClient, APITestCase, override_settings
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -44,6 +46,8 @@ class BaseApiTestCaseWithFixtures(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        post_save.disconnect(post_save_advertisement, sender=Lost)
+        post_save.disconnect(post_save_advertisement, sender=Found)
         cls.user_author = User.objects.create_user(email="author@example.com")
         cls.user_admin = User.objects.create_superuser(
             email="admin@example.com", password="123123"

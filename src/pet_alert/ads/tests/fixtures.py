@@ -1,6 +1,8 @@
 from decimal import Decimal
 
+from ads.signals import post_save_advertisement
 from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save
 from django.test import Client, TestCase
 
 from ..models import AnimalType, Dialog, Found, Lost, Message
@@ -12,6 +14,8 @@ class BaseTestCaseWithFixtures(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        post_save.disconnect(post_save_advertisement, sender=Lost)
+        post_save.disconnect(post_save_advertisement, sender=Found)
         cls.user = User.objects.create_user(
             email="testuser@example.ru", first_name="User1", phone="88005553535"
         )
