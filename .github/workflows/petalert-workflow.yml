@@ -93,6 +93,8 @@ jobs:
             # Celery settings
             CELERY_BROKER_URL=redis://petalert_redis:6379
             CELERY_RESULT_BACKEND=redis://petalert_redis:6379
+            # Telegram settings
+            TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}
             # DONE WORKFLOW ENVS
             EOF
              echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose --env-file ../.env up -d --build web petalert_worker nginx
@@ -105,6 +107,6 @@ jobs:
       - name: send message
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
+          to: ${{ secrets.TELEGRAM_DEPLOY_TO }}
+          token: ${{ secrets.TELEGRAM_DEPLOY_TOKEN }}
           message: 😽 ${{ github.workflow }} успешно выполнен!
