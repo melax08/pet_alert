@@ -1,7 +1,7 @@
 # Pet Alert - веб-приложение для поиска пропавших животных
 
 ![petalert workflow](https://github.com/melax08/pet_alert/actions/workflows/petalert-workflow.yml/badge.svg)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 [//]: # (Посмотреть по баджу с coverage)
 
@@ -34,21 +34,26 @@
 
 ### Системные требования
 
-- Python 3.11+;
-- Docker (19.03.0+) c docker compose;
-- [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
+> Версии инструментов указаны те, с которыми велась разработка проекта. На более ранних версиях проект не тестировался, поэтому его работоспособность не может быть гарантирована при использовании таких версий.
+
+- Python 3.13+;
+- Docker (20.10+) c docker compose;
+- [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer) (2.0.1+).
 
 ### Архитектура проекта
 
-| Директория            | Описание                                              |
-|-----------------------|-------------------------------------------------------|
-| `infra`               | Docker-compose файл, конфиги Nginx                    |
-| `.github/workflows`   | CI/CD скрипты github actions                          |
-| `src/pet_alert`       | Django приложение                                     |
-| `src/pet_alert/ads`   | Основное приложение Django                            |
-| `src/pet_alert/api`   | Django REST Framework API                             |
-| `src/pet_alert/users` | Приложение для работы с пользователями                |
-| `src/pet_alert/core`  | Контекст процессоры, фильтры шаблонов, общие сущности |
+| Директория           | Описание                                                                   |
+|----------------------|----------------------------------------------------------------------------|
+| `infra`              | Docker-compose файл, конфиги Nginx, entrypoints                            |
+| `.github/workflows`  | CI/CD скрипты github actions                                               |
+ | `config/`            | env файлы с настройками приложения                                         |
+| `server/`            | Django проект                                                              |
+| `server/settings/`   | Настройки приложения разбитые по отдельным конфигам                        |
+| `server/apps/`       | Каталог с приложениями                                                     |
+| `server/static/`     | Каталог со статикой нужной для работы front части                          |
+| `server/templates/`  | Каталог с HTML шаблонами для front части приложения                        |
+| `docker-compose.yml` | Docker compose файл для локальной разработки проекта                       |
+| `.pre-commit-config.yaml` | Конфиг с настройками git pre-commit, используемый для локальной разработки |
 
 
 ### Функциональные цели
@@ -82,8 +87,7 @@
   - [ ] Внедрение кэширования, Redis
 - [x] Внедрение Poetry
 - [x] Внедрение различных средств форматирования
-  - [x] Black
-  - [x] isort, flake8
+  - [x] Ruff
   - [x] Pre-commit
 - [ ] Система оповещения администраторов о новом объявлении через телеграм
 - [ ] Скачивание объявления для распечатывания с QR-кодом
@@ -99,47 +103,48 @@
 ## Установка и эксплуатация
 
 <details>
-  <summary>Локальная установка, запуск, тестирование (без Docker)</summary>
+  <summary>Локальная установка, запуск, тестирование</summary>
   <br>
 
-### Установка проекта локально (без Docker)
+### Установка проекта локально
 
-1. Устанавливаем инструмент для работы с виртуальным окружением и сборки пакетов `poetry`, [инструкция в официальной документации](https://python-poetry.org/docs/#installation).
-2. Клонируем репозиторий с проектом и переходим в его директорию:
+Для установки и запуска проекта локально необходим установленный `docker` с `docker compose` (для работы сервисов Redis, Celery, базы данных PostgreSQL, локального почтового SMTP-сервера), а также пакетный менеджер `poetry` (для установки зависимостей приложения).
+
+1. Клонируем репозиторий с проектом и переходим в его директорию:
 ```shell
 git clone https://github.com/melax08/pet_alert.git && cd pet_alert
 ```
-3. Устанавливаем зависимости:
+2. Устанавливаем зависимости:
 ```shell
 poetry install
 ```
-4. Копируем файл `.env.example` с новыми названием `.env` и заполняем его необходимыми данными:
+3. Копируем файл `.env.example` с новыми названием `.env` и заполняем его необходимыми данными:
 ```shell
-cp .env.example .env && nano .env
+cp config/.env.example config/.env && nano config/.env
 ```
-5. Подготавливаем бэкенд к работе:
+4. Запускаем docker compose для создания и запуска необходимых микросервисов:
+
 ```shell
-poetry run python3 src/pet_alert/manage.py migrate
+docker compose up -d
+```
+5. Применяем миграции:
+```shell
+poetry run python3 manage.py migrate
 ```
 
 Опционально. Создаем суперпользователя:
 ```shell
-poetry run python3 src/pet_alert/manage.py createsuperuser
+poetry run python3 manage.py createsuperuser
 ```
 
-### Запуск проекта локально (без Docker)
-
-Переходим в каталог с проектом:
-```shell
-cd src/pet_alert
-```
+### Запуск проекта локально
 
 Запускаем проект:
 ```shell
 poetry run python3 manage.py runserver
 ```
 
-Локальный проект будет доступен по http://127.0.0.1:8000
+Локальный проект будет запущен и доступен по http://127.0.0.1:8000
 
 ### Запуск тестов
 
@@ -151,11 +156,11 @@ poetry run python3 manage.py test -v 2
 
 </details>
 
-<details><summary>Установка и запуск в Docker-контейнерах</summary>
+<details><summary>Установка и запуск в production окружении</summary>
 
 <br>
 
-Для автоматической установки проекта в контейнерах, на вашем сервере или локальном компьютере должны быть установлен `Docker` (версии 19.03.0+) и `Docker Compose`.
+Для автоматической установки проекта в контейнерах, на вашем сервере или локальном компьютере должны быть установлен `Docker` и `Docker Compose`.
 
 Установка проекта через Docker подразумевает под собой разворачивание полноценного проекта на боевой сервер, с существующим у сайта доменом и выпуском для него SSL-сертификата.
 
@@ -179,7 +184,7 @@ git clone https://github.com/melax08/pet_alert.git && cd pet_alert
 2. Копируем файл `.env.example` с новыми названием `.env` и заполняем его необходимыми данными:
 
 ```shell
-cp .env.example .env && nano .env
+cp config/.env.example config/.env && nano config/.env
 ```
 
 3. Переходим в каталог с инфраструктурой.
@@ -199,7 +204,7 @@ cd infra
 Для этого используем команду:
 
 ```shell
-docker compose --env-file first_run.env --env-file ../.env up -d
+docker compose --env-file first_run.env --env-file ../.env -f docker-compose-prod.yml up -d
 ```
 
 Как только проект будет запущен и SSL-сертификат будет выпущен с помощью `certbot`, выключаем контейнер nginx:
@@ -212,7 +217,7 @@ docker compose rm -sf nginx
 И запускаем его повторно, выполняя пересборку контейнера:
 
 ```shell
-docker compose --env-file ../.env up -d --build nginx
+docker compose --env-file ../.env -f docker-compose-prod.yml up -d --build nginx
 ```
 
 Nginx будет запущен заново, но уже с нормальным конфигом Nginx, включающим в себя ssl секцию и использующим SSL-сертификат, выпущенный ранее.
@@ -236,7 +241,7 @@ crontab -e
 Вставим в конец открывшегося редактора:
 
 ```shell
-5 1 1 * *  docker compose --env-file /home/petalert/pet_alert/.env --file /home/petalert/pet_alert/infra/docker-compose.yml up certbot && docker compose --file /home/petalert/pet_alert/infra/docker-compose.yml exec nginx nginx -s reload
+5 1 1 * *  docker compose --env-file /home/petalert/pet_alert/.env --file /home/petalert/pet_alert/infra/docker-compose-prod.yml up certbot && docker compose --file /home/petalert/pet_alert/infra/docker-compose-prod.yml exec nginx nginx -s reload
 ```
 
 Вместо `/home/petalert` нужно в трех местах указать путь до каталога, где хранится клонированный проект.
@@ -260,6 +265,25 @@ docker compose exec web python manage.py createsuperuser
 </details>
 
 </details>
+
+
+## Для разработчиков
+
+Перед началом разработки и созданием новых коммитов, необходимо применить git-hooks, выполнив команду:
+
+```shell
+pre-commit install
+```
+
+Теперь, когда вы будете создавать новые коммиты, следующие хуки будут применяться автоматически:
+
+- [Ruff linter](https://docs.astral.sh/ruff/linter/);
+- [Ruff formatter](https://docs.astral.sh/ruff/formatter/);
+- [Django unit tests](https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/unit-tests/);
+- [Poetry check](https://python-poetry.org/docs/pre-commit-hooks/#poetry-check);
+- [check-yaml, end-of-file-fixer, trailing-whitespace](https://github.com/pre-commit/pre-commit-hooks).
+
+Настройка pre-commit хуков происходит в файле: `.pre-commit-config.yaml`
 
 
 <!-- MARKDOWN LINKS & BADGES -->
