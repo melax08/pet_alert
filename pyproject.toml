@@ -15,11 +15,11 @@ djoser = "^2.2.2"
 djangorestframework-simplejwt = "^5.3.1"
 celery = "^5.3.6"
 redis = "^5.0.1"
-setuptools = "^75.8.0"
+setuptools = "^75.8.2"
 django = "^5.1.6"
 django-filter = "^25.1"
 django-phonenumber-field = "^8.0.0"
-python-telegram-bot = "^21.10"
+python-telegram-bot = "^21.11.1"
 pillow = "^11.1.0"
 gunicorn = "^23.0.0"
 django-registration = "^5.1.0"
@@ -33,6 +33,7 @@ django-structlog = "^9.0.1"
 sentry-sdk = {extras = ["django"], version = "^2.22.0"}
 django-celery-results = "^2.5.1"
 django-csp = "^3.8"
+django-cors-headers = "^4.7.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -41,7 +42,9 @@ django-debug-toolbar = "^5.0.1"
 django-querycount = "^0.8.3"
 pytest = "^8.3.4"
 pytest-django = "^4.10.0"
-ruff = "^0.9.6"
+ruff = "^0.9.9"
+django-test-migrations = "^1.4.0"
+django-extra-checks = "^0.16.1"
 
 [build-system]
 requires = ["poetry-core"]

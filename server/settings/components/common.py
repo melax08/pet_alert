@@ -12,10 +12,9 @@ DJANGO_ENV = config(
 
 # Application definition:
 
-# ToDo: check middlewares and installed apps from template
-
 INSTALLED_APPS = [
-    # Application apps:
+    "corsheaders",
+    # Project apps:
     "server.apps.ads.apps.AdsConfig",
     "server.apps.core.apps.CoreConfig",
     "server.apps.users.apps.UsersConfig",
@@ -45,8 +44,11 @@ MIDDLEWARE = [
     "server.settings.components.logging.LoggingContextVarsMiddleware",
     # Content Security Policy:
     "csp.middleware.CSPMiddleware",
+    # Cors:
+    "corsheaders.middleware.CorsMiddleware",
     # Django:
     "django.middleware.security.SecurityMiddleware",
+    "django_permissions_policy.PermissionsPolicyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

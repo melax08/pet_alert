@@ -18,12 +18,18 @@ if TYPE_CHECKING:
 
 DEBUG = True
 
-# ToDo: check path
 STATICFILES_DIRS = ((BASE_DIR / "server/static"),)
 
 ALLOWED_HOSTS = ["*"]  # Allow all hosts in development
 
-INSTALLED_APPS += ("debug_toolbar",)
+INSTALLED_APPS += (
+    "debug_toolbar",
+    # django-test-migrations:
+    "django_test_migrations.contrib.django_checks.AutoNames",
+    "django_test_migrations.contrib.django_checks.DatabaseConfiguration",
+    # django-extra-checks:
+    "extra_checks",
+)
 
 MIDDLEWARE += (
     # Django debug toolbar:
@@ -35,7 +41,6 @@ MIDDLEWARE += (
 )
 
 
-# ToDo: check is it need?
 # https://django-debug-toolbar.readthedocs.io/en/stable/installation.html#configure-internal-ips
 try:  # This might fail on some OS
     INTERNAL_IPS = [
@@ -64,3 +69,43 @@ CSP_IMG_SRC += ("data:",)
 CSP_CONNECT_SRC += ("'self'",)
 
 DATABASES["default"]["CONN_MAX_AGE"] = 0
+
+
+# django-test-migrations
+# https://github.com/wemake-services/django-test-migrations
+
+# Set of badly named migrations to ignore:
+DTM_IGNORED_MIGRATIONS = frozenset(
+    (
+        ("django_celery_beat", "*"),
+        ("django_celery_results", "*"),
+    )
+)
+
+
+# django-extra-checks
+# https://github.com/kalekseev/django-extra-checks
+
+EXTRA_CHECKS = {
+    "checks": [
+        # Forbid `unique_together`:
+        "no-unique-together",
+        # Each model must be registered in admin:
+        "model-admin",
+        # FileField/ImageField must have nonempty `upload_to` argument:
+        "field-file-upload-to",
+        # Text fields shouldn't use `null=True`:
+        "field-text-null",
+        # Don't pass `null=False` to model fields (this is django default)
+        "field-null",
+        # ForeignKey fields must specify db_index explicitly if used in
+        # other indexes:
+        {"id": "field-foreign-key-db-index", "when": "indexes"},
+        # If field nullable `(null=True)`,
+        # then default=None argument is redundant and should be removed:
+        "field-default-null",
+        # Fields with choices must have companion CheckConstraint
+        # to enforce choices on database level
+        "field-choices-constraint",
+    ],
+}
