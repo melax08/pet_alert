@@ -150,7 +150,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 SILENCED_SYSTEM_CHECKS = ["rest_framework.W001"]
 
 if "test" in sys.argv:
-    SILENCED_SYSTEM_CHECKS.append("captcha.recaptcha_test_key_error")
+    SILENCED_SYSTEM_CHECKS.append("django_recaptcha.recaptcha_test_key_error")
     # LOGGING = {}
 else:
     RECAPTCHA_PUBLIC_KEY = config("RECAPTCHA_PUBLIC_KEY")

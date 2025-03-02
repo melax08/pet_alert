@@ -3,6 +3,7 @@ This file contains all the settings that defines the development server.
 """
 
 import socket
+import sys
 from typing import TYPE_CHECKING
 
 from server.settings.components import BASE_DIR
@@ -23,7 +24,6 @@ STATICFILES_DIRS = ((BASE_DIR / "server/static"),)
 ALLOWED_HOSTS = ["*"]  # Allow all hosts in development
 
 INSTALLED_APPS += (
-    "debug_toolbar",
     # django-test-migrations:
     "django_test_migrations.contrib.django_checks.AutoNames",
     "django_test_migrations.contrib.django_checks.DatabaseConfiguration",
@@ -32,13 +32,22 @@ INSTALLED_APPS += (
 )
 
 MIDDLEWARE += (
-    # Django debug toolbar:
-    # https://django-debug-toolbar.readthedocs.io
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     # https://github.com/bradmontgomery/django-querycount
     # Prints how many queries were executed, useful for the APIs.
     "querycount.middleware.QueryCountMiddleware",
 )
+
+if "test" not in sys.argv:
+    # Django debug toolbar:
+    # https://django-debug-toolbar.readthedocs.io
+    INSTALLED_APPS = [
+        *INSTALLED_APPS,
+        "debug_toolbar",
+    ]
+    MIDDLEWARE = [
+        *MIDDLEWARE,
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]
 
 
 # https://django-debug-toolbar.readthedocs.io/en/stable/installation.html#configure-internal-ips
