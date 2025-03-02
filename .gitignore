@@ -134,3 +134,4 @@ media/
 sent_emails/
 .data/
 tg_bot.py
+.ruff_cache
