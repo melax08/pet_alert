@@ -3,7 +3,7 @@ import os
 from celery import Celery
 from celery.signals import setup_logging
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pet_alert.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 app = Celery("pet_alert")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
