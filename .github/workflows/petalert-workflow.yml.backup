@@ -12,32 +12,27 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.11
+          python-version: 3.13
 
       - name: Setup Poetry
         uses: Gr1N/setup-poetry@v8
         with:
-          poetry-version: "1.5.1"
+          poetry-version: "2.0.1"
 
       - name: Install dependencies
         run: |
           poetry install
 
-      - name: Test with flake8
+      - name: Test with Ruff
         run: |
-          poetry run flake8 .
-
-      - name: Test with isort
-        run: |
-          poetry run isort . --check --diff
+          poetry run ruff check .
 
       - name: Test with django unittest
         run: |
-          cat <<EOF > .env
-          LOCAL=1
-          DJANGO_DEBUG=1
+          cat <<EOF > config/.env
+          DJANGO_ENV=development
           EOF
-          cd src/pet_alert && poetry run python manage.py test -v 2
+          poetry run python manage.py test -v 2
 
 
   deploy:
@@ -59,27 +54,26 @@ jobs:
             git pull
             cd infra
              echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose stop
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose rm -sf web petalert_worker nginx
+             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose rm -sf pet-alert-backend pet-alert-worker pet-alert-nginx
              echo "${{ secrets.SUDO_PASS }}" | sudo -S docker volume rm infra_static_volume
             cat <<EOF > ../.env
             DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET }}
-            DJANGO_DEBUG=0
-            DJANGO_ALLOWED_HOSTS=127.0.0.1 localhost pet-alert.ru testserver
+            DJANGO_ENV=production
             WEBSITE_HOST=pet-alert.ru
             TZ=Europe/Moscow
-            DB_ENGINE=django.db.backends.postgresql
-            DB_NAME=${{ secrets.DB_NAME }}
+
+            # Database settings
+            POSTGRES_DB=${{ secrets.DB_NAME }}
             POSTGRES_USER=${{ secrets.DB_USERNAME }}
             POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            # Yandex maps API Keys
-            YA_MAPS_API_KEY=${{ secrets.YA_MAPS_API_KEY }}
-            YA_MAPS_SUGGEST_API_KEY=${{ secrets.YA_MAPS_SUGGEST_API_KEY }}
+            DJANGO_DATABASE_HOST=${{ secrets.DB_HOST }}
+            DJANGO_DATABASE_PORT=${{ secrets.DB_PORT }}
+
             # ReCaptcha settings
             RECAPTCHA_PUBLIC_KEY=${{ secrets.RECAPTCHA_PUBLIC_KEY }}
             RECAPTCHA_PRIVATE_KEY=${{ secrets.RECAPTCHA_PRIVATE_KEY }}
             RECAPTCHA_REQUIRED_SCORE=${{ secrets.RECAPTCHA_REQUIRED_SCORE }}
+
             # SMTP settings
             DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}
             EMAIL_HOST=${{ secrets.SMTP_HOST }}
@@ -88,16 +82,26 @@ jobs:
             EMAIL_USE_SSL=1
             EMAIL_HOST_USER=${{ secrets.SMTP_USER }}
             EMAIL_HOST_PASSWORD=${{ secrets.SMTP_PASSWORD }}
-            # Logging settings
-            LOG_LEVEL=WARNING
-            # Celery settings
-            CELERY_BROKER_URL=redis://petalert_redis:6379
-            CELERY_RESULT_BACKEND=redis://petalert_redis:6379
+
+            # Yandex maps API Keys
+            YA_MAPS_API_KEY=${{ secrets.YA_MAPS_API_KEY }}
+            YA_MAPS_SUGGEST_API_KEY=${{ secrets.YA_MAPS_SUGGEST_API_KEY }}
+
+            # Redis
+            REDIS_SSL=0
+            REDIS_PREFIX=pet-alert
+            REDIS_HOST=pet-alert-redis
+            REDIS_PORT=6379
+            REDIS_DB=0
+
+            # Sentry
+            SENTRY_DSN=
+
             # Telegram settings
             TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}
             # DONE WORKFLOW ENVS
             EOF
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose --env-file ../.env up -d --build web petalert_worker nginx
+             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose -f infra/docker-compose-prod.yml --env-file config/.env up -d --build pet-alert-backend pet-alert-worker pet-alert-nginx
 
 
   send_message:

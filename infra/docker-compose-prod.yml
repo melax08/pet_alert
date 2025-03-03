@@ -1,46 +1,48 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  db:
-    image: postgres:16-bookworm
+  pet-alert-db:
+    image: postgres:17.2-alpine
     volumes:
       - database:/var/lib/postgresql/data/
     env_file:
-      - ../.env
+      - config/.env
     restart: always
-  petalert_redis:
+
+  pet-alert-redis:
     image: redis
     restart: always
-  web:
+
+  pet-alert-backend:
     build:
-      context: ..
+      context: .
       dockerfile: Dockerfile
     entrypoint: ./entrypoint_server.sh
     restart: always
     volumes:
       - static_volume:/app/static/
       - media_volume:/app/media/
-      - ./.data/:/.data/
     depends_on:
-      - db
+      - pet-alert-db
     env_file:
-      - ../.env
-  petalert_worker:
+      - config/.env
+
+  pet-alert-worker:
     build:
-      context: ..
+      context: .
       dockerfile: Dockerfile
     entrypoint: ./entrypoint_worker.sh
     restart: always
     volumes:
       - static_volume:/app/static/
       - media_volume:/app/media/
-      - ./.data/:/.data/
     depends_on:
-      - web
+      - pet-alert-backend
     env_file:
-      - ../.env
-  nginx:
-    image: nginx:1.23.4-alpine
+      - config/.env
+
+  pet-alert-nginx:
+    image: nginx:1.27.4-alpine
     ports:
       - "80:80"
       - "443:443"
@@ -55,18 +57,19 @@ services:
       - certbot_conf:/etc/letsencrypt
       - certbot_www:/var/www/certbot
     env_file:
-      - ../.env
+      - config/.env
     depends_on:
-      - web
-  certbot:
+      - pet-alert-backend
+
+  pet-alert-certbot:
     image: certbot/certbot
     volumes:
       - certbot_conf:/etc/letsencrypt
       - certbot_www:/var/www/certbot
     env_file:
-      - ../.env
+       - config/.env
     depends_on:
-      - nginx
+      - pet-alert-nginx
     command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@${WEBSITE_HOST} -d ${WEBSITE_HOST} --agree-tos
 
 volumes:
