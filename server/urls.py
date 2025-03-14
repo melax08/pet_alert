@@ -3,12 +3,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from server.apps.user_profile.messenger import urls as messenger_urls
+
 handler404 = "server.apps.core.views.page_not_found"
 handler500 = "server.apps.core.views.server_error"
 handler403 = "server.apps.core.views.permission_denied"
 
 urlpatterns = [
     path("", include("server.apps.ads.urls", namespace="ads")),
+    path("", include(messenger_urls, namespace="messenger")),
     path("admin/", admin.site.urls),
     # path('auth/', include('django_registration.backends.activation.urls')),
     path("auth/", include("server.apps.users.urls", namespace="users")),

@@ -18,6 +18,8 @@ INSTALLED_APPS = [
     "server.apps.ads.apps.AdsConfig",
     "server.apps.core.apps.CoreConfig",
     "server.apps.users.apps.UsersConfig",
+    "server.apps.user_profile.apps.UserProfileConfig",
+    "server.apps.user_profile.messenger.apps.MessengerConfig",
     # "server.apps.api.apps.ApiConfig",
     # Default Django apps:
     "django.contrib.admin",

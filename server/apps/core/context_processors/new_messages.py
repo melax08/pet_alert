@@ -1,4 +1,4 @@
-from server.apps.ads.models import Message
+from server.apps.user_profile.messenger.models import Message
 
 
 def new_messages(request):

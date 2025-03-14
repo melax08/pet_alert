@@ -30,13 +30,5 @@ urlpatterns = [
     ),
     path("service/post-manage/c/", views.CloseAd.as_view(), name="close_ad"),
     path("service/post-manage/o/", views.OpenAd.as_view(), name="open_ad"),
-    path("service/get-dialog/", views.GetDialog.as_view(), name="get_dialog"),
-    path("service/create-dialog/", views.CreateDialog.as_view(), name="create_dialog"),
-    path("profile/messages/", views.DialogList.as_view(), name="messages"),
-    path(
-        "profile/messages/<int:dialog_id>/",
-        views.MessageChat.as_view(),
-        name="messages_chat",
-    ),
     path("service/coords/", views.GetAdsBound.as_view(), name="coords"),
 ]

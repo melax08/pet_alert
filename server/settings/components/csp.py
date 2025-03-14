@@ -24,3 +24,7 @@ CSP_IMG_SRC += ("*.maps.yandex.net", "api-maps.yandex.ru")
 # Google (ReCaptcha)
 CSP_SCRIPT_SRC += ("www.google.com", "www.gstatic.com")
 CSP_FRAME_SRC += ("www.google.com",)
+
+# Messenger styles
+CSP_STYLE_SRC += ("maxcdn.bootstrapcdn.com",)
+CSP_FONT_SRC += ("maxcdn.bootstrapcdn.com",)

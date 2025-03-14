@@ -6,9 +6,8 @@ from operator import attrgetter
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, OuterRef, Q, Subquery
+from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import DetailView, ListView, UpdateView, View
 from django.views.generic.base import TemplateView
@@ -17,7 +16,7 @@ from django_registration.backends.activation.views import RegistrationView
 
 from server.apps.users.forms import CreationFormWithoutPassword
 
-from .constants import ADS_PER_PAGE, DIALOGS_PER_PAGE
+from .constants import ADS_PER_PAGE
 from .exceptions import BadRequest
 from .filters import TypeFilter
 from .forms import (
@@ -26,9 +25,8 @@ from .forms import (
     FoundForm,
     LostForm,
     ProfileSettingsForm,
-    SendMessageForm,
 )
-from .models import Dialog, Found, Lost, Message
+from .models import Found, Lost
 
 REGISTRATION_SALT = getattr(settings, "REGISTRATION_SALT", "registration")
 
@@ -380,107 +378,6 @@ class Profile(LoginRequiredMixin, UpdateView):
         return reverse("ads:profile") + "?success=1"
 
 
-class DialogList(LoginRequiredMixin, ListView):
-    """Shows the list of available chats."""
-
-    template_name = "ads/messages/messages_list.html"
-    model = Dialog
-    allow_empty = True
-    paginate_by = DIALOGS_PER_PAGE
-    context_object_name = "chats"
-
-    def get_queryset(self):
-        latest_message_pubdate = (
-            Message.objects.filter(dialog=OuterRef("pk"))
-            .order_by("-pub_date")
-            .values("pub_date")[:1]
-        )
-
-        latest_message_content = (
-            Message.objects.filter(dialog=OuterRef("pk"))
-            .order_by("-pub_date")
-            .values("content")[:1]
-        )
-
-        chats = (
-            Dialog.objects.select_related(
-                "author",
-                "questioner",
-                "advertisement_lost",
-                "advertisement_found",
-                "advertisement_lost__type",
-                "advertisement_found__type",
-            )
-            .filter(Q(author=self.request.user) | Q(questioner=self.request.user))
-            .annotate(
-                latest_message_date=Subquery(latest_message_pubdate),
-                latest_message_content=Subquery(latest_message_content),
-                unread_messages=Count(
-                    "messages",
-                    filter=Q(messages__recipient=self.request.user, messages__checked=False),
-                ),
-            )
-            .order_by("-latest_message_date")
-        )
-
-        return chats
-
-
-class MessageChat(LoginRequiredMixin, View):
-    """Show the messages in the dialog. Users can post the new messages."""
-
-    def get_dialog(self, request):
-        dialog = get_object_or_404(
-            Dialog.objects.select_related(
-                "author",
-                "questioner",
-                "advertisement_lost__author",
-                "advertisement_found__author",
-                "advertisement_lost__type",
-                "advertisement_found__type",
-            ),
-            pk=self.kwargs["dialog_id"],
-        )
-
-        if not (dialog.author == request.user or dialog.questioner == request.user):
-            raise Http404
-
-        return dialog
-
-    def get(self, request, *args, **kwargs):
-        dialog = self.get_dialog(request)
-
-        dialog.messages.filter(recipient=self.request.user, checked=False).update(checked=True)
-
-        form = SendMessageForm()
-        messages = dialog.messages.prefetch_related("sender", "recipient").order_by("pub_date")
-
-        return render(
-            request,
-            "ads/messages/messages_chat.html",
-            {
-                "messages": messages,
-                "form": form,
-                "advertisement": dialog.advertisement_group,
-            },
-        )
-
-    def post(self, request, *args, **kwargs):
-        dialog = self.get_dialog(request)
-
-        form = SendMessageForm(request.POST or None)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.dialog = dialog
-            message.sender = request.user
-            message.recipient = (
-                dialog.author if dialog.author != request.user else dialog.questioner
-            )
-            message.save()
-
-        return redirect("ads:messages_chat", self.kwargs["dialog_id"])
-
-
 class FetchBase(View):
     """Class with base functions for fetch requests."""
 
@@ -571,61 +468,6 @@ class CloseAd(OpenAd):
     to_set = False
 
 
-class DialogBase(AuthFetchBase):
-    """Base class for dialog views."""
-
-    @staticmethod
-    def _get_dialog_ad_field(ad):
-        return "advertisement_lost" if isinstance(ad, Lost) else "advertisement_found"
-
-
-class GetDialog(DialogBase):
-    """Fetch view for gets dialog if its exists."""
-
-    def post(self, request):
-        try:
-            ad = self._get_advertisement(request)
-        except BadRequest:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-        try:
-            dialog = Dialog.objects.get(
-                author=ad.author,
-                questioner=request.user,
-                **{self._get_dialog_ad_field(ad): ad},
-            )
-            dialog_id = dialog.id
-        except Dialog.DoesNotExist:
-            dialog_id = None
-
-        return JsonResponse({"dialog_id": dialog_id})
-
-
-class CreateDialog(DialogBase):
-    """Fetch view for create dialog when the first message sent."""
-
-    def post(self, request):
-        message = json.loads(request.body.decode()).get("msg").strip()
-        if not message:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-        try:
-            ad = self._get_advertisement(request)
-        except BadRequest:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-        params = {self._get_dialog_ad_field(ad): ad}
-
-        if Dialog.objects.filter(author=ad.author, questioner=request.user, **params).exists():
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-        dialog = Dialog.objects.create(author=ad.author, questioner=request.user, **params)
-        Message.objects.create(
-            dialog=dialog, sender=request.user, recipient=ad.author, content=message
-        )
-        return JsonResponse({"dialog_id": dialog.id})
-
-
 class GetAdsBound(FetchBase):
     """Return advertisements within the specified boundaries."""
 
@@ -638,7 +480,7 @@ class GetAdsBound(FetchBase):
             max_x, max_y = request_data["coords"][1]
             animal_type = request_data["animal_type"]
 
-            additional_params = dict()
+            additional_params = {}
             if animal_type:
                 additional_params["type__slug"] = animal_type
 

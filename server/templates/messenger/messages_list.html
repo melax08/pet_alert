@@ -46,7 +46,7 @@
               </div>
               <p class="text-muted text-break">{{ chat.latest_message_content|truncatechars:100 }}</p>
 
-              <a href="{% url 'ads:messages_chat' chat.id %}" class="pa-link stretched-link"></a>
+              <a href="{% url 'messenger:messages_chat' chat.id %}" class="pa-link stretched-link"></a>
             </div>
 
           </div>

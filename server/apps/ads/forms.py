@@ -6,8 +6,7 @@ from phonenumber_field.formfields import PhoneNumberField
 
 from server.apps.core.forms import CustomWidgetMixin
 
-from .constants import ROWS_IN_DIALOG_MESSAGE_FORM
-from .models import Found, Lost, Message
+from .models import Found, Lost
 
 User = get_user_model()
 
@@ -140,20 +139,3 @@ class ProfileSettingsForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("first_name", "contact_email", "contact_phone")
-
-
-class SendMessageForm(forms.ModelForm):
-    """Form for sending a message in a dialogue between two users."""
-
-    class Meta:
-        model = Message
-        fields = ("content",)
-
-        widgets = {
-            "content": forms.Textarea(
-                attrs={
-                    "rows": ROWS_IN_DIALOG_MESSAGE_FORM,
-                    "placeholder": "Введите сообщение",
-                }
-            )
-        }

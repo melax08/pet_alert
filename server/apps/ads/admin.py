@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AnimalType, Dialog, Found, Lost, Message
+from .models import AnimalType, Found, Lost
 
 
 class LostAdmin(admin.ModelAdmin):
@@ -23,30 +23,6 @@ class TypeAdmin(admin.ModelAdmin):
     list_display = ("pk", "name", "slug")
 
 
-class MessageAdmin(admin.ModelAdmin):
-    list_display = ("pk", "sender", "recipient", "content", "pub_date", "checked")
-    search_fields = ("content",)
-    list_filter = ("sender", "recipient", "dialog")
-
-
-class DialogAdmin(admin.ModelAdmin):
-    list_display = (
-        "pk",
-        "author",
-        "questioner",
-        "advertisement_lost",
-        "advertisement_found",
-    )
-    readonly_fields = ("messages_count",)
-
-    @admin.display(description="Сообщений в диалоге")
-    def messages_count(self, obj):
-        """Shows count of messages in dialog."""
-        return obj.messages.count()
-
-
 admin.site.register(Lost, LostAdmin)
 admin.site.register(Found, FoundAdmin)
 admin.site.register(AnimalType, TypeAdmin)
-admin.site.register(Dialog, DialogAdmin)
-admin.site.register(Message, MessageAdmin)
