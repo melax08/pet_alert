@@ -15,7 +15,7 @@ from .services import MessengerService
 class MessengerDialogListView(LoginRequiredMixin, ListView):
     """Shows the list of user chats."""
 
-    template_name = "messenger/messages_list.html"
+    template_name = "user_profile/messenger/messages_list.html"
     allow_empty = True
     paginate_by = DIALOGS_PER_PAGE
     context_object_name = "chats"
@@ -36,7 +36,7 @@ class MessengerDialogDetailView(LoginRequiredMixin, View):
 
         return render(
             request,
-            "messenger/messages_chat.html",
+            "user_profile/messenger/messages_chat.html",
             {
                 "messages": messenger_service.get_dialog_messages(dialog),
                 "form": SendMessageForm(),

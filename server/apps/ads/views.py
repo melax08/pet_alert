@@ -8,8 +8,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect, JsonResponse
-from django.urls import reverse, reverse_lazy
-from django.views.generic import DetailView, ListView, UpdateView, View
+from django.urls import reverse_lazy
+from django.views.generic import DetailView, ListView, View
 from django.views.generic.base import TemplateView
 from django_registration import signals
 from django_registration.backends.activation.views import RegistrationView
@@ -24,7 +24,6 @@ from .forms import (
     AuthorizedLostForm,
     FoundForm,
     LostForm,
-    ProfileSettingsForm,
 )
 from .models import Found, Lost
 
@@ -361,21 +360,6 @@ class ProfileInactiveList(ProfileAdsBase):
     """Views for inactive ads page of user profile."""
 
     active = False
-
-
-class Profile(LoginRequiredMixin, UpdateView):
-    """Show the current user settings and allow to edit some of them."""
-
-    template_name = "ads/profile.html"
-    form_class = ProfileSettingsForm
-
-    def get_object(self, queryset=None):
-        """Set the current request user as instance of form."""
-        return self.request.user
-
-    def get_success_url(self):
-        """Return user to profile settings page with additional query param."""
-        return reverse("ads:profile") + "?success=1"
 
 
 class FetchBase(View):

@@ -20,7 +20,6 @@ urlpatterns = [
     path("found/list/", views.FoundList.as_view(), name="found"),
     path("found/<int:ad_id>/", views.FoundDetail.as_view(), name="found_detail"),
     path("found/map/", views.FoundMap.as_view(), name="found_map"),
-    path("profile/", views.Profile.as_view(), name="profile"),
     path("profile/active/", views.ProfileActiveList.as_view(), name="my_ads"),
     path("profile/inactive/", views.ProfileInactiveList.as_view(), name="my_ads_inactive"),
     path(

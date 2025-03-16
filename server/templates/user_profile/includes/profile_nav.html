@@ -4,6 +4,6 @@
     Мои объявления
   </a>
   <a href="{% url 'messenger:dialog_list' %}" class="list-group-item list-group-item-action {% if view_name == 'messenger:dialog_list' or view_name == 'messenger:dialog_detail' %} text-pa-green {% endif %}">Сообщения</a>
-  <a href="{% url 'ads:profile' %}" class="list-group-item list-group-item-action {% if view_name == 'ads:profile' %} text-pa-green {% endif %}">Настройки</a>
+  <a href="{% url 'user_profile:settings' %}" class="list-group-item list-group-item-action {% if view_name == 'user_profile:settings' %} text-pa-green {% endif %}">Настройки</a>
 </div>
 {% endwith %}
