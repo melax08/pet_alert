@@ -69,14 +69,14 @@ function getDialog() {
         document.querySelector('#write-button').disabled = true;
         fetch(getDialogUrl, {
             method: 'POST',
-            body: JSON.stringify(manageData),
+            body: JSON.stringify(manageDataNew),
             headers: headers
         }).then(response => response.json().then(data => {
             if (response.ok) {
                 $('#spinner-get-dialog').hide();
                 document.querySelector('#write-button').disabled = false;
                 if (data['dialog_id'] != null) {
-                    window.location = '/profile/messages/' + data['dialog_id']
+                    window.location = '/profile/messenger/' + data['dialog_id']
                     return data
                 }
                 else {
@@ -98,16 +98,16 @@ function createDialog() {
            $('#send-msg-failed').html('')
            $('#spinner-send-msg').show();
            document.querySelector('#send-msg-button').disabled = true;
-           manageData["msg"] = document.getElementById("id_message").value
+           manageDataNew["message"] = document.getElementById("id_message").value
            fetch(createDialogUrl, {
                method: 'POST',
-               body: JSON.stringify(manageData),
+               body: JSON.stringify(manageDataNew),
                headers: headers
            }).then(response => response.json().then(data => {
                if (response.ok) {
                    $('#spinner-send-msg').hide();
                    document.querySelector('#send-msg-button').disabled = false;
-                   window.location = '/profile/messages/' + data['dialog_id']
+                   window.location = '/profile/messenger/' + data['dialog_id']
                    return data
                }
                $('#spinner-send-msg').hide();

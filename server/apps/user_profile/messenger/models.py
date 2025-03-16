@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Q
 
 from server.apps.ads.models import Found, Lost
 from server.apps.core.models.mixins import TimeStampedModelMixin
@@ -56,8 +56,19 @@ class Dialog(TimeStampedModelMixin, models.Model):
             models.CheckConstraint(
                 check=Q(advertisement_lost__isnull=False, advertisement_found=None)
                 | Q(advertisement_lost=None, advertisement_found__isnull=False),
-                name="dialog_advertisement_constraint",
-            )
+                name="dialog_related_adv_not_null_constraint",
+            ),
+            models.UniqueConstraint(
+                fields=["author", "questioner", "advertisement_lost"],
+                name="dialog_unique_together_author_questioner_lost_adv",
+            ),
+            models.UniqueConstraint(
+                fields=["author", "questioner", "advertisement_found"],
+                name="dialog_unique_together_author_questioner_found_adv",
+            ),
+            models.CheckConstraint(
+                check=~Q(author=F("questioner")), name="dialog_author_cant_message_himself"
+            ),
         ]
 
     def __str__(self):

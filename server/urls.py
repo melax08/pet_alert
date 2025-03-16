@@ -11,7 +11,7 @@ handler403 = "server.apps.core.views.permission_denied"
 
 urlpatterns = [
     path("", include("server.apps.ads.urls", namespace="ads")),
-    path("", include(messenger_urls, namespace="messenger")),
+    path("profile/messenger/", include(messenger_urls, namespace="messenger")),
     path("admin/", admin.site.urls),
     # path('auth/', include('django_registration.backends.activation.urls')),
     path("auth/", include("server.apps.users.urls", namespace="users")),

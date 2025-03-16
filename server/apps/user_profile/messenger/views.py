@@ -1,26 +1,18 @@
-import json
-from http import HTTPStatus
 from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import ListView, View
 
-from server.apps.ads.exceptions import BadRequest
-from server.apps.ads.models import Lost
-
-# ToDo: move to core or refactor
-from server.apps.ads.views import AuthFetchBase
-
 from .constants import DIALOGS_PER_PAGE
 from .forms import SendMessageForm
-from .models import Dialog, Message
+from .models import Dialog
 from .services import MessengerService
 
 
-class DialogList(LoginRequiredMixin, ListView):
+class MessengerDialogListView(LoginRequiredMixin, ListView):
     """Shows the list of user chats."""
 
     template_name = "messenger/messages_list.html"
@@ -33,7 +25,7 @@ class DialogList(LoginRequiredMixin, ListView):
         return messenger_service.get_dialogs()
 
 
-class MessageChat(LoginRequiredMixin, View):
+class MessengerDialogDetailView(LoginRequiredMixin, View):
     """Show the messages in the dialog. The user can send a new message."""
 
     def get(self, request: HttpRequest, *args: Any, **kwarg: Any) -> HttpResponse:
@@ -62,58 +54,3 @@ class MessageChat(LoginRequiredMixin, View):
             messenger_service.send_message(form, dialog)
 
         return redirect("messenger:messages_chat", self.kwargs["dialog_id"])
-
-
-class DialogBase(AuthFetchBase):
-    """Base class for dialog views."""
-
-    @staticmethod
-    def _get_dialog_ad_field(ad):
-        return "advertisement_lost" if isinstance(ad, Lost) else "advertisement_found"
-
-
-class GetDialog(DialogBase):
-    """Fetch view for gets dialog if its exists."""
-
-    def post(self, request):
-        try:
-            ad = self._get_advertisement(request)
-        except BadRequest:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-        try:
-            dialog = Dialog.objects.get(
-                author=ad.author,
-                questioner=request.user,
-                **{self._get_dialog_ad_field(ad): ad},
-            )
-            dialog_id = dialog.id
-        except Dialog.DoesNotExist:
-            dialog_id = None
-
-        return JsonResponse({"dialog_id": dialog_id})
-
-
-class CreateDialog(DialogBase):
-    """Fetch view for create dialog when the first message sent."""
-
-    def post(self, request):
-        message = json.loads(request.body.decode()).get("msg").strip()
-        if not message:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-        try:
-            ad = self._get_advertisement(request)
-        except BadRequest:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-        params = {self._get_dialog_ad_field(ad): ad}
-
-        if Dialog.objects.filter(author=ad.author, questioner=request.user, **params).exists():
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-
-        dialog = Dialog.objects.create(author=ad.author, questioner=request.user, **params)
-        Message.objects.create(
-            dialog=dialog, sender=request.user, recipient=ad.author, content=message
-        )
-        return JsonResponse({"dialog_id": dialog.id})

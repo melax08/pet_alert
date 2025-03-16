@@ -159,6 +159,10 @@ class Lost(AdsAbstract):
         """Get the dict with balloon information for yandex maps."""
         return self._get_map_dict("ads:lost_detail", "Потерялся")
 
+    @property
+    def dialog_field_name(self) -> str:
+        return "advertisement_lost"
+
 
 class Found(AdsAbstract):
     """
@@ -210,3 +214,7 @@ class Found(AdsAbstract):
     def get_map_dict(self):
         """Get the dict with balloon information for yandex maps."""
         return self._get_map_dict("ads:found_detail", "Нашелся")
+
+    @property
+    def dialog_field_name(self) -> str:
+        return "advertisement_found"
