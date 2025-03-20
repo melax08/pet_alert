@@ -26,7 +26,7 @@
     {% endif %}
 
     <div class="dropdown-menu">
-      <a class="dropdown-item" href="{% url 'ads:my_ads' %}">Мои объявления</a>
+      <a class="dropdown-item" href="{% url 'user_ads:active' %}">Мои объявления</a>
       <a class="dropdown-item" href="{% url 'messenger:dialog_list' %}">Мои сообщения {% if new_messages > 0 %}<span class="badge bg-pa-red rounded-pill"> {{ new_messages }}</span>{% endif %}</a>
       <a class="dropdown-item" href="{% url 'user_profile:settings' %}">Настройки</a>
       <a class="dropdown-item" href="{% url 'users:change_form' %}">Изменить пароль</a>

@@ -5,6 +5,7 @@ from django.urls import include, path
 
 from server.apps.user_profile import urls as user_profile_urls
 from server.apps.user_profile.messenger import urls as messenger_urls
+from server.apps.user_profile.user_ads import urls as user_ads_urls
 
 handler404 = "server.apps.core.views.page_not_found"
 handler500 = "server.apps.core.views.server_error"
@@ -12,6 +13,7 @@ handler403 = "server.apps.core.views.permission_denied"
 
 urlpatterns = [
     path("", include("server.apps.ads.urls", namespace="ads")),
+    path("profile/ads/", include(user_ads_urls, namespace="user_ads")),
     path("profile/messenger/", include(messenger_urls, namespace="messenger")),
     path("profile/", include(user_profile_urls, namespace="user_profile")),
     path("admin/", admin.site.urls),

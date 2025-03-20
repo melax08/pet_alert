@@ -1,0 +1,1 @@
+ADS_PER_PROFILE_PAGE: int = 6
