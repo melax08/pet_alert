@@ -1,12 +1,12 @@
-FROM python:3.13-slim
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ADD . /app
 
 WORKDIR /app
 
 RUN uv sync --frozen
+
+ENV PATH="/app/.venv/bin:$PATH"
