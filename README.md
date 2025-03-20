@@ -1,6 +1,7 @@
 # Pet Alert - веб-приложение для поиска пропавших животных
 
 ![petalert workflow](https://github.com/melax08/pet_alert/actions/workflows/petalert-workflow.yml/badge.svg)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 [//]: # (Посмотреть по баджу с coverage)
@@ -27,10 +28,10 @@
 [![DRF][DRF-badge]][DRF-url]
 [![Postgres][Postgres-badge]][Postgres-url]
 [![Nginx][Nginx-badge]][Nginx-url]
-[![Poetry][Poetry-badge]][Poetry-url]
 [![Docker][Docker-badge]][Docker-url]
 [![Redis][Redis-badge]][Redis-url]
 [![Celery][Celery-badge]][Celery-url]
+[![UV][UV-badge]][UV-url]
 
 ### Системные требования
 
@@ -38,7 +39,7 @@
 
 - Python 3.13+;
 - Docker (20.10+) c docker compose;
-- [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer) (2.0.1+).
+- [uv](https://github.com/astral-sh/uv/blob/main/README.md#installation) (0.6.8+).
 
 ### Архитектура проекта
 
@@ -86,6 +87,7 @@
   - [ ] Оптимизация взаимодействия с Yandex картами
   - [ ] Внедрение кэширования, Redis
 - [x] Внедрение Poetry
+- [x] Замена Poetry на UV
 - [x] Внедрение различных средств форматирования
   - [x] Ruff
   - [x] Pre-commit
@@ -108,16 +110,18 @@
 
 ### Установка проекта локально
 
-Для установки и запуска проекта локально необходим установленный `docker` с `docker compose` (для работы сервисов Redis, Celery, базы данных PostgreSQL, локального почтового SMTP-сервера), а также пакетный менеджер `poetry` (для установки зависимостей приложения).
+Для установки и запуска проекта локально необходим установленный `docker` с `docker compose` (для работы сервисов Redis, Celery, базы данных PostgreSQL, локального почтового SMTP-сервера), а также пакетный менеджер `uv` (для установки зависимостей приложения).
 
 1. Клонируем репозиторий с проектом и переходим в его директорию:
 ```shell
 git clone https://github.com/melax08/pet_alert.git && cd pet_alert
 ```
 2. Устанавливаем зависимости:
+
 ```shell
-poetry install
+uv sync
 ```
+
 3. Копируем файл `.env.example` с новыми названием `.env` и заполняем его необходимыми данными:
 ```shell
 cp config/.env.example config/.env && nano config/.env
@@ -129,19 +133,19 @@ docker compose up -d
 ```
 5. Применяем миграции:
 ```shell
-poetry run python3 manage.py migrate
+uv run python3 manage.py migrate
 ```
 
 Опционально. Создаем суперпользователя:
 ```shell
-poetry run python3 manage.py createsuperuser
+uv run python3 manage.py createsuperuser
 ```
 
 ### Запуск проекта локально
 
 Запускаем проект:
 ```shell
-poetry run python3 manage.py runserver
+uv run python3 manage.py runserver
 ```
 
 Локальный проект будет запущен и доступен по http://127.0.0.1:8000
@@ -151,7 +155,7 @@ poetry run python3 manage.py runserver
 Чтобы запустить `unittest` тестирование работы функционала Django-приложений, выполним команду:
 
 ```shell
-poetry run python3 manage.py test -v 2
+uv run python3 manage.py test -v 2
 ```
 
 </details>
@@ -280,7 +284,6 @@ pre-commit install
 - [Ruff linter](https://docs.astral.sh/ruff/linter/);
 - [Ruff formatter](https://docs.astral.sh/ruff/formatter/);
 - [Django unit tests](https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/unit-tests/);
-- [Poetry check](https://python-poetry.org/docs/pre-commit-hooks/#poetry-check);
 - [check-yaml, end-of-file-fixer, trailing-whitespace](https://github.com/pre-commit/pre-commit-hooks).
 
 Настройка pre-commit хуков происходит в файле: `.pre-commit-config.yaml`
@@ -298,11 +301,11 @@ pre-commit install
 [Postgres-badge]: https://img.shields.io/badge/postgres-306189?style=for-the-badge&logo=postgresql&logoColor=white
 [Nginx-url]: https://nginx.org
 [Nginx-badge]: https://img.shields.io/badge/nginx-009900?style=for-the-badge&logo=nginx&logoColor=white
-[Poetry-url]: https://python-poetry.org
-[Poetry-badge]: https://img.shields.io/badge/poetry-blue?style=for-the-badge&logo=Poetry&logoColor=white&link=https%3A%2F%2Fpython-poetry.org
 [Docker-url]: https://www.docker.com
 [Docker-badge]: https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white
 [Redis-badge]: https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white
 [Redis-url]: https://redis.io/
 [Celery-badge]: https://img.shields.io/badge/Celery-37814A.svg?style=for-the-badge&logo=Celery&logoColor=white
 [Celery-url]: https://docs.celeryq.dev/en/stable/
+[UV-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
+[UV-url]: https://docs.astral.sh/uv/
