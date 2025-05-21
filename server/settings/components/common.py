@@ -21,6 +21,9 @@ INSTALLED_APPS = [
     "server.apps.user_profile.apps.UserProfileConfig",
     "server.apps.user_profile.messenger.apps.MessengerConfig",
     "server.apps.user_profile.user_ads.apps.UserAdsConfig",
+    "server.apps.notifications.apps.NotificationsConfig",
+    "server.apps.notifications.emails.apps.EmailsConfig",
+    "server.apps.notifications.telegrams.apps.TelegramsConfig",
     # "server.apps.api.apps.ApiConfig",
     # Default Django apps:
     "django.contrib.admin",

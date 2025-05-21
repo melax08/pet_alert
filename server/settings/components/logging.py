@@ -1,11 +1,11 @@
-from typing import TYPE_CHECKING, Callable, final
+from collections.abc import Callable
+from typing import TYPE_CHECKING, final
 
 import structlog
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse
 
-# ToDo: add support for celery if needed
 
 LOGGING = {
     "version": 1,
@@ -15,9 +15,16 @@ LOGGING = {
             "()": structlog.stdlib.ProcessorFormatter,
             "processor": structlog.processors.JSONRenderer(),
         },
-        "plain_console": {
+        "console": {
             "()": structlog.stdlib.ProcessorFormatter,
-            "processor": structlog.dev.ConsoleRenderer(),
+            "processor": structlog.processors.KeyValueRenderer(
+                key_order=["timestamp", "level", "event", "logger"],
+            ),
+            "foreign_pre_chain": [
+                structlog.stdlib.add_log_level,
+                structlog.stdlib.add_logger_name,
+                structlog.processors.TimeStamper(fmt="iso"),
+            ],
         },
         "key_value": {
             "()": structlog.stdlib.ProcessorFormatter,
@@ -29,7 +36,7 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "plain_console",
+            "formatter": "console",
         },
         "json_console": {
             "class": "logging.StreamHandler",

@@ -31,6 +31,7 @@
 [![Docker][Docker-badge]][Docker-url]
 [![Redis][Redis-badge]][Redis-url]
 [![Celery][Celery-badge]][Celery-url]
+[![Aiogram][Aiogram-badge]][Aiogram-url]
 [![UV][UV-badge]][UV-url]
 
 ### Системные требования
@@ -91,7 +92,7 @@
 - [x] Внедрение различных средств форматирования
   - [x] Ruff
   - [x] Pre-commit
-- [ ] Система оповещения администраторов о новом объявлении через телеграм
+- [x] Система оповещения администраторов о новом объявлении через телеграм
 - [ ] Скачивание объявления для распечатывания с QR-кодом
 - [ ] API со всем функционалом из обычного сайта
   - [x] Создание объявлений
@@ -309,3 +310,5 @@ pre-commit install
 [Celery-url]: https://docs.celeryq.dev/en/stable/
 [UV-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
 [UV-url]: https://docs.astral.sh/uv/
+[Aiogram-url]: https://aiogram.dev/
+[Aiogram-badge]: https://img.shields.io/badge/Aiogram-blue?style=for-the-badge

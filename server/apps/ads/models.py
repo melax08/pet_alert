@@ -4,6 +4,7 @@ from django.db import models
 from django.urls import reverse_lazy
 from sorl.thumbnail import get_thumbnail
 
+from .choices import AdType
 from .constants import DESCRIPTION_MAP_LIMIT
 
 User = get_user_model()
@@ -33,7 +34,7 @@ class AnimalType(models.Model):
     default_image = models.ImageField(
         "Изображение по умолчанию",
         upload_to=settings.ANIMAL_DEFAULT_IMG_PATH,
-        help_text=("Изображение для животного, которое будет отображаться по умолчанию."),
+        help_text="Изображение для животного, которое будет отображаться по умолчанию.",
     )
 
     class Meta:
@@ -94,10 +95,7 @@ class AdsAbstract(models.Model):
     def _get_map_dict(self, reverse_url, header):
         """Get the dict with balloon information for yandex maps."""
         pet_name = getattr(self, "pet_name", "")
-        if pet_name:
-            hint_content = f"{header}: {pet_name}"
-        else:
-            hint_content = header
+        hint_content = f"{header}: {pet_name}" if pet_name else header
 
         if self.image:
             small_img = get_thumbnail(self.image, "50x50", crop="center", quality=MAP_IMAGE_QUALITY)
@@ -163,6 +161,10 @@ class Lost(AdsAbstract):
     def dialog_field_name(self) -> str:
         return "advertisement_lost"
 
+    @property
+    def adv_type(self) -> AdType:
+        return AdType.LOST
+
 
 class Found(AdsAbstract):
     """
@@ -218,3 +220,7 @@ class Found(AdsAbstract):
     @property
     def dialog_field_name(self) -> str:
         return "advertisement_found"
+
+    @property
+    def adv_type(self) -> AdType:
+        return AdType.FOUND
