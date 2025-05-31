@@ -40,7 +40,7 @@ class MessengerDialogDetailView(LoginRequiredMixin, View):
             {
                 "messages": messenger_service.get_dialog_messages(dialog),
                 "form": SendMessageForm(),
-                "advertisement": dialog.advertisement_group,
+                "advertisement": dialog.advertisement,
             },
         )
 
@@ -53,4 +53,4 @@ class MessengerDialogDetailView(LoginRequiredMixin, View):
         if form.is_valid():
             messenger_service.send_message(form, dialog)
 
-        return redirect("messenger:messages_chat", self.kwargs["dialog_id"])
+        return redirect("messenger:dialog_detail", self.kwargs["dialog_id"])

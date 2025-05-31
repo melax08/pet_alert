@@ -8,9 +8,9 @@ from server.apps.notifications.telegrams.tasks import notify_staff_about_new_adv
 from .models import Found, Lost
 
 
-@receiver(post_save, sender=Found)
 @receiver(post_save, sender=Lost)
+@receiver(post_save, sender=Found)
 def post_save_advertisement(created: bool, instance: Lost | Found, **kwargs: Any) -> None:
     """Process some logic after creation of the new advertisement."""
     if created:
-        notify_staff_about_new_advertisement.delay(instance.adv_type, instance.id)
+        notify_staff_about_new_advertisement.delay(instance.id)

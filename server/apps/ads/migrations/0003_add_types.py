@@ -12,7 +12,7 @@ DEFAULT_IMAGES_DIR = Path(settings.ANIMAL_DEFAULT_IMG_PATH)
 STATIC_ICON_DIR = Path(settings.BASE_DIR) / "server/static/img/map_icons"
 STATIC_DEFAULT_IMAGES_DIR = Path(settings.BASE_DIR) / "server/static/img/animal_types"
 
-ANIMAL_TYPES = [
+ANIMAL_SPECIES = [
     {
         "name": "другое",
         "slug": "other",
@@ -48,9 +48,9 @@ def add_types(apps, schema_editor):
     shutil.copytree(STATIC_ICON_DIR, icons_dir, dirs_exist_ok=True)
     shutil.copytree(STATIC_DEFAULT_IMAGES_DIR, default_images_dir, dirs_exist_ok=True)
 
-    animal_type_model = apps.get_model("ads", "AnimalType")
-    for animal_type in ANIMAL_TYPES:
-        new_animal_type = animal_type_model(**animal_type)
+    animal_species_model = apps.get_model("ads", "AnimalSpecies")
+    for animal_type in ANIMAL_SPECIES:
+        new_animal_type = animal_species_model(**animal_type)
         new_animal_type.save()
 
 
@@ -60,17 +60,17 @@ def remove_types(apps, schema_editor):
     Removes all animal_types specified in dictionary `ANIMAL_TYPES` from
     database if it exists.
     """
-    animal_type_model = apps.get_model("ads", "AnimalType")
-    for animal_type in ANIMAL_TYPES:
+    animal_species_model = apps.get_model("ads", "AnimalSpecies")
+    for animal_type in ANIMAL_SPECIES:
         try:
-            animal_type_model.objects.get(**animal_type).delete()
+            animal_species_model.objects.get(**animal_type).delete()
         except ObjectDoesNotExist:
             print(f"Warning: Animal type {animal_type.get('name')} doesn't exists. Skipped.")
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("ads", "0001_initial"),
+        ("ads", "0002_initial"),
     ]
 
     operations = [migrations.RunPython(add_types, remove_types)]

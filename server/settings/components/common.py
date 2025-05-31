@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "django_registration",
     "django_recaptcha",
+    "polymorphic",
     # DRF:
     "rest_framework",
     "djoser",
@@ -163,7 +164,7 @@ else:
     RECAPTCHA_PRIVATE_KEY = config("RECAPTCHA_PRIVATE_KEY")
     RECAPTCHA_REQUIRED_SCORE = config("RECAPTCHA_REQUIRED_SCORE", default=0.6, cast=float)
 
-CSRF_FAILURE_VIEW = "server.apps.core.views.csrf_failure"
+CSRF_FAILURE_VIEW = "server.apps.core.views.errors.csrf_failure"
 
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "ads:index"

@@ -1,5 +1,5 @@
 ADV_ATTRIBUTE_TEMPLATE_MAP: dict = {
-    "type": "<b>Вид животного</b>: {}",
+    "species": "<b>Вид животного</b>: {}",
     "address": "<b>Адрес</b>: {}",
     "description": "<b>Описание объявления</b>:\n{}",
     "age": "<b>Возраст</b>: {}",

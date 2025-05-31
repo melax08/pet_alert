@@ -14,15 +14,20 @@ class ProfileAdsBaseView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         service = UserAdsService(user=self.request.user)
-        ads, active_count, inactive_count = service.get_mixed_ads(self.is_active)
-        self.active_count = active_count
-        self.inactive_count = inactive_count
+        ads, reverse_count = service.get_ads_list(self.is_active)
+        self.reverse_count = reverse_count
         return ads
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["active_count"] = self.active_count
-        context["inactive_count"] = self.inactive_count
+
+        if self.is_active:
+            context["active_count"] = context["paginator"].count
+            context["inactive_count"] = self.reverse_count
+        else:
+            context["active_count"] = self.reverse_count
+            context["inactive_count"] = context["paginator"].count
+
         return context
 
 

@@ -1,16 +1,32 @@
 import django_filters
 from django import forms
 
-from .models import AnimalType
+from .choices import AdvertisementType
+from .models import AnimalSpecies, Found, Lost
 
 
-class TypeFilter(django_filters.FilterSet):
-    """Filter by animal type model for advertisements."""
+class AdvertisementListFilterSet(django_filters.FilterSet):
+    """Advertisements list filters."""
 
-    type = django_filters.ModelChoiceFilter(
-        queryset=AnimalType.objects.all(),
-        field_name="type__name",
+    species = django_filters.ModelChoiceFilter(
+        queryset=AnimalSpecies.objects.all(),
+        field_name="species__name",
         to_field_name="slug",
         empty_label="Все животные",
         widget=forms.Select(attrs={"onchange": "submit();"}),
     )
+
+    type = django_filters.ChoiceFilter(
+        method="filter_by_type", choices=AdvertisementType.choices, widget=forms.HiddenInput()
+    )
+
+    def filter_by_type(self, queryset, name, value):
+        match value:
+            case AdvertisementType.LOST:
+                model = Lost
+            case AdvertisementType.FOUND:
+                model = Found
+            case _:
+                return queryset
+
+        return queryset.instance_of(model)

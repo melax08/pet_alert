@@ -1,13 +1,12 @@
-from django.db.models import TextChoices
-
-# ToDo: refactor to the integer choices
-# from django.db.models import IntegerChoices
-
-# class AdType(IntegerChoices):
-#     LOST = 1, "Lost"
-#     FOUND = 2, "Found"
+from django.db.models import IntegerChoices, TextChoices
 
 
-class AdType(TextChoices):
-    LOST = "l", "Lost"
-    FOUND = "f", "Found"
+class AnimalConditionChoices(IntegerChoices):
+    OK = 1, "Здоровое"
+    SICK = 2, "Больное"
+    CRITICAL = 3, "Критическое"
+
+
+class AdvertisementType(TextChoices):
+    LOST = "lost", "Потерялся"
+    FOUND = "found", "Нашелся"

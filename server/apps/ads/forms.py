@@ -16,7 +16,7 @@ class BaseAddForm(CustomWidgetMixin, forms.ModelForm):
     Base form class for all add advertisement form. Only for inheritance.
 
     Features:
-    - Replace empty label for animal type field.
+    - Replace empty label for animal species field.
     - Add form-control classes for all fields.
     - Add placeholders with label information for all fields.
     - Address and coords fields are hidden.
@@ -24,7 +24,7 @@ class BaseAddForm(CustomWidgetMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["type"].empty_label = "- вид животного -"
+        self.fields["species"].empty_label = "- вид животного -"
 
     class Meta:
         widgets = {
@@ -65,7 +65,7 @@ class LostForm(BaseAddForm):
             "address",
             "latitude",
             "longitude",
-            "type",
+            "species",
             "image",
             "description",
             "pet_name",
@@ -87,7 +87,7 @@ class FoundForm(LostForm):
             "address",
             "latitude",
             "longitude",
-            "type",
+            "species",
             "image",
             "description",
             "age",
@@ -108,7 +108,7 @@ class AuthorizedLostForm(BaseAddForm):
             "address",
             "latitude",
             "longitude",
-            "type",
+            "species",
             "image",
             "description",
             "pet_name",
@@ -125,7 +125,7 @@ class AuthorizedFoundForm(BaseAddForm):
             "address",
             "latitude",
             "longitude",
-            "type",
+            "species",
             "image",
             "description",
             "age",

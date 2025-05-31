@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from server.apps.ads.models import AnimalType, Found, Lost
+from server.apps.ads.models import AnimalSpecies, Found, Lost
 
 User = get_user_model()
 
@@ -10,7 +10,7 @@ class AnimalTypeSerializer(serializers.ModelSerializer):
     """Serializer for AnimalType model views."""
 
     class Meta:
-        model = AnimalType
+        model = AnimalSpecies
         fields = "__all__"
 
 
@@ -20,7 +20,7 @@ class AdsBaseSerializer(serializers.ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(
         default=serializers.CurrentUserDefault(), read_only=True
     )
-    type = serializers.SlugRelatedField(slug_field="slug", queryset=AnimalType.objects.all())
+    type = serializers.SlugRelatedField(slug_field="slug", queryset=AnimalSpecies.objects.all())
 
     class Meta:
         read_only_fields = ("author", "pub_date", "id")

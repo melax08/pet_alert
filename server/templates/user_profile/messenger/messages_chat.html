@@ -42,7 +42,7 @@
                                    height="{{ im.height }}" class="rounded">
                             {% endthumbnail %}
                           {% else %}
-                            {% thumbnail advertisement.type.default_image "40x40" crop="center" as im %}
+                            {% thumbnail advertisement.species.default_image "40x40" crop="center" as im %}
                               <img src="{{ im.url }}" width="{{ im.width }}"
                                    height="{{ im.height }}" class="rounded">
                             {% endthumbnail %}
@@ -54,7 +54,7 @@
 
                                     <small>
                                     {% if advertisement.open and advertisement.active %}
-                                      <a href="{% if advertisement|getmodelname == 'found' %} {% url 'ads:found_detail' advertisement.id %} {% else %} {% url 'ads:lost_detail' advertisement.id %} {% endif %}" class="pa-link">
+                                      <a href="{% url 'ads:advertisement_detail' advertisement.id %}" class="pa-link">
                                         <p>{{ advertisement.description|truncatechars:30 }}</p>
                                       </a>
                                     {% else %}

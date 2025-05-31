@@ -26,26 +26,22 @@
                  height="{{ im.height }}" class="rounded">
           {% endthumbnail %}
         {% else %}
-          {% thumbnail ad.type.default_image "200x200" crop="center" as im %}
+          {% thumbnail ad.species.default_image "200x200" crop="center" as im %}
             <img src="{{ im.url }}" width="{{ im.width }}"
                  height="{{ im.height }}" class="rounded">
           {% endthumbnail %}
         {% endif %}
         </div>
       <div class="col-md-7 col-lg-8 col-xl-9 p-4 ps-md-0">
-      {% if ad|getmodelname == 'found' %}
+        {% if ad|getmodelname == 'found' %}
           <h5 class="mt-0">Нашелся:</h5>
-          <p class="text-muted">{{ ad.pub_date }}</p>
-          <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
-          <p class="text-muted">{{ ad.address }}</p>
-          <a href="{% url 'ads:found_detail' ad.id %}" class="pa-link">Подробнее</a>
         {% else %}
           <h5 class="mt-0 text-break">Пропал: {{ ad.pet_name }}</h5>
-          <p class="text-muted">{{ ad.pub_date }}</p>
-          <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
-          <p class="text-muted">{{ ad.address }}</p>
-          <a href="{% url 'ads:lost_detail' ad.id %}" class="pa-link">Подробнее</a>
         {% endif %}
+        <p class="text-muted">{{ ad.created_at }}</p>
+        <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
+        <p class="text-muted">{{ ad.address }}</p>
+        <a href="{% url 'ads:advertisement_detail' ad.id %}" class="pa-link">Подробнее</a>
       </div>
       </div>
     </article>

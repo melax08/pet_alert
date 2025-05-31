@@ -1,28 +1,26 @@
 from django.contrib import admin
 
-from .models import AnimalType, Found, Lost
+from .models import AnimalSpecies, Found, Lost
 
 
+@admin.register(Lost)
 class LostAdmin(admin.ModelAdmin):
-    list_display = ("pk", "active", "pet_name", "author", "address", "type")
+    list_display = ("pk", "active", "pet_name", "author", "address", "species")
     list_editable = ("active",)
     search_fields = ("description", "pet_name", "address")
-    list_filter = ("type", "author")
+    list_filter = ("species", "author")
     empty_value_display = "-пусто-"
 
 
+@admin.register(Found)
 class FoundAdmin(admin.ModelAdmin):
-    list_display = ("pk", "active", "condition", "author", "address", "type")
+    list_display = ("pk", "active", "condition", "author", "address", "species")
     list_editable = ("active",)
     search_fields = ("description", "address")
-    list_filter = ("type", "author", "condition")
+    list_filter = ("species", "author", "condition")
     empty_value_display = "-пусто-"
 
 
-class TypeAdmin(admin.ModelAdmin):
-    list_display = ("pk", "name", "slug")
-
-
-admin.site.register(Lost, LostAdmin)
-admin.site.register(Found, FoundAdmin)
-admin.site.register(AnimalType, TypeAdmin)
+@admin.register(AnimalSpecies)
+class AnimalSpeciesAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug")

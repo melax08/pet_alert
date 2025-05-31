@@ -16,6 +16,7 @@ dependencies = [
     "django-http-referrer-policy>=1.1.1",
     "django-permissions-policy>=4.25.0",
     "django-phonenumber-field>=8.0.0",
+    "django-polymorphic>=4.1.0",
     "django-recaptcha>=4.0.0",
     "django-redis>=5.4.0",
     "django-registration>=5.1.0",

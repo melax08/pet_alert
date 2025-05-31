@@ -29,10 +29,8 @@ class MessengerService:
             Dialog.objects.select_related(
                 "author",
                 "questioner",
-                "advertisement_lost",
-                "advertisement_found",
-                "advertisement_lost__type",
-                "advertisement_found__type",
+                "advertisement",
+                "advertisement__species",
             )
             .filter(Q(author=self._user) | Q(questioner=self._user))
             .annotate(
@@ -53,10 +51,8 @@ class MessengerService:
             Dialog.objects.select_related(
                 "author",
                 "questioner",
-                "advertisement_lost__author",
-                "advertisement_found__author",
-                "advertisement_lost__type",
-                "advertisement_found__type",
+                "advertisement__author",
+                "advertisement__species",
             ),
             pk=dialog_id,
         )

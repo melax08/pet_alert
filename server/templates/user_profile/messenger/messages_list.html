@@ -26,13 +26,13 @@
         <article class="border-top border-start border-end {% if forloop.last %}rounded-bottom border-bottom{% endif %}">
           <div class="row g-0 position-relative">
             <div class="col-xs-3 col-xl-2 mb-md-0 p-3 pb-0 pb-md-3">
-              {% if chat.advertisement_group.image %}
-                {% thumbnail chat.advertisement_group.image "100x100" crop="center" as im %}
+              {% if chat.advertisement.image %}
+                {% thumbnail chat.advertisement.image "100x100" crop="center" as im %}
                 <img src="{{ im.url }}" width="{{ im.width }}"
                      height="{{ im.height }}" class="rounded">
                 {% endthumbnail %}
               {% else %}
-                {% thumbnail chat.advertisement_group.type.default_image "100x100" crop="center" as im %}
+                {% thumbnail chat.advertisement.species.default_image "100x100" crop="center" as im %}
                   <img src="{{ im.url }}" width="{{ im.width }}"
                       height="{{ im.height }}" class="rounded">
                 {% endthumbnail %}

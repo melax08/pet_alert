@@ -2,7 +2,7 @@
 {% load thumbnail %}
 {% load static %}
 {% block title %}
-  {{ title }} | Карта
+  {% if request.GET.type == "lost" %}Потерялись{% else %}Нашлись{% endif %} | Карта
 {% endblock %}
 {% block content %}
   {% include 'ads/includes/navigation.html' %}
@@ -12,7 +12,7 @@
           "X-CSRFToken": "{{ csrf_token }}",
           "Content-Type": "application/json"
       }
-      const model = '{{ ad_model }}'
+      const model = '{{ request.GET.type }}'
   </script>
   <script src="{% static 'js/map_marks.js' %}"
           type="text/javascript">

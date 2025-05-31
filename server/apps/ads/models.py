@@ -2,19 +2,19 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse_lazy
+from polymorphic.models import PolymorphicModel
 from sorl.thumbnail import get_thumbnail
 
-from .choices import AdType
+from server.apps.core.models.mixins import TimeStampedModelMixin
+
+from .choices import AdvertisementType, AnimalConditionChoices
 from .constants import DESCRIPTION_MAP_LIMIT
 
 User = get_user_model()
 
-CONDITIONS_OF_PET = [("OK", "Здоровое"), ("BD", "Больное"), ("CR", "Критическое")]
-MAP_IMAGE_QUALITY = 99
 
-
-class AnimalType(models.Model):
-    """The kind of animal. Used for filtering and to display default icons and images
+class AnimalSpecies(models.Model):
+    """The animal species model. Used for filtering and to display default icons and images
     for various ads."""
 
     name = models.CharField(
@@ -45,10 +45,9 @@ class AnimalType(models.Model):
         return self.name
 
 
-class AdsAbstract(models.Model):
-    """Abstract class with common field for Lost and Found advertisements."""
+class Advertisement(TimeStampedModelMixin, PolymorphicModel):
+    """Advertisement model with base fields for all kinds of advertisements."""
 
-    pub_date = models.DateTimeField("Дата создания объявления", auto_now_add=True)
     address = models.CharField(
         "Адрес",
         max_length=300,
@@ -65,9 +64,9 @@ class AdsAbstract(models.Model):
         blank=True,
         help_text="Прикрепите фотографию питомца",
     )
-    description = models.TextField("Описание", help_text="Опишите вашего потерянного питомца")
+    description = models.TextField("Описание", help_text="Опишите питомца")
     age = models.CharField(
-        "Возраст питомца",
+        "Возраст животного",
         max_length=50,
         help_text="Примерный или точный возраст питомца",
         blank=True,
@@ -81,24 +80,42 @@ class AdsAbstract(models.Model):
         "Открыто", default=True, help_text="Объявление открыто пользователем"
     )
 
+    species = models.ForeignKey(
+        AnimalSpecies,
+        on_delete=models.SET_NULL,
+        related_name="advertisements",
+        verbose_name="Вид животного",
+        null=True,
+        help_text="Выберите вид животного",
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="advertisements",
+        verbose_name="Автор объявления",
+    )
+
     class Meta:
-        ordering = ["-pub_date"]
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["active", "open"]),
             models.Index(fields=["active", "open", "latitude", "longitude"]),
         ]
-        abstract = True
 
     def __str__(self):
         return self.description[:30]
 
-    def _get_map_dict(self, reverse_url, header):
+    @property
+    def visible(self) -> bool:
+        return self.active and self.open
+
+    def _get_map_dict(self, header):
         """Get the dict with balloon information for yandex maps."""
         pet_name = getattr(self, "pet_name", "")
         hint_content = f"{header}: {pet_name}" if pet_name else header
 
         if self.image:
-            small_img = get_thumbnail(self.image, "50x50", crop="center", quality=MAP_IMAGE_QUALITY)
+            small_img = get_thumbnail(self.image, "50x50", crop="center", quality=99)
             img = f'<img src="/media/{small_img}" class="rounded"'
             balloon_content_header = f"{img} <br> {hint_content}"
         else:
@@ -109,9 +126,9 @@ class AdsAbstract(models.Model):
         else:
             balloon_content_body = self.description[:DESCRIPTION_MAP_LIMIT] + "..."
 
-        url = reverse_lazy(reverse_url, kwargs={"ad_id": self.id})
+        url = reverse_lazy("ads:advertisement_detail", kwargs={"ad_id": self.id})
         balloon_content_footer = f'<a href="{url}" target="_blank" class="pa-link">Перейти</a>'
-        icon_href = f"/media/{self.type.icon}"
+        icon_href = f"/media/{self.species.icon}"
 
         return {
             "c": [self.latitude, self.longitude],
@@ -123,104 +140,42 @@ class AdsAbstract(models.Model):
         }
 
 
-class Lost(AdsAbstract):
-    """
-    Model for Lost advertisements.
-    Fields that only this ad type has:
-    - pet_name.
-    """
+class Lost(Advertisement):
+    """Model with information about lost animals."""
 
     pet_name = models.CharField(
         "Кличка", max_length=50, help_text="Кличка потерянного питомца", blank=True
     )
-    type = models.ForeignKey(
-        AnimalType,
-        on_delete=models.SET_NULL,
-        related_name="lost",
-        verbose_name="Вид животного",
-        help_text="Выберите вид потерянного питомца",
-        null=True,
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="lost_ads",
-        verbose_name="Автор",
-        help_text="Автор объявления о пропаже",
-    )
 
-    class Meta(AdsAbstract.Meta):
+    class Meta(Advertisement.Meta):
         verbose_name = "Потерян"
         verbose_name_plural = "Потеряны"
 
     def get_map_dict(self):
         """Get the dict with balloon information for yandex maps."""
-        return self._get_map_dict("ads:lost_detail", "Потерялся")
-
-    @property
-    def dialog_field_name(self) -> str:
-        return "advertisement_lost"
-
-    @property
-    def adv_type(self) -> AdType:
-        return AdType.LOST
+        return self._get_map_dict("Потерялся")
 
 
-class Found(AdsAbstract):
-    """
-    Model for Found advertisements.
-    Fields that only this ad type has:
-    - condition.
-    """
+class Found(Advertisement):
+    """Model with information about found animals."""
 
-    condition = models.CharField(
+    condition = models.PositiveSmallIntegerField(
         "Состояние животного",
-        max_length=2,
-        choices=CONDITIONS_OF_PET,
-        default="OK",
+        choices=AnimalConditionChoices.choices,
+        default=AnimalConditionChoices.OK,
         help_text="В каком состоянии было животное, когда вы его нашли?",
     )
-    image = models.ImageField(
-        "Фотография",
-        upload_to="main/img",
-        blank=True,
-        help_text="Прикрепите фотографию найденного животного",
-    )
-    description = models.TextField("Описание", help_text="Опишите найденное животное")
-    age = models.CharField(
-        "Примерный возраст",
-        max_length=50,
-        help_text="Примерный возраст животного",
-        blank=True,
-    )
-    type = models.ForeignKey(
-        AnimalType,
-        on_delete=models.SET_NULL,
-        related_name="found",
-        verbose_name="Вид животного",
-        help_text="Выберите вид найденного животного",
-        null=True,
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="found_ads",
-        verbose_name="Автор",
-        help_text="Автор объявления о находке",
-    )
 
-    class Meta(AdsAbstract.Meta):
+    class Meta(Advertisement.Meta):
         verbose_name = "Найден"
         verbose_name_plural = "Найдены"
 
     def get_map_dict(self):
         """Get the dict with balloon information for yandex maps."""
-        return self._get_map_dict("ads:found_detail", "Нашелся")
+        return self._get_map_dict("Нашелся")
 
-    @property
-    def dialog_field_name(self) -> str:
-        return "advertisement_found"
 
-    @property
-    def adv_type(self) -> AdType:
-        return AdType.FOUND
+ADVERTISEMENT_TYPES_LITERAL_MODEL_MAPPING: dict[str, type[Advertisement]] = {
+    AdvertisementType.LOST: Lost,
+    AdvertisementType.FOUND: Found,
+}

@@ -1,9 +1,6 @@
-from itertools import chain
-from operator import attrgetter
-
 from django.db.models import Q, QuerySet
 
-from server.apps.ads.models import Found, Lost
+from server.apps.ads.models import Advertisement
 from server.apps.users.models import User
 
 
@@ -11,37 +8,31 @@ class UserAdsService:
     def __init__(self, user: User) -> None:
         self.user = user
 
-    def get_active_user_ads(self) -> tuple[QuerySet[Lost], QuerySet[Found]]:
+    def get_active_user_ads_qs(self) -> QuerySet[Advertisement]:
         """Get all active user advertisements from lost and found."""
         return (
-            self.user.lost_ads.select_related("type").filter(active=True, open=True),
-            self.user.found_ads.select_related("type").filter(active=True, open=True),
+            self.user.advertisements.select_related("species")
+            .filter(active=True, open=True)
+            .order_by("-created_at")
         )
 
-    def get_inactive_user_ads(self) -> tuple[QuerySet[Lost], QuerySet[Found]]:
+    def get_inactive_user_ads_qs(self) -> QuerySet[Advertisement]:
         """
         Get all inactive user advertisements from lost and found.
         An inactive ad is one that has not passed moderation or has been disabled by the user.
         """
         return (
-            self.user.lost_ads.select_related("type").filter(Q(active=False) | Q(open=False)),
-            self.user.found_ads.select_related("type").filter(Q(active=False) | Q(open=False)),
+            self.user.advertisements.select_related("species")
+            .filter(Q(active=False) | Q(open=False))
+            .order_by("-created_at")
         )
 
-    def get_mixed_ads(self, is_active: bool) -> tuple[list[Lost | Found], int, int]:
-        """Mix active or inactive ads in one list and count amount of active and inactive ads."""
-        to_mix = self.get_active_user_ads()
-        to_count = self.get_inactive_user_ads()
-        if not is_active:
-            to_mix, to_count = to_count, to_mix
+    def get_ads_list(self, is_active: bool) -> tuple[QuerySet[Advertisement], int]:
+        """Get user active or inactive advertisements with count of active and inactive ads."""
+        active_ads = self.get_active_user_ads_qs()
+        inactive_ads = self.get_inactive_user_ads_qs()
 
-        ads_mix = sorted(chain(*to_mix), key=attrgetter("pub_date"), reverse=True)
+        ads = active_ads if is_active else inactive_ads
+        reverse_count = inactive_ads.count() if is_active else active_ads.count()
 
-        if is_active:
-            active_count = len(ads_mix)
-            inactive_count = sum([q.count() for q in to_count])
-        else:
-            inactive_count = len(ads_mix)
-            active_count = sum([q.count() for q in to_count])
-
-        return ads_mix, active_count, inactive_count
+        return ads, reverse_count

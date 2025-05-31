@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import F, Q
 
-from server.apps.ads.models import Found, Lost
+from server.apps.ads.models import Advertisement
 from server.apps.core.models.mixins import TimeStampedModelMixin
 
 User = get_user_model()
@@ -31,21 +31,11 @@ class Dialog(TimeStampedModelMixin, models.Model):
         verbose_name="Задающий вопросы",
     )
 
-    advertisement_lost = models.ForeignKey(
-        Lost,
-        null=True,
-        blank=True,
+    advertisement = models.ForeignKey(
+        Advertisement,
         on_delete=models.CASCADE,
-        related_name="messages",
-        verbose_name="Тип объявления: потерялся",
-    )
-    advertisement_found = models.ForeignKey(
-        Found,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name="messages",
-        verbose_name="Тип объявления: нашелся",
+        related_name="dialogs",
+        verbose_name="Объявление",
     )
 
     class Meta:
@@ -53,18 +43,9 @@ class Dialog(TimeStampedModelMixin, models.Model):
         verbose_name_plural = "Диалоги"
 
         constraints = [
-            models.CheckConstraint(
-                check=Q(advertisement_lost__isnull=False, advertisement_found=None)
-                | Q(advertisement_lost=None, advertisement_found__isnull=False),
-                name="dialog_related_adv_not_null_constraint",
-            ),
             models.UniqueConstraint(
-                fields=["author", "questioner", "advertisement_lost"],
-                name="dialog_unique_together_author_questioner_lost_adv",
-            ),
-            models.UniqueConstraint(
-                fields=["author", "questioner", "advertisement_found"],
-                name="dialog_unique_together_author_questioner_found_adv",
+                fields=["author", "questioner", "advertisement"],
+                name="dialog_unique_together_author_questioner_adv",
             ),
             models.CheckConstraint(
                 check=~Q(author=F("questioner")), name="dialog_author_cant_message_himself"
@@ -73,11 +54,6 @@ class Dialog(TimeStampedModelMixin, models.Model):
 
     def __str__(self):
         return f"Диалог между автором {self.author} и задающим вопросы {self.questioner}"
-
-    @property
-    def advertisement_group(self):
-        """Get the advertisement that bound to this dialog."""
-        return self.advertisement_lost or self.advertisement_found
 
 
 class Message(models.Model):

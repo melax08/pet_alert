@@ -1,5 +1,6 @@
 {% with request.resolver_match.view_name as view_name %}
   {% load user_filters %}
+
 <div class="row pb-3">
     <div class="col d-flex justify-content-md-start pb-2 pb-md-0">
       <a href="{% url 'ads:add_lost' %}">
@@ -7,40 +8,42 @@
       </a>
     </div>
     <div class="col-md d-md-flex justify-content-md-end">
-    {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' or view_name == 'ads:found' or view_name == 'ads:found_map' %}
-    <form method="get" class="pb-2 pb-md-0 pe-md-2 px-lg-0 mx-lg-2 col-md-4 col-lg-5">
-      {{ filter.form.type|addclass:'form-select' }}
+    {% if view_name == 'ads:advertisement_list' or view_name == 'ads:advertisement_map' %}
+    <form method="get" class="pb-2 pb-md-0 pe-md-2 px-lg-0 mx-lg-2 col-md-4 col-lg-5" id="species-form">
+      {{ filter.form.species|addclass:'form-select' }}
+      {{ filter.form.type }}
     </form>
       <div class="d-flex">
       <div class="btn-group me-2" role="group" aria-label="Basic radio
 toggle button group">
-      {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %}
-        <a href="{% url 'ads:lost' %}">
-      {% else %}
-        <a href="{% url 'ads:found' %}">
-      {% endif %}
-<button type="button" class="btn btn{% if view_name != 'ads:lost' and view_name != 'ads:found' %}-outline{% endif %}-pa-green">Список</button>
+        <a href="{% url 'ads:advertisement_list' %}{% querystring %}">
+<button type="button" class="btn btn{% if view_name != 'ads:advertisement_list' %}-outline{% endif %}-pa-green">Список</button>
           </a>
-      {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %}
-        <a href="{% url 'ads:lost_map' %}">
-      {% else %}
-        <a href="{% url 'ads:found_map' %}">
-      {% endif %}
-<button type="button" class="btn btn{% if view_name != 'ads:lost_map' and view_name != 'ads:found_map' %}-outline{% endif %}-pa-green">Карта</button>
+        <a href="{% url 'ads:advertisement_map' %}{% querystring %}">
+<button type="button" class="btn btn{% if view_name != 'ads:advertisement_map' %}-outline{% endif %}-pa-green">Карта</button>
           </a>
       </div>
     {% endif %}
     <div class="d-flex">
-      <a href="{% url 'ads:lost' %}">
-        <button type="button" class="btn {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' %} btn-pa-green {% else %} btn-outline-pa-green
+      {% if view_name == "ads:advertisement_list" %}
+        <a href="{% url 'ads:advertisement_list' %}?type=lost">
+      {% else %}
+        <a href="{% url 'ads:advertisement_map' %}?type=lost">
+      {% endif %}
+        <button type="button" class="btn {% if request.GET.type == "lost" %} btn-pa-green {% else %} btn-outline-pa-green
 {% endif %} me-md-2">Потерялся
         </button>
       </a>
-      <a href="{% url 'ads:found' %}">
-        <button type="button" class="btn {% if view_name == 'ads:found' or view_name == 'ads:found_map' %} btn-pa-green {% else %} btn-outline-pa-green{% endif %}">Нашёлся</button>
+      {% if view_name == "ads:advertisement_list" %}
+        <a href="{% url 'ads:advertisement_list' %}?type=found">
+      {% else %}
+        <a href="{% url 'ads:advertisement_map' %}?type=found">
+      {% endif %}
+        <button type="button" class="btn {% if request.GET.type == "found" %} btn-pa-green {% else %} btn-outline-pa-green{% endif %}">Нашёлся</button>
       </a>
     </div>
-    {% if view_name == 'ads:lost' or view_name == 'ads:lost_map' or view_name == 'ads:found' or view_name == 'ads:found_map' %}
+    {#   WTF? Fix it #}
+    {% if view_name == 'ads:advertisement_list' or view_name == 'ads:advertisement_map' %}
     </div>
     {% endif %}
     </div>

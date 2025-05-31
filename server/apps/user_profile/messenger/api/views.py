@@ -24,14 +24,12 @@ class GetDialogView(APIView):
         serializer.is_valid(raise_exception=True)
 
         advertisement_service = AdvertisementService()
-        advertisement = advertisement_service.get_advertisement_or_404(
-            ad_type=serializer.data.get("ad_type"), ad_id=serializer.data.get("ad_id")
+        advertisement = advertisement_service.get_visible_advertisement_or_404(
+            ad_id=serializer.data.get("ad_id")
         )
 
         dialog = Dialog.objects.filter(
-            author=advertisement.author,
-            questioner=request.user,
-            **{advertisement.dialog_field_name: advertisement},
+            author=advertisement.author, questioner=request.user, advertisement=advertisement
         ).first()
         dialog_id = dialog.id if dialog else None
 
@@ -50,8 +48,8 @@ class CreateDialogView(APIView):
         serializer.is_valid(raise_exception=True)
 
         advertisement_service = AdvertisementService()
-        advertisement = advertisement_service.get_advertisement_or_404(
-            ad_type=serializer.data.get("ad_type"), ad_id=serializer.data.get("ad_id")
+        advertisement = advertisement_service.get_visible_advertisement_or_404(
+            ad_id=serializer.data.get("ad_id")
         )
 
         if advertisement_service.is_user_advertisement_author(advertisement, request.user):
@@ -61,9 +59,8 @@ class CreateDialogView(APIView):
             dialog, _ = Dialog.objects.get_or_create(
                 author=advertisement.author,
                 questioner=request.user,
-                **{advertisement.dialog_field_name: advertisement},
+                advertisement=advertisement,
             )
-
             Message.objects.create(
                 dialog=dialog,
                 sender=request.user,

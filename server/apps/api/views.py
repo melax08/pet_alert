@@ -7,7 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from server.apps.ads.models import AnimalType, Found, Lost
+from server.apps.ads.models import AnimalSpecies, Found, Lost
 
 from .filters import AdFilter
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
@@ -23,7 +23,7 @@ from .serializers import (
 class AnimalTypeViewSet(ModelViewSet):
     """View set to manage AnimalType model."""
 
-    queryset = AnimalType.objects.all()
+    queryset = AnimalSpecies.objects.all()
     serializer_class = AnimalTypeSerializer
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = "slug"

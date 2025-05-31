@@ -21,11 +21,10 @@ class DialogAdmin(admin.ModelAdmin):
         "pk",
         "author",
         "questioner",
-        "advertisement_lost",
-        "advertisement_found",
+        "advertisement",
         "messages_count",
     )
-    readonly_fields = ("author", "questioner", "advertisement_lost", "advertisement_found")
+    readonly_fields = ("author", "questioner", "advertisement")
     inlines = (MessageInline,)
 
     def get_queryset(self, request):

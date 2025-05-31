@@ -11,7 +11,7 @@ from aiogram.exceptions import AiogramError, TelegramRetryAfter
 from aiogram.types import FSInputFile, InputFile
 from django.conf import settings
 
-from server.apps.ads.models import Found, Lost
+from server.apps.ads.models import Advertisement
 
 from .constants import ADV_ATTRIBUTE_TEMPLATE_MAP
 from .utils import ThumbnailImage
@@ -111,7 +111,7 @@ class TelegramNotificationsService:
 
 class AdvertisementTelegramNotificationService:
     def send_advertisement_to_telegram_users(
-        self, telegram_ids: list[int], advertisement: Lost | Found
+        self, telegram_ids: list[int], advertisement: Advertisement
     ) -> None:
         message, image_path = self._serialize_advertisement(advertisement)
 
@@ -135,7 +135,7 @@ class AdvertisementTelegramNotificationService:
                 media_file_path=image_path,
             )
 
-    def _serialize_advertisement(self, adv_instance: Lost | Found) -> tuple[str, str | None]:
+    def _serialize_advertisement(self, adv_instance: Advertisement) -> tuple[str, str | None]:
         """Serialize lost or found advertisement to the tuple with information message about
         the advertisement and image path."""
         try:
@@ -148,7 +148,7 @@ class AdvertisementTelegramNotificationService:
         return message, image_path
 
     @staticmethod
-    def _generate_info_message_about_advertisement(adv_instance: Lost | Found) -> str:
+    def _generate_info_message_about_advertisement(adv_instance: Advertisement) -> str:
         message = [
             "❗ Создано новое объявление!",
             f"<b>Автор</b>: {adv_instance.author.first_name} ({adv_instance.author.email})",

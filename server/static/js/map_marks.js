@@ -26,13 +26,14 @@ function getYaMap () {
 
         function loadData(bounds) {
             const urlParams = new URLSearchParams(window.location.search);
-            const animalType = urlParams.get('type');
+            const animalSpecies = urlParams.get('species');
+            const model = urlParams.get('type')
             data = {
                 'coords': bounds,
-                'model': model,
-                'animal_type': animalType
+                'type': model,
+                'species': animalSpecies
             }
-            fetch('/service/coords/', {
+            fetch('/api/map-coords/', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(data)

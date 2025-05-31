@@ -43,7 +43,7 @@
       <div class="row pb-4">
         {% for found in founds %}
           <div class="col">
-            <a href="{% url 'ads:found_detail' found.id %}">
+            <a href="{% url 'ads:advertisement_detail' found.id %}">
               {% if found.image %}
                 {% thumbnail found.image "250x250" crop="center" as im %}
                   <img src="{{ im.url }}" width="{{ im.width }}"
@@ -56,14 +56,14 @@
                 {% endthumbnail %}
               {% endif %}
             </a>
-            <p class="pt-3">{{ found.pub_date }}</p>
+            <p class="pt-3">{{ found.created_at }}</p>
             <div class="pb-3">
-              <a href="{% url 'ads:found_detail' found.id %}" class="pa-link">Подробнее</a>
+              <a href="{% url 'ads:advertisement_detail' found.id %}" class="pa-link">Подробнее</a>
             </div>
           </div>
         {% endfor %}
      </div>
-      <a href="{% url 'ads:found' %}">
+      <a href="{% url 'ads:advertisement_list' %}?type=found">
         <button class="btn btn-pa-green index-green-button mt-2">Все найденные</button>
       </a>
     </div>
@@ -73,7 +73,7 @@
       <div class="row pb-4">
         {% for lost in losts %}
           <div class="col">
-            <a href="{% url 'ads:lost_detail' lost.id %}">
+            <a href="{% url 'ads:advertisement_detail' lost.id %}">
               {% if lost.image %}
                 {% thumbnail lost.image "250x250" crop="center" as im %}
                   <img src="{{ im.url }}" width="{{ im.width }}"
@@ -86,14 +86,14 @@
                 {% endthumbnail %}
               {% endif %}
             </a>
-            <p class="pt-3">{{ lost.pub_date }}</p>
+            <p class="pt-3">{{ lost.created_at }}</p>
             <div class="pb-3">
-              <a href="{% url 'ads:lost_detail' lost.id %}" class="pa-link">Подробнее</a>
+              <a href="{% url 'ads:advertisement_detail' lost.id %}" class="pa-link">Подробнее</a>
             </div>
           </div>
         {% endfor %}
       </div>
-      <a href="{% url 'ads:lost' %}">
+      <a href="{% url 'ads:advertisement_list' %}?type=lost">
         <button class="btn btn-pa-green index-green-button mt-2">Все потерянные</button>
       </a>
     </div>
