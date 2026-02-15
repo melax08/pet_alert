@@ -70,7 +70,7 @@ def remove_types(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("ads", "0002_initial"),
+        ("ads", "0001_initial"),
     ]
 
     operations = [migrations.RunPython(add_types, remove_types)]
