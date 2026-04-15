@@ -10,18 +10,6 @@
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'css/chat-history.css' %}">
 
-
-<script>
-  window.onload = () => {
-      const div = document.getElementById("chat-history");
-      div.scrollTo({
-          top: div.scrollHeight,
-          behavior: 'instant'
-      });
-
-  }
-</script>
-
   {% include 'ads/includes/navigation.html' %}
 
   <div class="row">
@@ -66,18 +54,32 @@
                         </div>
                     </div>
                 </div>
-                <div class="chat-history overflow-auto" style="max-height: 500px;" id="chat-history">
+                <div
+                  class="chat-history overflow-auto"
+                  style="max-height: 500px;"
+                  id="chat-history"
+                  data-dialog-id="{{ dialog.id }}"
+                  data-current-user-id="{{ request.user.id }}"
+                  data-current-user-name="{{ request.user.first_name|default:request.user.username|escapejs }}"
+                  data-other-user-name="{% if request.user == dialog.author %}{{ dialog.questioner.first_name|default:dialog.questioner.username|escapejs }}{% else %}{{ dialog.author.first_name|default:dialog.author.username|escapejs }}{% endif %}"
+                >
 
-                {% if not messages %}
-                  <p class="text-muted">В диалоге нет сообщений</p>
-                {% endif %}
+                <p class="text-muted{% if messages %} d-none{% endif %}" id="empty-chat-message">В диалоге нет сообщений</p>
 
-                    <ul class="m-b-0">
+                    <ul class="m-b-0 ps-0" id="messages-list">
 
                       {% for message in messages %}
-                      <li class="clearfix">
+                      <li class="clearfix message-item{% if request.user == message.sender %} message-item-own{% endif %}">
                         <div class="message-data {% if request.user == message.sender %} text-end {% endif %}">
-                          <span class="message-data-time">{{ message.sender.first_name }}{% if request.user == message.sender %} (вы){% endif %}, {{ message.pub_date|date:'d M G:i' }}</span>
+                          <span class="message-data-time">
+                            {{ message.sender.first_name }}{% if request.user == message.sender %} (вы){% endif %}, {{ message.pub_date|date:'d M G:i' }}
+                            {% if request.user == message.sender %}
+                              <span class="text-muted ms-1 message-read-indicator" aria-label="{% if message.checked %}Прочитано{% else %}Не прочитано{% endif %}">
+                                <span class="read-status{% if message.checked %} d-none{% endif %}">&#10003;</span>
+                                <span class="read-status-read{% if not message.checked %} d-none{% endif %}">&#10003;&#10003;</span>
+                              </span>
+                            {% endif %}
+                          </span>
                         </div>
                         <div class="message {% if request.user == message.sender %} other-message float-right {% else %} my-message {% endif %} text-break">
                           {{ message.content }}
@@ -88,7 +90,7 @@
 
                     </ul>
                 </div>
-            <form method="post">
+            <form method="post" id="chat-message-form">
               {% csrf_token %}
                 <div class="chat-message clearfix">
                     <div class="input-group mb-0">
@@ -105,4 +107,177 @@
 
     </div>
   </div>
+
+  <script>
+    window.addEventListener("load", () => {
+      const chatHistory = document.getElementById("chat-history");
+      const messagesList = document.getElementById("messages-list");
+      const emptyChatMessage = document.getElementById("empty-chat-message");
+      const chatForm = document.getElementById("chat-message-form");
+      const submitButton = document.getElementById("button-addon2");
+      const messageInput = chatForm.querySelector("textarea");
+      const dialogId = chatHistory.dataset.dialogId;
+      const currentUserId = Number(chatHistory.dataset.currentUserId);
+      const currentUserName = chatHistory.dataset.currentUserName;
+      const otherUserName = chatHistory.dataset.otherUserName;
+      const scheme = window.location.protocol === "https:" ? "wss" : "ws";
+      const chatSocket = new WebSocket(`${scheme}://${window.location.host}/ws/dialog/${dialogId}/`);
+      {#const chatSocket = new WebSocket(`ws://127.0.0.1:8001/ws/dialog/${dialogId}/`);#}
+
+      const scrollChatToBottom = () => {
+        chatHistory.scrollTo({
+          top: chatHistory.scrollHeight,
+          behavior: "auto",
+        });
+      };
+
+      const toggleEmptyState = () => {
+        emptyChatMessage.classList.toggle("d-none", messagesList.children.length > 0);
+      };
+
+      const markOwnMessagesAsRead = () => {
+        document.querySelectorAll(".message-item-own").forEach((messageItem) => {
+          const unreadStatus = messageItem.querySelector(".read-status");
+          const readStatus = messageItem.querySelector(".read-status-read");
+          const statusIndicator = messageItem.querySelector(".message-read-indicator");
+
+          if (unreadStatus) {
+            unreadStatus.classList.add("d-none");
+          }
+
+          if (readStatus) {
+            readStatus.classList.remove("d-none");
+          }
+
+          if (statusIndicator) {
+            statusIndicator.setAttribute("aria-label", "Прочитано");
+          }
+        });
+      };
+
+      const sendReadEvent = () => {
+        if (document.visibilityState !== "visible" || chatSocket.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
+        chatSocket.send(JSON.stringify({
+          type: "read_messages",
+        }));
+      };
+
+      const buildMessageNode = ({ senderId, message, createdAt }) => {
+        const isOwnMessage = senderId === currentUserId;
+        const messageItem = document.createElement("li");
+        messageItem.className = `clearfix message-item${isOwnMessage ? " message-item-own" : ""}`;
+
+        const metaWrapper = document.createElement("div");
+        metaWrapper.className = `message-data${isOwnMessage ? " text-end" : ""}`;
+
+        const meta = document.createElement("span");
+        meta.className = "message-data-time";
+        meta.textContent = `${isOwnMessage ? currentUserName : otherUserName}${isOwnMessage ? " (вы)" : ""}, ${createdAt}`;
+
+        if (isOwnMessage) {
+          const statusIndicator = document.createElement("span");
+          statusIndicator.className = "text-muted ms-1 message-read-indicator";
+          statusIndicator.setAttribute("aria-label", "Не прочитано");
+
+          const unreadStatus = document.createElement("span");
+          unreadStatus.className = "read-status";
+          unreadStatus.innerHTML = "&#10003;";
+
+          const readStatus = document.createElement("span");
+          readStatus.className = "read-status-read d-none";
+          readStatus.innerHTML = "&#10003;&#10003;";
+
+          statusIndicator.appendChild(unreadStatus);
+          statusIndicator.appendChild(readStatus);
+          meta.appendChild(statusIndicator);
+        }
+
+        metaWrapper.appendChild(meta);
+
+        const body = document.createElement("div");
+        body.className = `message ${isOwnMessage ? "other-message float-right" : "my-message"} text-break`;
+        body.textContent = message;
+
+        messageItem.appendChild(metaWrapper);
+        messageItem.appendChild(body);
+
+        return messageItem;
+      };
+
+      chatSocket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "send_message") {
+          const createdAt = new Date(data.created_at).toLocaleString("ru-RU", {
+            day: "2-digit",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          messagesList.appendChild(
+            buildMessageNode({
+              senderId: Number(data.sender_id),
+              message: data.message,
+              createdAt,
+            })
+          );
+
+          toggleEmptyState();
+          scrollChatToBottom();
+
+          if (Number(data.sender_id) !== currentUserId) {
+            sendReadEvent();
+          }
+        }
+
+        if (data.type === "messages_read" && Number(data.reader_id) !== currentUserId) {
+          markOwnMessagesAsRead();
+        }
+      };
+
+      chatSocket.onopen = () => {
+        scrollChatToBottom();
+        sendReadEvent();
+      };
+
+      chatSocket.onclose = () => {
+        submitButton.disabled = true;
+        submitButton.title = "Соединение с чатом потеряно";
+      };
+
+      chatForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const message = messageInput.value.trim();
+        if (!message || chatSocket.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
+        chatSocket.send(JSON.stringify({
+          type: "send_message",
+          message,
+        }));
+
+        messageInput.value = "";
+      });
+
+      messageInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          chatForm.requestSubmit();
+        }
+      });
+
+      chatHistory.addEventListener("mouseenter", sendReadEvent);
+      window.addEventListener("focus", sendReadEvent);
+      document.addEventListener("visibilitychange", sendReadEvent);
+
+      toggleEmptyState();
+      scrollChatToBottom();
+    });
+  </script>
 {% endblock %}

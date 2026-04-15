@@ -9,12 +9,17 @@ Docs: https://github.com/mozilla/django-csp
 """
 
 # These values might and will be redefined in `development.py` env:
-CSP_SCRIPT_SRC: tuple[str, ...] = ("'self'", "'unsafe-inline'")
+CSP_SCRIPT_SRC: tuple[str, ...] = (
+    "'self'",
+    "'unsafe-inline'",
+    "cdn.jsdelivr.net",
+    "127.0.0.1:8001",
+)
 CSP_IMG_SRC: tuple[str, ...] = ("'self'", "data:")
 CSP_FONT_SRC: tuple[str, ...] = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")
 CSP_STYLE_SRC: tuple[str, ...] = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")
 CSP_DEFAULT_SRC: tuple[str, ...] = ("'self'", "'unsafe-inline'")
-CSP_CONNECT_SRC: tuple[str, ...] = ("'self'",)
+CSP_CONNECT_SRC: tuple[str, ...] = ("'self'", "ws://127.0.0.1:8001")
 CSP_FRAME_SRC: tuple[str, ...] = ("'self'",)
 
 # Yandex maps

@@ -1,6 +1,5 @@
 from django.db.models import Count, OuterRef, Q, QuerySet, Subquery
 from django.http import Http404
-from django.shortcuts import get_object_or_404
 
 from server.apps.users.models import User
 
@@ -44,20 +43,25 @@ class MessengerService:
             .order_by("-latest_message_date")
         )
 
-    def get_dialog(self, dialog_id: int) -> Dialog:
-        """Get dialog by its id. The user should be dialog author or dialog questioner to has
+    def get_dialog(self, dialog_id: int) -> Dialog | None:
+        """Get dialog by its id. The user should be a dialog author or a dialog questioner to has
         access to the dialog."""
-        dialog = get_object_or_404(
+        dialog = (
             Dialog.objects.select_related(
-                "author",
-                "questioner",
-                "advertisement__author",
-                "advertisement__species",
-            ),
-            pk=dialog_id,
+                "author", "questioner", "advertisement__author", "advertisement__species"
+            )
+            .filter(id=dialog_id)
+            .first()
         )
+        if not dialog or not (dialog.author == self._user or dialog.questioner == self._user):
+            return None
 
-        if not (dialog.author == self._user or dialog.questioner == self._user):
+        return dialog
+
+    def get_dialog_or_404(self, dialog_id: int) -> Dialog:
+        """Get the dialog by id or raise 404 error."""
+        dialog = self.get_dialog(dialog_id)
+        if not dialog:
             raise Http404
 
         return dialog
@@ -71,10 +75,18 @@ class MessengerService:
         """Set all unchecked messages in the dialog as viewed for the current user."""
         dialog.messages.filter(recipient=self._user, checked=False).update(checked=True)
 
-    def send_message(self, form: SendMessageForm, dialog: Dialog) -> None:
+    def send_message_form(self, form: SendMessageForm, dialog: Dialog) -> None:
         """Send the message from the current user to the another dialog member."""
         message = form.save(commit=False)
         message.dialog = dialog
         message.sender = self._user
         message.recipient = dialog.author if dialog.author != self._user else dialog.questioner
         message.save()
+
+    def send_message(self, dialog: Dialog, message_content: str) -> Message:
+        return Message.objects.create(
+            dialog=dialog,
+            sender=self._user,
+            recipient=dialog.author if self._user != dialog.author else dialog.questioner,
+            content=message_content,
+        )

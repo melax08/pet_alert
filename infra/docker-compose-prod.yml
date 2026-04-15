@@ -1,6 +1,5 @@
-version: '3.9'
-
 services:
+
   pet-alert-db:
     image: postgres:17.2-alpine
     volumes:
@@ -8,6 +7,20 @@ services:
     env_file:
       - config/.env
     restart: always
+
+  pet-alert-backend-prepare:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ./entrypoint_backend_prepare.sh
+    volumes:
+      - static_volume:/app/static/
+      - media_volume:/app/media/
+    depends_on:
+      pet-alert-db:
+        condition: service_started
+    env_file:
+      - config/.env
 
   pet-alert-redis:
     image: redis
@@ -23,7 +36,10 @@ services:
       - static_volume:/app/static/
       - media_volume:/app/media/
     depends_on:
-      - pet-alert-db
+      pet-alert-backend-prepare:
+        condition: service_completed_successfully
+      pet-alert-db:
+        condition: service_started
     env_file:
       - config/.env
 
@@ -37,7 +53,27 @@ services:
       - static_volume:/app/static/
       - media_volume:/app/media/
     depends_on:
-      - pet-alert-backend
+      pet-alert-backend-prepare:
+        condition: service_completed_successfully
+      pet-alert-backend:
+        condition: service_started
+    env_file:
+      - config/.env
+
+  pet-alert-ws:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ./entrypoint_ws.sh
+    restart: always
+    volumes:
+      - static_volume:/app/static/
+      - media_volume:/app/media/
+    depends_on:
+      pet-alert-backend-prepare:
+        condition: service_completed_successfully
+      pet-alert-db:
+        condition: service_started
     env_file:
       - config/.env
 

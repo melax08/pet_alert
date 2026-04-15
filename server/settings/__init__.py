@@ -14,5 +14,6 @@ include(
     "components/csp.py",
     "components/sentry.py",
     "components/third_party_apis.py",
+    "components/channels.py",
     f"environments/{_ENV}.py",
 )

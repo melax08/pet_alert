@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django_registration",
     "django_recaptcha",
     "polymorphic",
+    "channels",
     # DRF:
     "rest_framework",
     "djoser",
@@ -69,6 +70,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = "server.urls"
 
 WSGI_APPLICATION = "server.wsgi.application"
+ASGI_APPLICATION = "server.asgi.application"
 
 # Database:
 

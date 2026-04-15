@@ -17,6 +17,7 @@ class Dialog(TimeStampedModelMixin, models.Model):
     - questioner - the another user who sent a message to author of an advertisement.
     """
 
+    # ToDo: delete author
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -68,6 +69,7 @@ class Message(models.Model):
         related_name="sent_messages",
         verbose_name="Отправитель",
     )
+    # ToDo: delete recipient
     recipient = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

@@ -31,7 +31,7 @@ class MessengerDialogDetailView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, *args: Any, **kwarg: Any) -> HttpResponse:
         messenger_service = MessengerService(user=request.user)
 
-        dialog = messenger_service.get_dialog(dialog_id=self.kwargs["dialog_id"])
+        dialog = messenger_service.get_dialog_or_404(dialog_id=self.kwargs["dialog_id"])
         messenger_service.mark_dialog_messages_as_viewed(dialog)
 
         return render(
@@ -41,16 +41,17 @@ class MessengerDialogDetailView(LoginRequiredMixin, View):
                 "messages": messenger_service.get_dialog_messages(dialog),
                 "form": SendMessageForm(),
                 "advertisement": dialog.advertisement,
+                "dialog": dialog,
             },
         )
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         messenger_service = MessengerService(user=request.user)
 
-        dialog = messenger_service.get_dialog(dialog_id=self.kwargs["dialog_id"])
+        dialog = messenger_service.get_dialog_or_404(dialog_id=self.kwargs["dialog_id"])
 
         form = SendMessageForm(request.POST or None)
         if form.is_valid():
-            messenger_service.send_message(form, dialog)
+            messenger_service.send_message_form(form, dialog)
 
         return redirect("messenger:dialog_detail", self.kwargs["dialog_id"])
