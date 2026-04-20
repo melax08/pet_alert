@@ -5,13 +5,13 @@ services:
     volumes:
       - database:/var/lib/postgresql/data/
     env_file:
-      - config/.env
+      - ../config/.env
     restart: always
 
   pet-alert-backend-prepare:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: infra/Dockerfile
     entrypoint: ./entrypoint_backend_prepare.sh
     volumes:
       - static_volume:/app/static/
@@ -20,7 +20,7 @@ services:
       pet-alert-db:
         condition: service_started
     env_file:
-      - config/.env
+      - ../config/.env
 
   pet-alert-redis:
     image: redis
@@ -28,8 +28,8 @@ services:
 
   pet-alert-backend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: infra/Dockerfile
     entrypoint: ./entrypoint_server.sh
     restart: always
     volumes:
@@ -41,12 +41,12 @@ services:
       pet-alert-db:
         condition: service_started
     env_file:
-      - config/.env
+      - ../config/.env
 
   pet-alert-worker:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: infra/Dockerfile
     entrypoint: ./entrypoint_worker.sh
     restart: always
     volumes:
@@ -58,12 +58,12 @@ services:
       pet-alert-backend:
         condition: service_started
     env_file:
-      - config/.env
+      - ../config/.env
 
   pet-alert-ws:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: infra/Dockerfile
     entrypoint: ./entrypoint_ws.sh
     restart: always
     volumes:
@@ -75,7 +75,7 @@ services:
       pet-alert-db:
         condition: service_started
     env_file:
-      - config/.env
+      - ../config/.env
 
   pet-alert-nginx:
     image: nginx:1.27.4-alpine
@@ -93,7 +93,7 @@ services:
       - certbot_conf:/etc/letsencrypt
       - certbot_www:/var/www/certbot
     env_file:
-      - config/.env
+      - ../config/.env
     depends_on:
       - pet-alert-backend
 
@@ -103,7 +103,7 @@ services:
       - certbot_conf:/etc/letsencrypt
       - certbot_www:/var/www/certbot
     env_file:
-       - config/.env
+       - ../config/.env
     depends_on:
       - pet-alert-nginx
     command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@${WEBSITE_HOST} -d ${WEBSITE_HOST} --agree-tos
