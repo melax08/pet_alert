@@ -209,7 +209,7 @@ cd infra
 Для этого используем команду:
 
 ```shell
-docker compose --env-file config/first_run.env --env-file config/.env -f infra/docker-compose-prod.yml up -d
+docker compose --env-file infra/first_run.env --env-file config/.env -f infra/docker-compose-prod.yml up -d
 ```
 
 Как только проект будет запущен и SSL-сертификат будет выпущен с помощью `certbot`, выключаем контейнер nginx:
