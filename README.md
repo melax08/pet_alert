@@ -209,20 +209,20 @@ cd infra
 Для этого используем команду:
 
 ```shell
-docker compose --env-file first_run.env --env-file ../.env -f docker-compose-prod.yml up -d
+docker compose --env-file config/first_run.env --env-file config/.env -f infra/docker-compose-prod.yml up -d
 ```
 
 Как только проект будет запущен и SSL-сертификат будет выпущен с помощью `certbot`, выключаем контейнер nginx:
 
 ```shell
-docker compose stop
-docker compose rm -sf nginx
+docker compose -f infra/docker-compose-prod.yml stop
+docker compose -f infra/docker-compose-prod.yml rm -sf pet-alert-nginx
 ```
 
 И запускаем его повторно, выполняя пересборку контейнера:
 
 ```shell
-docker compose --env-file ../.env -f docker-compose-prod.yml up -d --build nginx
+docker compose --env-file config/.env -f infra/docker-compose-prod.yml up -d --build pet-alert-nginx
 ```
 
 Nginx будет запущен заново, но уже с нормальным конфигом Nginx, включающим в себя ssl секцию и использующим SSL-сертификат, выпущенный ранее.
@@ -246,7 +246,7 @@ crontab -e
 Вставим в конец открывшегося редактора:
 
 ```shell
-5 1 1 * *  docker compose --env-file /home/petalert/pet_alert/.env --file /home/petalert/pet_alert/infra/docker-compose-prod.yml up certbot && docker compose --file /home/petalert/pet_alert/infra/docker-compose-prod.yml exec nginx nginx -s reload
+5 1 1 * *  docker compose --env-file /home/petalert/pet_alert/config/.env --file /home/petalert/pet_alert/infra/docker-compose-prod.yml up certbot && docker compose --file /home/petalert/pet_alert/infra/docker-compose-prod.yml exec nginx nginx -s reload
 ```
 
 Вместо `/home/petalert` нужно в трех местах указать путь до каталога, где хранится клонированный проект.
