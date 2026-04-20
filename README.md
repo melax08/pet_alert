@@ -192,12 +192,6 @@ git clone https://github.com/melax08/pet_alert.git && cd pet_alert
 cp config/.env.example config/.env && nano config/.env
 ```
 
-3. Переходим в каталог с инфраструктурой.
-
-```shell
-cd infra
-```
-
 </details>
 
 <details><summary>Первая установка через Docker</summary>
@@ -209,20 +203,20 @@ cd infra
 Для этого используем команду:
 
 ```shell
-docker compose --env-file infra/first_run.env --env-file config/.env -f infra/docker-compose-prod.yml up -d
+docker compose -p petalert --env-file infra/first_run.env --env-file config/.env -f infra/docker-compose-prod.yml up -d
 ```
 
 Как только проект будет запущен и SSL-сертификат будет выпущен с помощью `certbot`, выключаем контейнер nginx:
 
 ```shell
-docker compose -f infra/docker-compose-prod.yml stop
-docker compose -f infra/docker-compose-prod.yml rm -sf pet-alert-nginx
+docker compose -p petalert -f infra/docker-compose-prod.yml stop
+docker compose -p petalert -f infra/docker-compose-prod.yml rm -sf pet-alert-nginx
 ```
 
 И запускаем его повторно, выполняя пересборку контейнера:
 
 ```shell
-docker compose --env-file config/.env -f infra/docker-compose-prod.yml up -d --build pet-alert-nginx
+docker compose -p petalert --env-file config/.env -f infra/docker-compose-prod.yml up -d --build pet-alert-nginx
 ```
 
 Nginx будет запущен заново, но уже с нормальным конфигом Nginx, включающим в себя ssl секцию и использующим SSL-сертификат, выпущенный ранее.

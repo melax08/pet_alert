@@ -7,6 +7,7 @@ from server.settings.components import BASE_DIR, config
 DEBUG = False
 
 STATIC_ROOT = BASE_DIR / "static"
+STATICFILES_DIRS = (BASE_DIR / "server/static",)
 
 ALLOWED_HOSTS = [
     config("DOMAIN_NAME"),
