@@ -12,7 +12,7 @@ services:
     build:
       context: ..
       dockerfile: infra/Dockerfile
-    entrypoint: ./entrypoint_backend_prepare.sh
+    entrypoint: infra/entrypoint_backend_prepare.sh
     volumes:
       - static_volume:/app/static/
       - media_volume:/app/media/
@@ -30,7 +30,7 @@ services:
     build:
       context: ..
       dockerfile: infra/Dockerfile
-    entrypoint: ./entrypoint_server.sh
+    entrypoint: infra/entrypoint_server.sh
     restart: always
     volumes:
       - static_volume:/app/static/
@@ -47,7 +47,7 @@ services:
     build:
       context: ..
       dockerfile: infra/Dockerfile
-    entrypoint: ./entrypoint_worker.sh
+    entrypoint: infra/entrypoint_worker.sh
     restart: always
     volumes:
       - static_volume:/app/static/
@@ -64,7 +64,7 @@ services:
     build:
       context: ..
       dockerfile: infra/Dockerfile
-    entrypoint: ./entrypoint_ws.sh
+    entrypoint: infra/entrypoint_ws.sh
     restart: always
     volumes:
       - static_volume:/app/static/
