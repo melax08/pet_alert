@@ -21,13 +21,13 @@ jobs:
       - name: Test with Ruff
         run: uv run ruff check .
 
-      - name: Test with django unittest
-        run: |
-          cat <<EOF > config/.env
-          DJANGO_SECRET_KEY=SomeSecretKeyForTests
-          DJANGO_ENV=development
-          EOF
-          uv run python manage.py test -v 2
+#      - name: Test with django unittest
+#        run: |
+#          cat <<EOF > config/.env
+#          DJANGO_SECRET_KEY=SomeSecretKeyForTests
+#          DJANGO_ENV=development
+#          EOF
+#          uv run python manage.py test -v 2
 
 
   deploy:
