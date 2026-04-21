@@ -7,32 +7,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.13
+        run: uv python install
 
-      - name: Setup Poetry
-        uses: Gr1N/setup-poetry@v8
-        with:
-          poetry-version: "2.0.1"
-
-      - name: Install dependencies
-        run: |
-          poetry install
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
 
       - name: Test with Ruff
-        run: |
-          poetry run ruff check .
+        run: uv run ruff check .
 
       - name: Test with django unittest
         run: |
           cat <<EOF > config/.env
           DJANGO_ENV=development
           EOF
-          poetry run python manage.py test -v 2
+          uv run python manage.py test -v 2
 
 
   deploy:
@@ -52,14 +46,15 @@ jobs:
           script : |
             cd pet_alert
             git pull
-            cd infra
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose stop
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose rm -sf pet-alert-backend pet-alert-worker pet-alert-nginx
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker volume rm infra_static_volume
-            cat <<EOF > ../.env
+            docker compose -p petalert -f infra/docker-compose-prod.yml stop
+            docker compose -p petalert -f infra/docker-compose-prod.yml rm -sf pet-alert-backend pet-alert-worker pet-alert-ws pet-alert-nginx
+            docker volume rm petalert_static_volume
+            cat <<EOF > config/.env
+            # START WORKFLOW ENVS
             DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET }}
             DJANGO_ENV=production
             WEBSITE_HOST=pet-alert.ru
+            DOMAIN_NAME=pet-alert.ru
             TZ=Europe/Moscow
 
             # Database settings
@@ -101,7 +96,7 @@ jobs:
             TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}
             # DONE WORKFLOW ENVS
             EOF
-             echo "${{ secrets.SUDO_PASS }}" | sudo -S docker compose -f infra/docker-compose-prod.yml --env-file config/.env up -d --build pet-alert-backend pet-alert-worker pet-alert-nginx
+            docker compose -p petalert -f infra/docker-compose-prod.yml --env-file config/.env up -d --build pet-alert-backend pet-alert-worker pet-alert-nginx pet-alert-ws
 
 
   send_message:
