@@ -24,6 +24,7 @@ jobs:
       - name: Test with django unittest
         run: |
           cat <<EOF > config/.env
+          DJANGO_SECRET_KEY=SomeSecretKeyForTests
           DJANGO_ENV=development
           EOF
           uv run python manage.py test -v 2
