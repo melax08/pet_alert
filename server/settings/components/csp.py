@@ -15,6 +15,7 @@ CSP_SCRIPT_SRC: tuple[str, ...] = (
     "cdn.jsdelivr.net",
     "127.0.0.1:8001",
     "ajax.googleapis.com",
+    "cloudflareinsights.com",
 )
 CSP_IMG_SRC: tuple[str, ...] = ("'self'", "data:")
 CSP_FONT_SRC: tuple[str, ...] = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")
