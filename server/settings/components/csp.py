@@ -25,7 +25,14 @@ CSP_FRAME_SRC: tuple[str, ...] = ("'self'",)
 
 # Yandex maps
 CSP_SCRIPT_SRC += ("yastatic.net", "api-maps.yandex.ru")
-CSP_IMG_SRC += ("*.maps.yandex.net", "api-maps.yandex.ru")
+CSP_IMG_SRC += (
+    "*.maps.yandex.net",
+    "api-maps.yandex.ru",
+    "yastatic.net",
+    "yandex.ru",
+    "log.api-maps.yandex.ru",
+)
+CSP_CONNECT_SRC += ("log.api-maps.yandex.ru", "suggest-maps.yandex.ru")
 
 # Google (ReCaptcha)
 CSP_SCRIPT_SRC += ("www.google.com", "www.gstatic.com")

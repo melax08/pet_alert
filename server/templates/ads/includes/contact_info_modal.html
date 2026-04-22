@@ -1,22 +1,21 @@
-<div class="modal fade" id="contactInfoModal" tabindex="-1" aria-labelledby="contactInfoModalLabel" aria-hidden="true">
+<div class="modal" id="contactInfoModal" tabindex="-1" aria-labelledby="contactInfoModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="contactInfoModalLabel">Контактная информация</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-modal-close aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <p class="d-inline">Создал объявление:</p> <div class="d-inline fw-bold">{{ ad.author.first_name }}</div>
-        <p></p>
-        <div id="email-item">
-          <p class="d-inline">Контактный email:</p> <div class="d-inline fw-bold" id="id_email"></div>
+      <div class="modal-body modal-body-compact">
+        <div class="modal-info-list">
+          <div><span>Создал объявление:</span> <strong>{{ ad.author.first_name }}</strong></div>
         </div>
-        <p></p>
-        <div id="phone-item">
-          <p class="d-inline">Контактный телефон:</p> <div class="d-inline fw-bold" id="id_phone"></div>
+        <div class="modal-info-list" id="email-item">
+          <div><span>Контактный email:</span> <strong id="id_email"></strong></div>
         </div>
-        <p></p>
-        <button type="button" class="btn btn-pa-red" disabled>Пожаловаться</button>
+        <div class="modal-info-list" id="phone-item">
+          <div><span>Контактный телефон:</span> <strong id="id_phone"></strong></div>
+        </div>
+        <button type="button" class="btn btn-pa-red modal-action-button" disabled>Пожаловаться</button>
       </div>
     </div>
   </div>

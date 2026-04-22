@@ -1,44 +1,63 @@
 {% load static %}
-<nav class="navbar navbar-expand-md navbar-light">
 <div class="container">
-      <a class="navbar-brand" href="{% url 'ads:index' %}">
-      <img src="{% static 'img/logo.png' %}" class="d-inline-block align-top" style="width: auto; height: 50px;">
-        </a>
-<ul class="nav nav-pills">
-{% with request.resolver_match.view_name as view_name %}
-  {% if user.is_anonymous %}
-  <li class="nav-item"><a class="nav-link {% if view_name == 'users:login' %}active{% endif %}" href="{% url 'users:login' %}">Войти</a></li>
-  <li class="nav-item"><a class="nav-link {% if view_name == 'users:signup' %}active{% endif %}" href="{% url 'users:signup' %}">Регистрация</a></li>
-  {% else %}
-    {% if user.is_staff %}
-      <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Админка</a></li>
-      {% endif %}
-    <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-      {{ user.first_name }}
+  <nav class="navbar" aria-label="Основная навигация">
+    <a class="navbar-brand" href="{% url 'ads:index' %}">
+      <img src="{% static 'img/logo.png' %}" alt="Pet Alert">
     </a>
 
-    {% if new_messages > 0 %}
-    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-pa-red">
-      {{ new_messages }}
-      <span class="visually-hidden">unread messages</span>
-    </span>
-    {% endif %}
+    <button
+      type="button"
+      class="navbar-toggle"
+      data-menu-toggle
+      data-menu-target="site-menu"
+      aria-expanded="false"
+      aria-controls="site-menu"
+      aria-label="Открыть меню"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-    <div class="dropdown-menu">
-      <a class="dropdown-item" href="{% url 'user_ads:active' %}">Мои объявления</a>
-      <a class="dropdown-item" href="{% url 'messenger:dialog_list' %}">Мои сообщения {% if new_messages > 0 %}<span class="badge bg-pa-red rounded-pill"> {{ new_messages }}</span>{% endif %}</a>
-      <a class="dropdown-item" href="{% url 'user_profile:settings' %}">Настройки</a>
-      <a class="dropdown-item" href="{% url 'users:change_form' %}">Изменить пароль</a>
-      <div class="dropdown-divider"></div>
-      <form method="post" action="{% url 'users:logout' %}">
-        {% csrf_token %}
-        <button class="dropdown-item" type="submit">Выйти</button>
-      </form>
+    <div class="navbar-menu" id="site-menu">
+      {% with request.resolver_match.view_name as view_name %}
+        <div class="navbar-actions">
+          <a class="nav-link {% if view_name == 'ads:advertisement_list' or view_name == 'ads:advertisement_map' %}active{% endif %}" href="{% url 'ads:advertisement_list' %}?type=lost">Объявления</a>
+          <a class="nav-link {% if view_name == 'ads:add_lost' or view_name == 'ads:add_found' %}active{% endif %}" href="{% url 'ads:add_lost' %}">Подать объявление</a>
+        </div>
+        <ul class="nav nav-pills">
+          {% if user.is_anonymous %}
+            <li class="nav-item"><a class="nav-link {% if view_name == 'users:login' %}active{% endif %}" href="{% url 'users:login' %}">Войти</a></li>
+            <li class="nav-item"><a class="nav-link {% if view_name == 'users:signup' %}active{% endif %}" href="{% url 'users:signup' %}">Регистрация</a></li>
+          {% else %}
+            {% if user.is_staff %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Админка</a></li>
+            {% endif %}
+            <li class="nav-item dropdown">
+              <button type="button" class="nav-link dropdown-toggle" data-dropdown-toggle aria-expanded="false">
+                {{ user.first_name }}
+                {% if new_messages > 0 %}
+                  <span class="badge">{{ new_messages }}<span class="visually-hidden"> непрочитанные сообщения</span></span>
+                {% endif %}
+              </button>
+              <div class="dropdown-menu" role="menu">
+                <a class="dropdown-item" href="{% url 'user_ads:active' %}">Мои объявления</a>
+                <a class="dropdown-item" href="{% url 'messenger:dialog_list' %}">
+                  <span>Мои сообщения</span>
+                  {% if new_messages > 0 %}<span class="badge">{{ new_messages }}</span>{% endif %}
+                </a>
+                <a class="dropdown-item" href="{% url 'user_profile:settings' %}">Настройки</a>
+                <a class="dropdown-item" href="{% url 'users:change_form' %}">Изменить пароль</a>
+                <div class="dropdown-divider"></div>
+                <form method="post" action="{% url 'users:logout' %}">
+                  {% csrf_token %}
+                  <button class="dropdown-item" type="submit">Выйти</button>
+                </form>
+              </div>
+            </li>
+          {% endif %}
+        </ul>
+      {% endwith %}
     </div>
-  </li>
-  {% endif %}
-{% endwith %}
-</ul>
+  </nav>
 </div>
-</nav>

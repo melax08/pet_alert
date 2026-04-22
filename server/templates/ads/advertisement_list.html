@@ -15,30 +15,30 @@
   <p class="py-3 text-secondary">В данном разделе отсутствуют объявления</p>
   {% else %}
   {% for ad in page_obj %}
-    <article class="border {% if not forloop.last %} border-bottom-0 {% endif %}">
-      <div class="row g-0 bg-light position-relative">
-        <div class="col-md-4 col-lg-3 mb-md-0 p-4 pb-0 pb-md-4">
+    <article class="list-card{% if not forloop.last %} mb-3{% endif %}">
+      <div class="list-card__image">
         {% if ad.image %}
-          {% thumbnail ad.image "200x200" crop="center" as im %}
-            <img src="{{ im.url }}" width="{{ im.width }}"
-                 height="{{ im.height }}" class="rounded">
+          {% thumbnail ad.image "400x400" crop="center" as im %}
+            <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Фото объявления">
           {% endthumbnail %}
         {% else %}
-          {% thumbnail ad.species.default_image "200x200" crop="center" as im %}
-            <img src="{{ im.url }}" width="{{ im.width }}"
-                 height="{{ im.height }}" class="rounded">
+          {% thumbnail ad.species.default_image "400x400" crop="center" as im %}
+            <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Фото объявления">
           {% endthumbnail %}
         {% endif %}
+      </div>
+      <div class="list-card__body">
+        {% if ad|getmodelname == 'lost' %}
+          <h3 class="mt-0 text-break">Пропал: {{ ad.pet_name }}</h3>
+        {% else %}
+          <h3 class="mt-0 text-break">Нашёлся питомец</h3>
+        {% endif %}
+        <div class="meta-line">
+          <span>{{ ad.created_at }}</span>
+          <span>{{ ad.address }}</span>
         </div>
-        <div class="col-md-8 col-lg-9 p-4 ps-md-0">
-          {% if ad|getmodelname == 'lost' %}
-            <h5 class="mt-0 text-break">Пропал: {{ ad.pet_name }}</h5>
-          {% else %}
-            <h5 class="mt-0">Нашелся:</h5>
-          {% endif %}
-          <p class="text-muted">{{ ad.created_at }}</p>
-          <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
-          <p class="text-muted">{{ ad.address }}</p>
+        <p class="text-break">{{ ad.description | truncatechars:200 }}</p>
+        <div>
           <a href="{% url 'ads:advertisement_detail' ad.id %}" class="pa-link">Подробнее</a>
         </div>
       </div>

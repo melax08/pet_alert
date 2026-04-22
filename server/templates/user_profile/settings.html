@@ -32,41 +32,53 @@
           {% endfor %}
         {% endif %}
       <form method="post">
-      <div class="border-top border-bottom pt-3 pb-3">
-        <h6 class="mb-3">Личные данные</h6>
+      <div class="border-top border-bottom pt-3 pb-3 profile-settings__section">
+        <h3 class="mb-3 profile-settings__title">Личные данные</h3>
         {% csrf_token %}
-        <div class="row mb-3">
-          <label for="id_first_name" class="col-sm-2 col-form-label">Имя</label>
+        <div class="row mb-3 profile-settings__row">
+          <label for="id_first_name" class="col-sm-2 col-form-label profile-settings__label">Имя</label>
           <div class="col-sm-10">
             {{ form.first_name|addclass:'form-control' }}
           </div>
         </div>
 
-        <div class="row mb-3">
+        <div class="row mb-3 profile-settings__row">
           <label for="staticEmail"
-                 class="col-sm-2 col-form-label">Email</label>
+                 class="col-sm-2 col-form-label profile-settings__label">Email</label>
           <div class="col-sm-10">
-            <input type="text" readonly class="form-control" id="staticEmail"
+            <input type="text" readonly aria-readonly="true" class="form-control form-control-readonly" id="staticEmail"
                    value="{{ request.user.email }}">
           </div>
         </div>
+        <div class="row mb-3">
+          <div class="col-sm-2"></div>
+          <div class="col-sm-10">
+            <small class="form-text text-muted">Email нельзя изменить в настройках профиля.</small>
+          </div>
+        </div>
 
-        <div class="row">
-          <label for="staticPhone" class="col-sm-2 col-form-label">Номер
+        <div class="row profile-settings__row">
+          <label for="staticPhone" class="col-sm-2 col-form-label profile-settings__label">Номер
             телефона</label>
           <div class="col-sm-10">
-            <input type="text" readonly class="form-control" id="staticPhone"
+            <input type="text" readonly aria-readonly="true" class="form-control form-control-readonly" id="staticPhone"
                    value="{{ request.user.phone }}">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-2"></div>
+          <div class="col-sm-10">
+            <small class="form-text text-muted">Номер телефона нельзя изменить в настройках профиля.</small>
           </div>
         </div>
 
         </div>
 
-        <div class="border-bottom pt-3 pb-3">
-          <h6 class="mb-3">Какая контактная информация видна в объявлениях?</h6>
+        <div class="border-bottom pt-3 pb-3 profile-settings__section">
+          <h3 class="mb-3 profile-settings__title">Какая контактная информация видна в объявлениях?</h3>
 
-          <div class="row pb-2">
-            <label for="id_contact_email" class="col-sm-2">Email</label>
+          <div class="row pb-2 profile-settings__row">
+            <label for="id_contact_email" class="col-sm-2 profile-settings__label">Email</label>
             <div class="col-sm-10">
               <div class="form-check form-switch">
                 {{ form.contact_email|addclass:"form-check-input"}}
@@ -74,8 +86,8 @@
             </div>
           </div>
 
-          <div class="row">
-            <label for="id_contact_phone" class="col-sm-2">Номер телефона</label>
+          <div class="row profile-settings__row">
+            <label for="id_contact_phone" class="col-sm-2 profile-settings__label">Номер телефона</label>
             <div class="col-sm-10 ">
               <div class="form-check form-switch">
                 {{ form.contact_phone|addclass:"form-check-input"}}

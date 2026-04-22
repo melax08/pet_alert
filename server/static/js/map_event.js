@@ -3,19 +3,53 @@
 function getYaMap() {
     var myPlacemark,
         myMap = new ymaps.Map('map', {
-            center: [59.938,30.3],
-            zoom: 9,
+            center: [61.5240, 105.3188],
+            zoom: 4,
             controls: []
         }, {
             searchControlProvider: 'yandex#search',
-            restrictMapArea: [
-                [59.838,29.511],
-                [60.056,30.829]
-            ],
             suppressMapOpenBlock: true,
             yandexMapDisablePoiInteractivity: true
         });
 
+    const applyButton = document.querySelector('#sendButton');
+    const suggestInput = document.querySelector('#suggest');
+    const preview = document.querySelector('#addressPreview');
+    const displayAddress = document.querySelector('.id_address');
+    const addressField = document.querySelector('#id_address');
+    const latitudeField = document.querySelector('#id_latitude');
+    const longitudeField = document.querySelector('#id_longitude');
+    const coordsField = document.querySelector('#id_coords');
+    const openModalButton = document.querySelector('[data-modal-target="mapModal"]');
+    const modalElement = document.querySelector('#mapModal');
+
+    let confirmedSelection = {
+        address: addressField.value || '',
+        latitude: latitudeField.value || '',
+        longitude: longitudeField.value || ''
+    };
+    let pendingSelection = null;
+
+    function tryCenterMapByGeolocation() {
+        if (!navigator.geolocation || confirmedSelection.latitude || confirmedSelection.longitude) {
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+            const coords = [
+                position.coords.latitude,
+                position.coords.longitude
+            ];
+
+            myMap.setCenter(coords, 11, { duration: 250 });
+        }, function () {
+            // Keep the default Russia-wide view if geolocation is unavailable.
+        }, {
+            enableHighAccuracy: false,
+            timeout: 5000,
+            maximumAge: 300000
+        });
+    }
 
     mySearchResults = new ymaps.GeoObjectCollection(null, {
         hintContentLayout: ymaps.templateLayoutFactory.createClass('$[properties.name]')
@@ -23,11 +57,60 @@ function getYaMap() {
 
     // Создание саджеста
     // var suggestView = new ymaps.SuggestView('suggest');
-    var suggestView = new ymaps.SuggestView('suggest', {
-        provider: {
-            suggest:(function(request, options){
-                return ymaps.suggest("Санкт-Петербург, " + request);
-            })
+    var suggestView = new ymaps.SuggestView('suggest');
+
+    function updatePreview(text) {
+        preview.textContent = text;
+    }
+
+    function updateApplyState() {
+        applyButton.disabled = !pendingSelection;
+    }
+
+    function setPendingSelection(selection) {
+        pendingSelection = selection;
+        suggestInput.value = selection.address;
+        updatePreview('Нажмите "Подтвердить", чтобы применить выбранный адрес.');
+        updateApplyState();
+    }
+
+    function syncModalWithConfirmedSelection() {
+        pendingSelection = null;
+        suggestInput.value = confirmedSelection.address || '';
+        if (confirmedSelection.address) {
+            updatePreview('Текущий адрес: ' + confirmedSelection.address);
+        } else {
+            updatePreview('Выберите адрес через поиск, клик по карте или перетаскивание метки.');
+        }
+        updateApplyState();
+    }
+
+    function applySelection() {
+        if (!pendingSelection) {
+            return;
+        }
+
+        confirmedSelection = pendingSelection;
+        displayAddress.textContent = confirmedSelection.address;
+        addressField.value = confirmedSelection.address;
+        latitudeField.value = confirmedSelection.latitude;
+        longitudeField.value = confirmedSelection.longitude;
+        if (coordsField) {
+            coordsField.value = [confirmedSelection.latitude, confirmedSelection.longitude];
+        }
+        pendingSelection = null;
+        updateApplyState();
+        updatePreview('Адрес применён.');
+        window.PAUI.hideModal(modalElement);
+    }
+
+    applyButton.addEventListener('click', applySelection);
+    openModalButton.addEventListener('click', syncModalWithConfirmedSelection);
+
+    document.addEventListener('paui:modal-open', function (event) {
+        if (event.detail.modalId === 'mapModal') {
+            syncModalWithConfirmedSelection();
+            tryCenterMapByGeolocation();
         }
     });
 
@@ -123,12 +206,13 @@ function getYaMap() {
                     // В качестве контента балуна задаем строку с адресом объекта.
                     balloonContent: firstGeoObject.getAddressLine()
                 });
-            $(".id_address").html(firstGeoObject.getAddressLine());
-            $("#id_address").val(firstGeoObject.getAddressLine());
-            $("#suggest").val(firstGeoObject.getAddressLine());
-            $("#id_coords").val(coords);
-            $("#id_latitude").val(latitude)
-            $("#id_longitude").val(longitude)
+            setPendingSelection({
+                address: firstGeoObject.getAddressLine(),
+                latitude: latitude,
+                longitude: longitude
+            });
         });
     }
+
+    tryCenterMapByGeolocation();
 }

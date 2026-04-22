@@ -1,16 +1,73 @@
 function getYaMap () {
     var myMap = new ymaps.Map('map', {
-            center: [59.938,30.3],
-            zoom: 9,
+            center: [61.5240, 105.3188],
+            zoom: 4,
             controls: []
         }, {
-            restrictMapArea: [
-                [59.838,29.511],
-                [60.056,30.829]
-            ],
             suppressMapOpenBlock: true,
             yandexMapDisablePoiInteractivity: true
         });
+
+        function tryCenterMapByGeolocation() {
+            if (!navigator.geolocation) {
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(function (position) {
+                const coords = [
+                    position.coords.latitude,
+                    position.coords.longitude
+                ];
+
+                myMap.setCenter(coords, 11, { duration: 250 });
+            }, function () {
+                // Keep the default Russia-wide view if geolocation is unavailable.
+            }, {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: 300000
+            });
+        }
+
+        const searchInput = document.querySelector('#map-address-search');
+        const searchButton = document.querySelector('#map-address-search-button');
+
+        if (searchInput) {
+            const suggestView = new ymaps.SuggestView('map-address-search');
+
+            function centerMapByAddress(address) {
+                if (!address) {
+                    return;
+                }
+
+                ymaps.geocode(address, { results: 1 }).then(function (res) {
+                    const firstGeoObject = res.geoObjects.get(0);
+                    if (!firstGeoObject) {
+                        return;
+                    }
+                    const coords = firstGeoObject.geometry.getCoordinates();
+                    myMap.setCenter(coords, 14, { duration: 250 });
+                });
+            }
+
+            suggestView.events.add('select', function (event) {
+                const selectedItem = event.get('item');
+                if (selectedItem && selectedItem.value) {
+                    centerMapByAddress(selectedItem.value);
+                }
+            });
+
+            searchButton.addEventListener('click', function () {
+                centerMapByAddress(searchInput.value.trim());
+            });
+
+            searchInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    centerMapByAddress(searchInput.value.trim());
+                }
+            });
+        }
 
         clusterer = new ymaps.Clusterer(
             {
@@ -28,7 +85,7 @@ function getYaMap () {
             const urlParams = new URLSearchParams(window.location.search);
             const animalSpecies = urlParams.get('species');
             const model = urlParams.get('type')
-            data = {
+            const data = {
                 'coords': bounds,
                 'type': model,
                 'species': animalSpecies
@@ -79,4 +136,5 @@ function getYaMap () {
         // Initial data load
         var initialBounds = myMap.getBounds();
         loadData(initialBounds);
+        tryCenterMapByGeolocation();
 }

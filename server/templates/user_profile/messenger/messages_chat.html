@@ -6,8 +6,6 @@
   Список чатов
 {% endblock %}
 {% block content %}
-
-  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'css/chat-history.css' %}">
 
   {% include 'ads/includes/navigation.html' %}
@@ -17,94 +15,94 @@
       {% include 'user_profile/includes/profile_nav.html' %}
     </aside>
     <div class="col-12 col-md-10">
+      <section class="chat-layout">
+        <div class="chat-panel">
+          <div class="chat-header">
+            <div class="chat-header__main">
+              <div class="chat-header__media">
+                {% if advertisement.image %}
+                  {% thumbnail advertisement.image "120x120" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}"
+                         height="{{ im.height }}" alt="Объявление">
+                  {% endthumbnail %}
+                {% else %}
+                  {% thumbnail advertisement.species.default_image "120x120" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}"
+                         height="{{ im.height }}" alt="Объявление">
+                  {% endthumbnail %}
+                {% endif %}
+              </div>
 
-            <div class="chat">
-                <div class="chat-header clearfix">
-                    <div class="row">
-                        <div class="col-lg-6">
-
-
-                          {% if advertisement.image %}
-                            {% thumbnail advertisement.image "40x40" crop="center" as im %}
-                              <img src="{{ im.url }}" width="{{ im.width }}"
-                                   height="{{ im.height }}" class="rounded">
-                            {% endthumbnail %}
-                          {% else %}
-                            {% thumbnail advertisement.species.default_image "40x40" crop="center" as im %}
-                              <img src="{{ im.url }}" width="{{ im.width }}"
-                                   height="{{ im.height }}" class="rounded">
-                            {% endthumbnail %}
-                          {% endif %}
-
-
-                            <div class="chat-about">
-                                 <span class="d-inline">Объявление от: </span><h6 class="m-b-0 d-inline">{{ advertisement.author.first_name }}</h6>
-
-                                    <small>
-                                    {% if advertisement.open and advertisement.active %}
-                                      <a href="{% url 'ads:advertisement_detail' advertisement.id %}" class="pa-link">
-                                        <p>{{ advertisement.description|truncatechars:30 }}</p>
-                                      </a>
-                                    {% else %}
-                                        <p><del>{{ advertisement.description|truncatechars:30 }}</del></p>
-                                    {% endif %}
-                                    </small>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div
-                  class="chat-history overflow-auto"
-                  style="max-height: 500px;"
-                  id="chat-history"
-                  data-dialog-id="{{ dialog.id }}"
-                  data-current-user-id="{{ request.user.id }}"
-                  data-current-user-name="{{ request.user.first_name|default:request.user.username|escapejs }}"
-                  data-other-user-name="{% if request.user == dialog.author %}{{ dialog.questioner.first_name|default:dialog.questioner.username|escapejs }}{% else %}{{ dialog.author.first_name|default:dialog.author.username|escapejs }}{% endif %}"
-                >
-
-                <p class="text-muted{% if messages %} d-none{% endif %}" id="empty-chat-message">В диалоге нет сообщений</p>
-
-                    <ul class="m-b-0 ps-0" id="messages-list">
-
-                      {% for message in messages %}
-                      <li class="clearfix message-item{% if request.user == message.sender %} message-item-own{% endif %}">
-                        <div class="message-data {% if request.user == message.sender %} text-end {% endif %}">
-                          <span class="message-data-time">
-                            {{ message.sender.first_name }}{% if request.user == message.sender %} (вы){% endif %}, {{ message.pub_date|date:'d M G:i' }}
-                            {% if request.user == message.sender %}
-                              <span class="text-muted ms-1 message-read-indicator" aria-label="{% if message.checked %}Прочитано{% else %}Не прочитано{% endif %}">
-                                <span class="read-status{% if message.checked %} d-none{% endif %}">&#10003;</span>
-                                <span class="read-status-read{% if not message.checked %} d-none{% endif %}">&#10003;&#10003;</span>
-                              </span>
-                            {% endif %}
-                          </span>
-                        </div>
-                        <div class="message {% if request.user == message.sender %} other-message float-right {% else %} my-message {% endif %} text-break">
-                          {{ message.content }}
-                        </div>
-
-                      </li>
-                      {% endfor %}
-
-                    </ul>
-                </div>
-            <form method="post" id="chat-message-form">
-              {% csrf_token %}
-                <div class="chat-message clearfix">
-                    <div class="input-group mb-0">
-                        <div class="input-group-prepend">
-                          <button class="btn btn-outline-secondary" type="submit" id="button-addon2"><i class="fa fa-send"></i></button>
-                        </div>
-                        {{ form.content|addclass:'form-control' }}
-                    </div>
-                </div>
-            </form>
+              <div class="chat-header__copy">
+                <p class="chat-header__eyebrow">Объявление от {{ advertisement.author.first_name }}</p>
+                <p class="chat-header__title">
+                  {% if request.user == dialog.author %}
+                    Диалог с {{ dialog.questioner.first_name|default:dialog.questioner.username }}
+                  {% else %}
+                    Диалог с {{ dialog.author.first_name|default:dialog.author.username }}
+                  {% endif %}
+                </p>
+                {% if advertisement.open and advertisement.active %}
+                  <a href="{% url 'ads:advertisement_detail' advertisement.id %}" class="chat-header__link">
+                    {{ advertisement.description|truncatechars:58 }}
+                  </a>
+                {% else %}
+                  <span class="chat-header__link"><del>{{ advertisement.description|truncatechars:58 }}</del></span>
+                {% endif %}
+              </div>
             </div>
+          </div>
 
+          <div
+            class="chat-history"
+            id="chat-history"
+            data-dialog-id="{{ dialog.id }}"
+            data-current-user-id="{{ request.user.id }}"
+            data-current-user-name="{{ request.user.first_name|default:request.user.username|escapejs }}"
+            data-other-user-name="{% if request.user == dialog.author %}{{ dialog.questioner.first_name|default:dialog.questioner.username|escapejs }}{% else %}{{ dialog.author.first_name|default:dialog.author.username|escapejs }}{% endif %}"
+          >
+            <p class="text-muted" id="empty-chat-message"{% if messages %} hidden{% endif %}>В диалоге пока нет сообщений</p>
 
+            <ul id="messages-list">
+              {% for message in messages %}
+                <li class="message-item{% if request.user == message.sender %} message-item-own{% endif %}">
+                  <div class="message-data {% if request.user == message.sender %} text-end {% endif %}">
+                    <span class="message-data-time">
+                      {{ message.sender.first_name }}{% if request.user == message.sender %} (вы){% endif %}, {{ message.pub_date|date:'d M G:i' }}
+                      {% if request.user == message.sender %}
+                        <span class="message-status {% if message.checked %}message-status--read{% else %}message-status--sent{% endif %}" aria-label="{% if message.checked %}Прочитано{% else %}Отправлено{% endif %}">
+                          {% if message.checked %}
+                            Прочитано
+                          {% else %}
+                            Отправлено
+                          {% endif %}
+                        </span>
+                      {% endif %}
+                    </span>
+                  </div>
+                  <div class="message {% if request.user == message.sender %} other-message {% else %} my-message {% endif %} text-break">
+                    {{ message.content }}
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
 
+          <form method="post" id="chat-message-form">
+            {% csrf_token %}
+            <div class="chat-message">
+              <div class="chat-form">
+                {{ form.content|addclass:'form-control' }}
+                <button class="btn btn-pa-green chat-submit" type="submit" id="button-addon2" aria-label="Отправить сообщение">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M3 11.5 20.5 4l-4.8 16L11 13l-8-1.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -132,26 +130,21 @@
       };
 
       const toggleEmptyState = () => {
-        emptyChatMessage.classList.toggle("d-none", messagesList.children.length > 0);
+        emptyChatMessage.hidden = messagesList.children.length > 0;
       };
 
       const markOwnMessagesAsRead = () => {
         document.querySelectorAll(".message-item-own").forEach((messageItem) => {
-          const unreadStatus = messageItem.querySelector(".read-status");
-          const readStatus = messageItem.querySelector(".read-status-read");
-          const statusIndicator = messageItem.querySelector(".message-read-indicator");
+          const statusIndicator = messageItem.querySelector(".message-status");
 
-          if (unreadStatus) {
-            unreadStatus.classList.add("d-none");
+          if (!statusIndicator) {
+            return;
           }
 
-          if (readStatus) {
-            readStatus.classList.remove("d-none");
-          }
-
-          if (statusIndicator) {
-            statusIndicator.setAttribute("aria-label", "Прочитано");
-          }
+          statusIndicator.textContent = "Прочитано";
+          statusIndicator.classList.remove("message-status--sent");
+          statusIndicator.classList.add("message-status--read");
+          statusIndicator.setAttribute("aria-label", "Прочитано");
         });
       };
 
@@ -168,7 +161,7 @@
       const buildMessageNode = ({ senderId, message, createdAt }) => {
         const isOwnMessage = senderId === currentUserId;
         const messageItem = document.createElement("li");
-        messageItem.className = `clearfix message-item${isOwnMessage ? " message-item-own" : ""}`;
+        messageItem.className = `message-item${isOwnMessage ? " message-item-own" : ""}`;
 
         const metaWrapper = document.createElement("div");
         metaWrapper.className = `message-data${isOwnMessage ? " text-end" : ""}`;
@@ -179,26 +172,16 @@
 
         if (isOwnMessage) {
           const statusIndicator = document.createElement("span");
-          statusIndicator.className = "text-muted ms-1 message-read-indicator";
-          statusIndicator.setAttribute("aria-label", "Не прочитано");
-
-          const unreadStatus = document.createElement("span");
-          unreadStatus.className = "read-status";
-          unreadStatus.innerHTML = "&#10003;";
-
-          const readStatus = document.createElement("span");
-          readStatus.className = "read-status-read d-none";
-          readStatus.innerHTML = "&#10003;&#10003;";
-
-          statusIndicator.appendChild(unreadStatus);
-          statusIndicator.appendChild(readStatus);
+          statusIndicator.className = "message-status message-status--sent";
+          statusIndicator.textContent = "Отправлено";
+          statusIndicator.setAttribute("aria-label", "Отправлено");
           meta.appendChild(statusIndicator);
         }
 
         metaWrapper.appendChild(meta);
 
         const body = document.createElement("div");
-        body.className = `message ${isOwnMessage ? "other-message float-right" : "my-message"} text-break`;
+        body.className = `message ${isOwnMessage ? "other-message" : "my-message"} text-break`;
         body.textContent = message;
 
         messageItem.appendChild(metaWrapper);

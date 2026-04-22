@@ -5,98 +5,101 @@
   Главная страница
 {% endblock %}
 {% block content %}
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" type="text/css" href="{% static 'css/main-page.css' %}">
-
-
-  <article class="py-3">
-    <div class="row mb-5 pb-3">
-      <div class="col-12 col-lg-5">
-        <p class="page-header mt-5 mb-5">Сервис для поиска домашних животных</p>
-        <ul class="rec-list mb-5">
-          <li>
-            Ваш питомец потерялся?
-          </li>
-          <li>
-            Или вы нашли кого-то на улице?
-          </li>
-          <li>
-            Хотите рассказать об этом?
-          </li>
-        </ul>
-      <a href="{% url 'ads:add_lost' %}">
-        <button type="button" class="index-red-button btn btn-lg btn-pa-red mt-4">Подать объявление</button>
-      </a>
+  <article>
+    <section class="hero">
+      <div class="row hero-main">
+        <div class="col-12 col-lg-5">
+          <div class="hero-copy">
+            <span class="hero-kicker">Помогаем находить любимцев по всей России</span>
+            <h1>Поиск пропавших животных</h1>
+            <p>Разместите объявление о пропаже или находке, ознакомьтесь с существующими объявлениями и свяжитесь с их авторами.</p>
+            <div class="filter-bar__group">
+              <a href="{% url 'ads:add_lost' %}" class="btn btn-lg btn-pa-red">Подать объявление</a>
+              <a href="{% url 'ads:advertisement_list' %}?type=lost" class="btn btn-lg btn-outline-pa-green">Смотреть объявления</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-7 hero-visual">
+          <img src="{% static 'img/girl-and-dog.png' %}" alt="Девушка с собакой">
+        </div>
       </div>
+{#      <div class="stats-grid">#}
+{#        <div class="stat-card">#}
+{#          <strong>Объявление</strong>#}
+{#          <span>создайте чтобы о вашей ситуации узнали люди рядом</span>#}
+{#        </div>#}
+{#        <div class="stat-card">#}
+{#          <strong>Карта</strong>#}
+{#          <span>по всей России для быстрого поиска рядом и в других регионах</span>#}
+{#        </div>#}
+{#        <div class="stat-card">#}
+{#          <strong>Сообщения</strong>#}
+{#          <span>для быстрой связи</span>#}
+{#        </div>#}
+{#      </div>#}
+    </section>
 
-      <div class="col-12 col-lg-7 pt-5 pt-lg-0">
-        <img src="{% static 'img/girl-and-dog.png' %}" class="img-fluid">
+    <section class="mt-5">
+      <div class="section-heading">
+        <div>
+          <h2>Недавно найденные</h2>
+          <p>Свежие объявления, где питомцев нашли и ищут хозяев.</p>
+        </div>
+        <a href="{% url 'ads:advertisement_list' %}?type=found" class="btn btn-outline-pa-green">Все найденные</a>
       </div>
-    </div>
-
-    <div class="mt-5 pt-5 mb-5 pb-3">
-      <p class="page-header pb-4">Недавно найденные</p>
-      <div class="row pb-4">
+      <div class="cards-grid">
         {% for found in founds %}
-          <div class="col">
-            <a href="{% url 'ads:advertisement_detail' found.id %}">
-              {% if found.image %}
-                {% thumbnail found.image "250x250" crop="center" as im %}
-                  <img src="{{ im.url }}" width="{{ im.width }}"
-                    height="{{ im.height }}" class="rounded">
-                {% endthumbnail %}
-              {% else %}
-                {% thumbnail found.type__default_image "250x250" crop="center" as im %}
-                  <img src="{{ im.url }}" width="{{ im.width }}"
-                    height="{{ im.height }}" class="rounded">
-                {% endthumbnail %}
-              {% endif %}
-            </a>
-            <p class="pt-3">{{ found.created_at }}</p>
-            <div class="pb-3">
+          <article class="card">
+            <div class="card-body">
+              <a class="list-card__image" href="{% url 'ads:advertisement_detail' found.id %}">
+                {% if found.image %}
+                  {% thumbnail found.image "450x450" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Найденный питомец">
+                  {% endthumbnail %}
+                {% else %}
+                  {% thumbnail found.type__default_image "450x450" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Найденный питомец">
+                  {% endthumbnail %}
+                {% endif %}
+              </a>
+              <div class="meta-line mt-3"><span>{{ found.created_at }}</span></div>
               <a href="{% url 'ads:advertisement_detail' found.id %}" class="pa-link">Подробнее</a>
             </div>
-          </div>
-        {% endfor %}
-     </div>
-      <a href="{% url 'ads:advertisement_list' %}?type=found">
-        <button class="btn btn-pa-green index-green-button mt-2">Все найденные</button>
-      </a>
-    </div>
-
-    <div class="mt-5 pt-5">
-      <p class="page-header pb-4">Недавно потерянные</p>
-      <div class="row pb-4">
-        {% for lost in losts %}
-          <div class="col">
-            <a href="{% url 'ads:advertisement_detail' lost.id %}">
-              {% if lost.image %}
-                {% thumbnail lost.image "250x250" crop="center" as im %}
-                  <img src="{{ im.url }}" width="{{ im.width }}"
-                       height="{{ im.height }}" class="rounded">
-                {% endthumbnail %}
-              {% else %}
-                {% thumbnail lost.type__default_image "250x250" crop="center" as im %}
-                  <img src="{{ im.url }}" width="{{ im.width }}"
-                       height="{{ im.height }}" class="rounded">
-                {% endthumbnail %}
-              {% endif %}
-            </a>
-            <p class="pt-3">{{ lost.created_at }}</p>
-            <div class="pb-3">
-              <a href="{% url 'ads:advertisement_detail' lost.id %}" class="pa-link">Подробнее</a>
-            </div>
-          </div>
+          </article>
         {% endfor %}
       </div>
-      <a href="{% url 'ads:advertisement_list' %}?type=lost">
-        <button class="btn btn-pa-green index-green-button mt-2">Все потерянные</button>
-      </a>
-    </div>
+    </section>
+
+    <section class="mt-5">
+      <div class="section-heading">
+        <div>
+          <h2>Недавно потерянные</h2>
+          <p>Объявления, которым особенно важно помочь как можно быстрее.</p>
+        </div>
+        <a href="{% url 'ads:advertisement_list' %}?type=lost" class="btn btn-outline-pa-green">Все потерянные</a>
+      </div>
+      <div class="cards-grid">
+        {% for lost in losts %}
+          <article class="card">
+            <div class="card-body">
+              <a class="list-card__image" href="{% url 'ads:advertisement_detail' lost.id %}">
+                {% if lost.image %}
+                  {% thumbnail lost.image "450x450" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Потерянный питомец">
+                  {% endthumbnail %}
+                {% else %}
+                  {% thumbnail lost.type__default_image "450x450" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" alt="Потерянный питомец">
+                  {% endthumbnail %}
+                {% endif %}
+              </a>
+              <div class="meta-line mt-3"><span>{{ lost.created_at }}</span></div>
+              <a href="{% url 'ads:advertisement_detail' lost.id %}" class="pa-link">Подробнее</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
   </article>
 
 {% endblock %}

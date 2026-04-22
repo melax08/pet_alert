@@ -27,27 +27,44 @@
         >
           {% csrf_token %}
           {% for field in form %}
-            <div class="form-floating my-3"
-                    {% if field.field.required %}
-                 aria-required="true"
-                    {% else %}
-                 aria-required="false"
-                    {% endif %}
-            >
+            {% if field.name == 'captcha' %}
+              <div class="my-3"
+                      {% if field.field.required %}
+                   aria-required="true"
+                      {% else %}
+                   aria-required="false"
+                      {% endif %}
+              >
                 {{ field }}
-              <label for="{{ field.id_for_label }}">
-                {{ field.label }}
-                {% if field.field.required %}
-                  <span class="required text-danger">*</span>
-                {% endif %}
-              </label>
-
                 {% if field.help_text %}
                   <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
                     {{ field.help_text|safe }}
                   </small>
                 {% endif %}
-            </div>
+              </div>
+            {% else %}
+              <div class="form-floating my-3"
+                      {% if field.field.required %}
+                   aria-required="true"
+                      {% else %}
+                   aria-required="false"
+                      {% endif %}
+              >
+                  {{ field }}
+                <label for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.field.required %}
+                    <span class="required text-danger">*</span>
+                  {% endif %}
+                </label>
+
+                  {% if field.help_text %}
+                    <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
+                      {{ field.help_text|safe }}
+                    </small>
+                  {% endif %}
+              </div>
+            {% endif %}
           {% endfor %}
           <div class="d-grid gap-2">
             <button type="submit" class="btn btn-pa-green btn-lg col-12 col-sm-6 mx-auto">

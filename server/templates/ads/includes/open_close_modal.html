@@ -1,4 +1,4 @@
-<div class="modal fade" id="closeOpenModal" tabindex="-1" aria-labelledby="closeOpenModalLabel" aria-hidden="true">
+<div class="modal" id="closeOpenModal" tabindex="-1" aria-labelledby="closeOpenModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -9,9 +9,9 @@
             Активировать объявление?
           {% endif %}
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-modal-close aria-label="Close"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body modal-body-compact">
         {% if ad.open %}
             Если вы хотите, чтобы данное объявление больше не было доступно другим пользователям на сайте, вы можете его закрыть.
           {% else %}
@@ -19,8 +19,8 @@
           {% endif %}
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отменить</button>
-        <button id="manage-button" type="button" class="btn {% if ad.open %} btn-pa-orange {% else %} btn-pa-green {% endif %}" onclick="managePost()">
+        <button type="button" class="btn btn-secondary modal-action-button" data-modal-close>Отменить</button>
+        <button id="manage-button" type="button" class="btn modal-action-button {% if ad.open %} btn-pa-orange {% else %} btn-pa-green {% endif %}" onclick="managePost()">
         <span id="spinner-open-close" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none"></span>
           {% if ad.open %}
             Закрыть объявление

@@ -7,55 +7,74 @@
 {% endblock %}
 {% block content %}
   {% include 'ads/includes/navigation.html' %}
+  <link rel="stylesheet" href="{% static 'css/chat-history.css' %}">
 
   <div class="row">
-
     <aside class="col-12 col-md-2">
       {% include 'user_profile/includes/profile_nav.html' %}
     </aside>
 
     <div class="col-12 col-md-10">
+      <section class="messenger-shell">
+        <div>
+          <h2 class="messenger-heading">Список диалогов</h2>
+          <p class="messenger-subtitle">Все активные переписки по вашим объявлениям и откликам.</p>
+        </div>
 
-      <h3 class="pb-2">Список диалогов</h3>
-
-    {% if not chats %}
-      <p class="text-muted">У вас еще нет начатых диалогов</p>
-    {% else %}
-
-      {% for chat in chats %}
-        <article class="border-top border-start border-end {% if forloop.last %}rounded-bottom border-bottom{% endif %}">
-          <div class="row g-0 position-relative">
-            <div class="col-xs-3 col-xl-2 mb-md-0 p-3 pb-0 pb-md-3">
-              {% if chat.advertisement.image %}
-                {% thumbnail chat.advertisement.image "100x100" crop="center" as im %}
-                <img src="{{ im.url }}" width="{{ im.width }}"
-                     height="{{ im.height }}" class="rounded">
-                {% endthumbnail %}
-              {% else %}
-                {% thumbnail chat.advertisement.species.default_image "100x100" crop="center" as im %}
-                  <img src="{{ im.url }}" width="{{ im.width }}"
-                      height="{{ im.height }}" class="rounded">
-                {% endthumbnail %}
-              {% endif %}
-            </div>
-
-            <div class="col-xs-9 col-xl-10 p-3">
-              <div class="d-flex justify-content-between">
-                <p>{% if request.user == chat.author %} {{ chat.questioner.first_name }} {% else %} {{ chat.author.first_name }} {% endif %} {% if chat.unread_messages %} <span class="badge bg-pa-red rounded-pill"> {{ chat.unread_messages }} </span> {% endif %}</p>
-                <p class="text-muted">{{ chat.latest_message_date|date:"j E" }}</p>
-              </div>
-              <p class="text-muted text-break">{{ chat.latest_message_content|truncatechars:100 }}</p>
-
-              <a href="{% url 'messenger:dialog_detail' chat.id %}" class="pa-link stretched-link"></a>
-            </div>
-
+        {% if not chats %}
+          <div class="surface-panel p-4">
+            <p class="text-muted">У вас еще нет начатых диалогов</p>
           </div>
-        </article>
+        {% else %}
+          <div class="dialogs-list">
+            {% for chat in chats %}
+              <a href="{% url 'messenger:dialog_detail' chat.id %}" class="dialog-card dialog-card--link">
+                <div class="dialog-card__media">
+                  {% if chat.advertisement.image %}
+                    {% thumbnail chat.advertisement.image "160x160" crop="center" as im %}
+                      <img src="{{ im.url }}" width="{{ im.width }}"
+                           height="{{ im.height }}" alt="Объявление">
+                    {% endthumbnail %}
+                  {% else %}
+                    {% thumbnail chat.advertisement.species.default_image "160x160" crop="center" as im %}
+                      <img src="{{ im.url }}" width="{{ im.width }}"
+                           height="{{ im.height }}" alt="Объявление">
+                    {% endthumbnail %}
+                  {% endif %}
+                </div>
 
-      {% endfor %}
+                <div class="dialog-card__body">
+                  <div class="dialog-card__meta">
+                    <p class="dialog-card__name">
+                      {% if request.user == chat.author %}
+                        {{ chat.questioner.first_name }}
+                      {% else %}
+                        {{ chat.author.first_name }}
+                      {% endif %}
+                      {% if chat.unread_messages %}
+                        <span class="badge">{{ chat.unread_messages }}</span>
+                      {% endif %}
+                    </p>
+                    <span class="dialog-card__date">{{ chat.latest_message_date|date:"j E" }}</span>
+                  </div>
 
-      {% include 'ads/includes/paginator.html' %}
-      {% endif %}
+                  <p class="dialog-card__ad">
+                    {% if chat.advertisement.open and chat.advertisement.active %}
+                      По объявлению: {{ chat.advertisement.description|truncatechars:48 }}
+                    {% else %}
+                      Объявление уже закрыто
+                    {% endif %}
+                  </p>
+
+                  <p class="dialog-card__preview text-break">{{ chat.latest_message_content|truncatechars:120 }}</p>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+
+          {% include 'ads/includes/paginator.html' %}
+        {% endif %}
+      </section>
     </div>
   </div>
 {% endblock %}

@@ -53,16 +53,12 @@
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <p>{{ address_info }}</p>
-            <!-- Button trigger modal -->
-
-            <button type="button" class="btn btn-pa-green"
-                    data-bs-toggle="modal" data-bs-target="#mapModal">
+            <button type="button" class="btn btn-pa-green" data-modal-target="mapModal">
               Выбрать адрес
             </button>
 
             <p class="my-3 id_address">Адрес не выбран</p>
-            <!-- Modal -->
-            <div class="modal fade" id="mapModal" tabindex="-1"
+            <div class="modal" id="mapModal" tabindex="-1"
                  aria-labelledby="mapModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
@@ -70,14 +66,15 @@
                     <h5 class="modal-title" id="mapModalLabel">Выберите
                       адрес</h5>
                     <button type="button" class="btn-close"
-                            data-bs-dismiss="modal"
+                            data-modal-close
                             aria-label="Close"></button>
                   </div>
-                  <div class="modal-body">
-                    <div class="input-group mb-3">
-                      <input type="text" id="suggest" class="form-control form-control-lg" placeholder="Введите адрес">
-                      <button type="button" class="btn btn-pa-green" id="sendButton" data-bs-dismiss="modal">Подтвердить</button>
+                  <div class="modal-body address-modal__body">
+                    <div class="address-modal__toolbar">
+                      <input type="text" id="suggest" class="form-control form-control-lg address-modal__input" placeholder="Введите адрес или выберите точку на карте">
+                      <button type="button" class="btn btn-pa-green address-modal__apply" id="sendButton" disabled>Подтвердить</button>
                     </div>
+                    <p class="address-modal__preview" id="addressPreview">Выберите адрес через поиск, клик по карте или перетаскивание метки.</p>
                     {% include 'ads/includes/ya_maps.html' %}
                     <script async src="{% static 'js/map_event.js' %}"
                             type="text/javascript"></script>
