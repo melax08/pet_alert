@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponseRedirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils.text import Truncator
 from django.views.generic import DetailView, ListView
 from django.views.generic.base import TemplateView
 from django_registration import signals
@@ -28,6 +29,95 @@ EMAIL_SUBJECT_TEMPLATE = "users/activation_email_subject.txt"
 User = get_user_model()
 
 
+def _absolute_url(request, url_name, **kwargs):
+    return request.build_absolute_uri(reverse(url_name, kwargs=kwargs))
+
+
+def _index_seo_context(request):
+    return {
+        "seo_title": "PetAlert - поиск пропавших и найденных животных по России",
+        "seo_description": (
+            "PetAlert помогает публиковать объявления о пропаже и находке домашних "
+            "животных, искать питомцев на карте и быстро связываться между собой."
+        ),
+        "seo_canonical_url": _absolute_url(request, "ads:index"),
+        "seo_og_type": "website",
+    }
+
+
+def _advertisement_collection_seo_context(request, *, is_map):
+    ad_type = request.GET.get("type")
+    page_label = "карта объявлений" if is_map else "объявления"
+
+    if ad_type == "lost":
+        title = f"Потерянные животные - {page_label} | PetAlert"
+        description = (
+            "Смотрите объявления о пропавших животных, ищите питомцев по списку и на карте, "
+            "чтобы быстрее помочь владельцам."
+        )
+    elif ad_type == "found":
+        title = f"Найденные животные - {page_label} | PetAlert"
+        description = (
+            "Смотрите объявления о найденных животных, чтобы помочь вернуть питомцев домой "
+            "и связаться с авторами объявлений."
+        )
+    else:
+        title = f"Объявления о пропавших и найденных животных - {page_label} | PetAlert"
+        description = (
+            "База объявлений о пропавших и найденных домашних животных по России: список, "
+            "карта, фильтры и быстрый переход к карточкам объявлений."
+        )
+
+    canonical_name = "ads:advertisement_map" if is_map else "ads:advertisement_list"
+    return {
+        "seo_title": title,
+        "seo_description": description,
+        "seo_canonical_url": _absolute_url(request, canonical_name),
+        "seo_og_type": "website",
+    }
+
+
+def _advertisement_detail_seo_context(request, advertisement):
+    if advertisement.__class__ is Lost:
+        status_label = "Потерялся"
+        subject = advertisement.pet_name or (
+            advertisement.species.name.lower() if advertisement.species else "питомец"
+        )
+    else:
+        status_label = "Нашёлся"
+        subject = advertisement.species.name.lower() if advertisement.species else "питомец"
+
+    title = f"{status_label} {subject} | PetAlert"
+    description_parts = [f"{status_label} {subject}."]
+    if advertisement.address:
+        description_parts.append(f"Адрес: {Truncator(advertisement.address).chars(80)}.")
+    if advertisement.description:
+        description_parts.append(Truncator(advertisement.description).chars(120))
+
+    seo_context = {
+        "seo_title": title,
+        "seo_description": " ".join(description_parts),
+        "seo_canonical_url": _absolute_url(
+            request,
+            "ads:advertisement_detail",
+            ad_id=advertisement.id,
+        ),
+        "seo_og_type": "article",
+    }
+
+    if advertisement.image:
+        seo_context["seo_image_url"] = request.build_absolute_uri(advertisement.image.url)
+    elif advertisement.species and advertisement.species.default_image:
+        seo_context["seo_image_url"] = request.build_absolute_uri(
+            advertisement.species.default_image.url
+        )
+
+    if not advertisement.visible:
+        seo_context["seo_robots"] = "noindex, nofollow"
+
+    return seo_context
+
+
 class IndexPageView(TemplateView):
     """Main page with some information about project and last
     Lost and Found advertisements."""
@@ -37,6 +127,7 @@ class IndexPageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         AdvertisementService.update_context_with_lost_and_found_advertisements(context, ads_count=4)
+        context.update(_index_seo_context(self.request))
         return context
 
 
@@ -182,6 +273,7 @@ class AdvertisementListView(ListView):
         get_copy = self.request.GET.copy()
         context["parameters"] = get_copy.pop("page", True) and get_copy.urlencode()
         context["filter"] = self.filterset
+        context.update(_advertisement_collection_seo_context(self.request, is_map=False))
         return context
 
 
@@ -196,6 +288,7 @@ class AdvertisementMapView(TemplateView):
             self.request.GET,
             queryset=Advertisement.objects.select_related("species").filter(active=True, open=True),
         )
+        context.update(_advertisement_collection_seo_context(self.request, is_map=True))
         return context
 
 
@@ -243,4 +336,5 @@ class AdvertisementDetailView(DetailView):
             context["balloon_content"] = "Был найден тут"
             context["author_label"] = "Кто видел"
 
+        context.update(_advertisement_detail_seo_context(self.request, self.object))
         return context

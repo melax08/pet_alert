@@ -3,8 +3,8 @@
 function getYaMap() {
     var myPlacemark,
         myMap = new ymaps.Map('map', {
-            center: [61.5240, 105.3188],
-            zoom: 4,
+            center: [56.2, 37.9],
+            zoom: 5,
             controls: []
         }, {
             searchControlProvider: 'yandex#search',
