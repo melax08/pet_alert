@@ -15,13 +15,13 @@ CSP_SCRIPT_SRC: tuple[str, ...] = (
     "cdn.jsdelivr.net",
     "127.0.0.1:8001",
     "ajax.googleapis.com",
-    "cloudflareinsights.com",
+    "*.cloudflareinsights.com",
 )
 CSP_IMG_SRC: tuple[str, ...] = ("'self'", "data:")
 CSP_FONT_SRC: tuple[str, ...] = ("'self'", "fonts.gstatic.com", "fonts.googleapis.com")
 CSP_STYLE_SRC: tuple[str, ...] = ("'self'", "'unsafe-inline'", "fonts.googleapis.com")
 CSP_DEFAULT_SRC: tuple[str, ...] = ("'self'", "'unsafe-inline'")
-CSP_CONNECT_SRC: tuple[str, ...] = ("'self'", "ws://127.0.0.1:8001")
+CSP_CONNECT_SRC: tuple[str, ...] = ("'self'", "ws://127.0.0.1:8001", "cloudflareinsights.com")
 CSP_FRAME_SRC: tuple[str, ...] = ("'self'",)
 
 # Yandex maps
@@ -38,7 +38,3 @@ CSP_CONNECT_SRC += ("log.api-maps.yandex.ru", "suggest-maps.yandex.ru")
 # Google (ReCaptcha)
 CSP_SCRIPT_SRC += ("www.google.com", "www.gstatic.com")
 CSP_FRAME_SRC += ("www.google.com",)
-
-# Messenger styles
-CSP_STYLE_SRC += ("maxcdn.bootstrapcdn.com",)
-CSP_FONT_SRC += ("maxcdn.bootstrapcdn.com",)
