@@ -43,13 +43,9 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script : |
             cd pet_alert
             git pull
-            docker compose -p petalert -f infra/docker-compose-prod.yml stop
-            docker compose -p petalert -f infra/docker-compose-prod.yml rm -sf pet-alert-backend pet-alert-worker pet-alert-ws pet-alert-nginx
-            docker volume rm petalert_static_volume
             cat <<EOF > config/.env
             # START WORKFLOW ENVS
             DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET }}
@@ -86,7 +82,7 @@ jobs:
             # Redis
             REDIS_SSL=0
             REDIS_PREFIX=pet-alert
-            REDIS_HOST=pet-alert-redis
+            REDIS_HOST=redis
             REDIS_PORT=6379
             REDIS_DB=0
 
@@ -97,7 +93,8 @@ jobs:
             TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}
             # DONE WORKFLOW ENVS
             EOF
-            docker compose -p petalert -f infra/docker-compose-prod.yml --env-file config/.env up -d --build pet-alert-backend pet-alert-worker pet-alert-nginx pet-alert-ws
+            docker compose -f infra/docker-compose-prod.yml up -d --build
+            yes | docker image prune --all
 
 
   send_message:

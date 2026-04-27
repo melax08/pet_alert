@@ -49,7 +49,7 @@ class Dialog(TimeStampedModelMixin, models.Model):
                 name="dialog_unique_together_author_questioner_adv",
             ),
             models.CheckConstraint(
-                check=~Q(author=F("questioner")), name="dialog_author_cant_message_himself"
+                condition=~Q(author=F("questioner")), name="dialog_author_cant_message_himself"
             ),
         ]
 

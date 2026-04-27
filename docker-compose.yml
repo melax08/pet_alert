@@ -1,21 +1,23 @@
 # For development purposes only
+name: petalert
+
 services:
 
-  pet-alert-redis:
+  redis:
     image: redis
     ports:
       - "6379:6379"
 
-  pet-alert-db:
-    image: postgres:17.2-alpine
+  database:
+    image: postgres:18.3-alpine
     volumes:
-      - database:/var/lib/postgresql/data/
+      - database:/var/lib/postgresql/
     env_file:
       - config/.env
     ports:
       - "5432:5432"
 
-  pet-alert-worker:
+  worker:
     build:
       context: .
       dockerfile: ./infra/Dockerfile
@@ -26,16 +28,16 @@ services:
       - ./server/static:/app/static/
       - ./media:/app/media/
     depends_on:
-      - pet-alert-db
-      - pet-alert-redis
+      - database
+      - redis
     env_file:
       - config/.env
     environment:
-      DJANGO_DATABASE_HOST: pet-alert-db
+      DJANGO_DATABASE_HOST: database
       EMAIL_HOST: pet-alert-mailpit
-      REDIS_HOST: pet-alert-redis
+      REDIS_HOST: redis
 
-  pet-alert-mailpit:
+  mailpit:
     image: axllent/mailpit
     logging:
       driver: "none"

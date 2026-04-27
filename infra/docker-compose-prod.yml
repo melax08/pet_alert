@@ -1,116 +1,89 @@
+name: petalert
+
 services:
 
-  pet-alert-db:
-    image: postgres:17.2-alpine
+  database:
+    image: postgres:18.3-alpine
     volumes:
-      - database:/var/lib/postgresql/data/
+      - database:/var/lib/postgresql/
     env_file:
       - ../config/.env
     restart: always
 
-  pet-alert-backend-prepare:
+  backend-prepare:
     build:
       context: ..
       dockerfile: infra/Dockerfile
     entrypoint: infra/entrypoint_backend_prepare.sh
     volumes:
-      - static_volume:/app/static/
-      - media_volume:/app/media/
+      - /srv/pet-alert/static:/app/static/
+      - /srv/pet-alert/static:/app/media/
     depends_on:
-      pet-alert-db:
+      database:
         condition: service_started
     env_file:
       - ../config/.env
 
-  pet-alert-redis:
+  redis:
     image: redis
     restart: always
 
-  pet-alert-backend:
+  backend:
     build:
       context: ..
       dockerfile: infra/Dockerfile
-    entrypoint: infra/entrypoint_server.sh
+    entrypoint: infra/entrypoint_backend.sh
+    ports:
+      - "8000:8000"
     restart: always
     volumes:
-      - static_volume:/app/static/
-      - media_volume:/app/media/
+      - /srv/pet-alert/static:/app/static/
+      - /srv/pet-alert/static:/app/media/
     depends_on:
-      pet-alert-backend-prepare:
+      backend-prepare:
         condition: service_completed_successfully
-      pet-alert-db:
+      database:
         condition: service_started
     env_file:
       - ../config/.env
 
-  pet-alert-worker:
+  worker:
     build:
       context: ..
       dockerfile: infra/Dockerfile
     entrypoint: infra/entrypoint_worker.sh
     restart: always
     volumes:
-      - static_volume:/app/static/
-      - media_volume:/app/media/
+      - /srv/pet-alert/static:/app/static/
+      - /srv/pet-alert/static:/app/media/
     depends_on:
-      pet-alert-backend-prepare:
+      backend-prepare:
         condition: service_completed_successfully
-      pet-alert-backend:
+      backend:
+        condition: service_started
+      redis:
         condition: service_started
     env_file:
       - ../config/.env
 
-  pet-alert-ws:
+  ws:
     build:
       context: ..
       dockerfile: infra/Dockerfile
     entrypoint: infra/entrypoint_ws.sh
+    ports:
+      - "8001:8001"
     restart: always
     volumes:
-      - static_volume:/app/static/
-      - media_volume:/app/media/
+      - /srv/pet-alert/static:/app/static/
+      - /srv/pet-alert/static:/app/media/
     depends_on:
-      pet-alert-backend-prepare:
+      backend-prepare:
         condition: service_completed_successfully
-      pet-alert-db:
+      database:
         condition: service_started
     env_file:
       - ../config/.env
 
-  pet-alert-nginx:
-    image: nginx:1.27.4-alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    restart: always
-    volumes:
-      - ${PET_MAIN_NGINX_CONF-./nginx/nginx_pet_alert.template}:/etc/nginx/templates/default.conf.template
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/bot.conf:/etc/nginx/conf.d/bot.conf
-      - ./nginx/bot_include.conf:/etc/nginx/vhosts-includes/bot.conf
-      - static_volume:/var/html/static/
-      - media_volume:/var/html/media/
-      - certbot_conf:/etc/letsencrypt
-      - certbot_www:/var/www/certbot
-    env_file:
-      - ../config/.env
-    depends_on:
-      - pet-alert-backend
-
-  pet-alert-certbot:
-    image: certbot/certbot
-    volumes:
-      - certbot_conf:/etc/letsencrypt
-      - certbot_www:/var/www/certbot
-    env_file:
-       - ../config/.env
-    depends_on:
-      - pet-alert-nginx
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email admin@${WEBSITE_HOST} -d ${WEBSITE_HOST} --agree-tos
-
 volumes:
   database:
-  static_volume:
-  media_volume:
-  certbot_conf:
-  certbot_www:
