@@ -58,12 +58,12 @@ class LoggingContextVarsMiddleware:
 
     def __init__(
         self,
-        get_response: "Callable[[HttpRequest], HttpResponse]",
+        get_response: Callable[[HttpRequest], HttpResponse],
     ) -> None:
         """Django's API-compatible constructor."""
         self.get_response = get_response
 
-    def __call__(self, request: "HttpRequest") -> "HttpResponse":
+    def __call__(self, request: HttpRequest) -> HttpResponse:
         """
         Handle requests.
 

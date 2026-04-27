@@ -62,7 +62,7 @@ except OSError:  # pragma: no cover
 INTERNAL_IPS += ["127.0.0.1", "10.0.2.2"]
 
 
-def _custom_show_toolbar(request: "HttpRequest") -> bool:
+def _custom_show_toolbar(request: HttpRequest) -> bool:
     """Only show the debug toolbar to users with the superuser flag."""
     return DEBUG and request.user.is_superuser
 
