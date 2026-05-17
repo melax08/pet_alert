@@ -17,7 +17,7 @@ services:
     entrypoint: infra/entrypoint_backend_prepare.sh
     volumes:
       - /srv/pet-alert/static:/app/static/
-      - /srv/pet-alert/static:/app/media/
+      - /srv/pet-alert/media:/app/media/
     depends_on:
       database:
         condition: service_started
@@ -38,7 +38,7 @@ services:
     restart: always
     volumes:
       - /srv/pet-alert/static:/app/static/
-      - /srv/pet-alert/static:/app/media/
+      - /srv/pet-alert/media:/app/media/
     depends_on:
       backend-prepare:
         condition: service_completed_successfully
@@ -55,7 +55,7 @@ services:
     restart: always
     volumes:
       - /srv/pet-alert/static:/app/static/
-      - /srv/pet-alert/static:/app/media/
+      - /srv/pet-alert/media:/app/media/
     depends_on:
       backend-prepare:
         condition: service_completed_successfully
@@ -76,7 +76,7 @@ services:
     restart: always
     volumes:
       - /srv/pet-alert/static:/app/static/
-      - /srv/pet-alert/static:/app/media/
+      - /srv/pet-alert/media:/app/media/
     depends_on:
       backend-prepare:
         condition: service_completed_successfully
